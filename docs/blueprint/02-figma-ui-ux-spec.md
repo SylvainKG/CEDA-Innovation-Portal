@@ -4,6 +4,7 @@
 **Depends on:** [01-mvp-blueprint.md](01-mvp-blueprint.md) v0.2 (scope, roles, demo journey, data model, decisions D-01 to D-30)
 **Scope:** 15 reusable templates (T01–T15), one component library, one state kit, 7 clickable prototypes. Per D-28, there are **no screens beyond these templates**. Every v0.2 feature lives inside an existing template.
 **Brand:** CEDA layout, colour and font guidance has not been received (D-04). All visual tokens below are **placeholders** built so that a brand swap changes only variable values.
+**Precedence (blueprint v0.3, D-32):** the shared CEDA Figma project is the source of truth for **visual** design. This document remains the source for **behaviour** (states, permissions, actions, status wording, accessibility checks). Its placeholder tokens and visuals apply only where the existing Figma project defines nothing; where Figma defines a token or component, Figma wins. Differences are logged in `docs/design/figma-handoff/handoff-notes.md` (D-33). Sandra's inventory (blueprint §8.2) maps the existing frames to T01–T15.
 
 ---
 
