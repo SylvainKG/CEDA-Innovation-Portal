@@ -30,12 +30,12 @@
 
 | Source recipe | CEDA application | Status vs approved blueprint |
 |---|---|---|
-| Idempotent command | `submit_proposal` uses `client_request_id` (unique) and returns the original reference on retry | In blueprint v0.2 |
-| Idempotent command (full form) | A generic `command_receipts(actor_id, operation, request_key, fingerprint, result, created_at)` table used by **every** workflow RPC. Same key + same fingerprint → saved result; same key + different fingerprint → `REQUEST_CONFLICT` | **Proposed: needs a blueprint change request.** v0.2 covers submit only |
-| Transactional outbox | `email_outbox` row written in the same transaction as the status change; an Edge Function relay sends later; delivery is at least once | In blueprint v0.2 |
+| Idempotent command | `submit_proposal` uses `client_request_id` (unique) and returns the original reference on retry | In the blueprint |
+| Idempotent command (full form) | A generic `command_receipts(actor_id, operation, request_key, fingerprint, result, created_at)` table used by **every** workflow RPC. Same key + same fingerprint → saved result; same key + different fingerprint → `REQUEST_CONFLICT` | **Proposed: needs a blueprint change request.** The blueprint covers submit only |
+| Transactional outbox | `email_outbox` row written in the same transaction as the status change; an Edge Function relay sends later; delivery is at least once | In the blueprint |
 | Outcome vocabulary | `email_outbox.status`: `pending · accepted · rejected · retryable · unknown_outcome` (with `attempts`, `last_attempt_at`, `next_attempt_at`) instead of `pending · sent · failed` | **Proposed: needs a blueprint change request.** "sent"/"failed" overstate what is observed (principle 2) |
-| Idempotent consumer | The relay records the provider message ID and only processes `pending`/`retryable` rows it has claimed with a conditional update | Added detail within v0.2 scope |
-| Concurrency | Conditional updates `UPDATE proposals SET status = $new WHERE id = $id AND status = $expected` (zero rows → `INVALID_STATE`); unique constraints listed in blueprint §4; real parallel-request tests | Within v0.2 scope |
+| Idempotent consumer | The relay records the provider message ID and only processes `pending`/`retryable` rows it has claimed with a conditional update | Added detail within blueprint scope |
+| Concurrency | Conditional updates `UPDATE proposals SET status = $new WHERE id = $id AND status = $expected` (zero rows → `INVALID_STATE`); unique constraints listed in blueprint §4; real parallel-request tests | Within blueprint scope |
 | Optimistic version | `proposals.row_version` checked by every RPC that changes the case | **Proposed: needs a blueprint change request** |
 | Retries | Single owner: the outbox relay. Maximum attempts and timeout are **proposed** values (e.g. 5 attempts, 10 s timeout, exponential backoff with jitter) until the team agrees them. The browser makes one attempt per user action and reuses the key | Values proposed |
 | Protection | Timeouts on every remote call (required). Auth rate limiting through Supabase Auth (required). Circuit breakers, load shedding and bounded dead-letter queues: **deferred for the MVP**, recorded in the debt register with the trigger "real traffic or a second external provider" | Scaled down, recorded |

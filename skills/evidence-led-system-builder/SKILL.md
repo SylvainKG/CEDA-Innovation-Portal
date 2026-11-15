@@ -7,7 +7,7 @@ description: "CEDA Innovation Portal implementation and verification discipline 
 
 The engineering discipline for building and proving the CEDA Innovation Portal hackathon MVP. It turns the approved blueprint into working, tested, documented code and reports only what evidence supports.
 
-**Source and fidelity.** Derived from `evidence-led-system-builder_skill.pdf` (9 pages). Every original principle, phase, recipe, checklist, pattern and anti-pattern is kept **verbatim** in the reference files. Text marked **CEDA adaptation (added)** applies them to this project and is not part of the PDF. An unmodified, generic copy of the source skill may also be installed at account level as `anthropic-skills:evidence-led-system-builder`; for CEDA work, use this project skill.
+**Source and fidelity.** Derived from `evidence-led-system-builder_skill.pdf` (9 pages). Every original principle, phase, recipe, checklist, pattern and anti-pattern is kept **verbatim** in the reference files. Text marked **CEDA adaptation (added)** applies them to this project and is not part of the PDF. An unmodified, generic copy of the source skill may also be installed at account level; for CEDA work, use this project skill.
 
 ## When to use
 
@@ -23,7 +23,7 @@ For a short question (for example "what does principle 8 mean?"), answer directl
 
 ## Working with project-blueprint-builder
 
-- The **approved blueprint** (`docs/blueprint/01-mvp-blueprint.md` v0.2, `02-figma-ui-ux-spec.md`, and the API contract document once approved) is the source of requirements and scope. This skill never changes scope, business rules or permissions on its own.
+- The **approved blueprint** (`docs/blueprint/01-mvp-blueprint.md`, currently v0.3, `02-figma-ui-ux-spec.md`, and the API contract document once approved) is the source of requirements and scope. This skill never changes scope, business rules or permissions on its own.
 - When code shows that the blueprint is wrong, incomplete or unsafe, stop and raise a **blueprint change request** ([documentation-standards.md](references/documentation-standards.md#blueprint-change-request--ceda-adaptation-added)). A demonstrated security defect is fixed as a defect first and recorded afterwards.
 - Documents are not duplicated. Each subject has one home; see the document map in [documentation-standards.md](references/documentation-standards.md).
 - Both skills share the same authorisation boundary: planning or documentation does not authorise implementation, repository creation, deployment, credential use or external messages. Wait for explicit authority.
@@ -41,7 +41,7 @@ The 15 core principles in [engineering-principles.md](references/engineering-pri
 
 ## CEDA invariants
 
-- Scope comes from blueprint v0.2. Slice order: Submit → Screen → Evaluate → Revise → Decide and award → Report, then optional innovation extras. The schedule is never extended for optional items (D-27).
+- Scope comes from the approved blueprint. Slice order: Submit → Screen → Evaluate → Revise → Decide and award → Report, then optional innovation extras. The schedule is never extended for optional items (D-27).
 - Workflow state changes only through guarded `SECURITY DEFINER` RPCs. RLS is default-deny on every table. Direct writes to workflow tables are revoked.
 - Submitted versions, submitted scorecards, published decisions and audit entries are append-only.
 - Submission is idempotent by `client_request_id`. A timeout is an unknown outcome, never "Failed".

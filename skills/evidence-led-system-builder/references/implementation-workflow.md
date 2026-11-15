@@ -12,7 +12,7 @@ Phases 0–3 are mostly produced under the **project-blueprint-builder** skill. 
 
 | Phase | Primary record in CEDA | What this skill does |
 |---|---|---|
-| 0 Intake | Blueprint v0.2 header, backlog, requirements PDFs | Inspects existing code, migrations, tests and config before any change |
+| 0 Intake | Blueprint header, backlog, requirements PDFs | Inspects existing code, migrations, tests and config before any change |
 | 1 Requirements | Backlog IDs, user requirements (UR/NFR), blueprint §1 and §3 | Confirms that each slice item has a testable acceptance check; missing ones become a blueprint change request |
 | 2 Domain model | Blueprint §4 (entities, state machine, RPC list) | Writes operation contracts (pre/post/invariant/refusals) for each RPC in the API contract document |
 | 3 Architecture and data | Blueprint §4, security design PDF, ADRs | Adds the ownership table, commit design and failure cuts to `docs/design/design.md`; writes ADRs |

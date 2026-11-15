@@ -61,7 +61,7 @@ Each distinction below comes from the source principle named in the second colum
 
 | Source principle | How it is applied in React + TypeScript + Supabase + Vercel |
 |---|---|
-| 1 Requirement before mechanism | Requirements come from the approved blueprint v0.2 and backlog IDs. No library, queue or service is added without naming the requirement it serves |
+| 1 Requirement before mechanism | Requirements come from the approved blueprint and backlog IDs. No library, queue or service is added without naming the requirement it serves |
 | 3 Logged in is not allowed | RLS default-deny on every table; `has_permission()` + assignment + status checks inside each RPC; React route guards are convenience only |
 | 4 Rules live with the state | Guarded operations are `SECURITY DEFINER` Postgres functions (`submit_proposal`, `record_decision`, …). Direct `INSERT/UPDATE/DELETE` on workflow tables is revoked from `authenticated` |
 | 5 Check before you change | Each RPC validates permission, input, current status/version and invariants before any write, and raises a coded error that leaves rows untouched |
