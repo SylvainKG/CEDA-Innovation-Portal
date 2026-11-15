@@ -102,6 +102,8 @@ Obvious starts implementing a screen as soon as it is Ready for build. You do no
 
 ## 5. Useful requests for your AI coding assistant with Figma MCP
 
+**For the dashboards** (T06, T07, T13, T14, T15 inbox), follow the step-by-step run sheet in [`prompts/dashboards.md`](prompts/dashboards.md). It includes the setup on your machine, the context request, one request per dashboard, shared fictional data and the handoff steps.
+
 Paste a frame link where `<link>` appears. These only **read** from Figma:
 
 - "Using the Figma MCP, read the structure of page `<link>` once and list every top-level frame with its name, node ID and size. Then map each to a template T01–T15 using `docs/blueprint/02-figma-ui-ux-spec.md` §7 and write the rows into `docs/design/figma-handoff/screen-inventory.md`."
