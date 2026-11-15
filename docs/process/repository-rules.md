@@ -63,7 +63,7 @@ These rules apply to everyone, human or assisted. They protect each other's work
 
 ## 5. Branch protection on `main` (settings Sylvain applies)
 
-To apply once the team's GitHub usernames are known (blueprint §6 item 8):
+Usernames are now known (blueprint §6 item 8); apply these settings:
 
 - [ ] Require a pull request before merging, with **1 approval**
 - [ ] Require review from **Code Owners** (file in §7)
@@ -101,13 +101,13 @@ To apply once the team's GitHub usernames are known (blueprint §6 item 8):
 
 ## 7. Code owners (proposed `.github/CODEOWNERS`)
 
-Placeholders are replaced with real GitHub usernames before this file is added.
+GitHub usernames: Sandra `sandra-oc` · Obvious `Shawnjembu` · Stacey `staceynthoi0-droid` · Sylvain `SylvainKG`.
 
 ```text
 # Default: any one other member reviews (enforced by the 1-approval rule)
-/src/components/                   @OBVIOUS_USERNAME
-/supabase/                         @STACEY_USERNAME
-/docs/design/figma-handoff/        @SANDRA_USERNAME @OBVIOUS_USERNAME
+/src/components/                   @Shawnjembu
+/supabase/                         @staceynthoi0-droid
+/docs/design/figma-handoff/        @sandra-oc @Shawnjembu
 /docs/blueprint/                   @SylvainKG
 /.github/                          @SylvainKG
 /package.json                      @SylvainKG
