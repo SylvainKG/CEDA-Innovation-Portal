@@ -1,0 +1,45 @@
+# AWS Amplify Hosting build specification for the frontend (Vite single-page app).
+# Amplify builds the connected branch on every push; the site is a demonstration with fictional data.
+#
+# Also required in the Amplify console (App settings > Rewrites and redirects), so that deep links
+# such as /staff or /ideas/123 load the app instead of returning 404:
+#   Source: </^[^.]+$|\.(?!(css|gif|ico|jpg|jpeg|js|png|txt|svg|woff|woff2|ttf|map|json|webp)$)([^.]+$)/>
+#   Target: /index.html
+#   Type:   200 (Rewrite)
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - nvm install "$(cat .nvmrc)"
+        - nvm use "$(cat .nvmrc)"
+        - node --version
+        - npm ci
+    build:
+      commands:
+        # VITE_API_MODE defaults to "mock" (no backend). Set it in the Amplify environment variables later.
+        - npm run build
+  artifacts:
+    baseDirectory: dist
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
+  # Security headers from the team's security design (HTTPS only, no framing, no MIME sniffing).
+  # connect-src already allows Supabase for when the backend is connected.
+  customHeaders:
+    - pattern: '**/*'
+      headers:
+        - key: Strict-Transport-Security
+          value: max-age=31536000; includeSubDomains
+        - key: X-Frame-Options
+          value: DENY
+        - key: X-Content-Type-Options
+          value: nosniff
+        - key: Referrer-Policy
+          value: strict-origin-when-cross-origin
+        - key: Permissions-Policy
+          value: camera=(), microphone=(), geolocation=()
+        - key: Content-Security-Policy
+          value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
