@@ -4,6 +4,14 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `feature` Slice 3 backend (REV-02, REV-03, NTF-01, D-11, D-19, D-20):
+  - `declare_assignment`: the case opens only after a no-conflict declaration (N10); a conflict revokes the assignment and alerts admins (N11);
+  - `save_scorecard` / `submit_scorecard`: 1–5 scores with reasons of at least 20 characters; quorum moves the case to adjudication automatically; retries are safe;
+  - `get_score_panel` (weighted aggregate, spread, 2-point flag), `my_review_queue`, `mark_notifications_read`;
+  - notifications and case history published for Realtime; published rubrics and challenge versions locked.
+
+  Evidence: PGlite stand-in run, 004 suite 61/61 (all suites 212/212). Not run on the Supabase stack yet.
+
 - `feature` Slice 2 backend (REV-01, IAM-01, D-08):
   - `record_screening` (eligible to evaluation, ineligible closes with reason), `assign_reviewers` (safe to retry; reviewer-role, conflict and self checks), `revoke_assignment`;
   - `grant_role` / `revoke_role`: a self-grant is refused and audited (N8);
