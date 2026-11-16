@@ -1,0 +1,33 @@
+# Continuous integration: stage 1 (docs/process/ci-and-environments.md §2, D-42).
+# Stage 2 (lint, type-check, unit tests, npm audit) is added with the app scaffold.
+# Stage 3 (migrations + seed + pgTAP on a throwaway database) is added with migration 001.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: read   # the scanner lists the PR's commits through the API
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  secrets:
+    name: secrets
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Scan for committed secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
