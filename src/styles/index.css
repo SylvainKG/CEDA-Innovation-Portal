@@ -1,0 +1,20 @@
+@import '@fontsource-variable/inter';
+@import './tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply bg-surface-page text-base text-ink font-sans antialiased;
+  }
+  /* F6: a visible focus ring on every interactive element */
+  :focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+  a {
+    @apply text-brand-text underline underline-offset-2;
+  }
+}
