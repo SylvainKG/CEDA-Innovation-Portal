@@ -30,11 +30,11 @@ export function Brand() {
 export function Footer() {
   return (
     <footer className="mt-12 border-t border-line bg-surface-card">
-      <nav aria-label="Footer" className="mx-auto flex max-w-content flex-wrap gap-x-6 gap-y-2 px-4 py-6 text-sm">
-        <Link to="/privacy">Privacy</Link>
-        <Link to="/help/support">Fault support</Link>
-        <Link to="/help/faqs">FAQs</Link>
-        <Link to="/help/contacts">Contacts</Link>
+      <nav aria-label="Footer" className="mx-auto flex max-w-content flex-wrap items-center gap-x-4 px-4 py-4 text-sm">
+        <Link to="/privacy" className="inline-flex min-h-touch min-w-touch items-center">Privacy</Link>
+        <Link to="/help/support" className="inline-flex min-h-touch min-w-touch items-center">Fault support</Link>
+        <Link to="/help/faqs" className="inline-flex min-h-touch min-w-touch items-center">FAQs</Link>
+        <Link to="/help/contacts" className="inline-flex min-h-touch min-w-touch items-center">Contacts</Link>
         <span className="text-ink-muted">Demonstration prototype with fictional data.</span>
       </nav>
     </footer>
@@ -43,7 +43,7 @@ export function Footer() {
 
 export function NotificationsLink() {
   return (
-    <Link to="/notifications" className="inline-flex min-h-touch items-center gap-2 rounded-md px-2 text-ink no-underline hover:bg-surface-sunken">
+    <Link to="/notifications" className="inline-flex min-h-touch min-w-touch items-center justify-center gap-2 rounded-md px-2 text-ink no-underline hover:bg-surface-sunken">
       <Bell aria-hidden className="h-5 w-5" />
       <span className="hidden md:inline">Notifications</span>
       <span className="sr-only md:hidden">Notifications</span>

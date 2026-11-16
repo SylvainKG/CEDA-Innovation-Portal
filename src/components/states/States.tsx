@@ -3,12 +3,30 @@ import { AlertTriangle, Clock, Inbox, Lock, RotateCcw, SearchX, WifiOff, type Lu
 import { Link } from 'react-router-dom'
 import { Button } from '../Button'
 
-/** Shared frame for full-area states (spec §7 "Shared states"). */
-function StateFrame({ icon: Icon, title, children, role }: { icon: LucideIcon; title: string; children?: ReactNode; role?: 'alert' | 'status' }) {
+type HeadingLevel = 'h1' | 'h2'
+
+/**
+ * Shared frame for full-area states (spec §7 "Shared states").
+ * When the state is the page's main content (Forbidden, Not found, a page-level error), its title is the page h1.
+ */
+function StateFrame({
+  icon: Icon,
+  title,
+  children,
+  role,
+  level = 'h2',
+}: {
+  icon: LucideIcon
+  title: string
+  children?: ReactNode
+  role?: 'alert' | 'status'
+  level?: HeadingLevel
+}) {
+  const Heading = level
   return (
     <section role={role} className="mx-auto flex max-w-form flex-col items-center gap-3 rounded-md bg-surface-card p-8 text-center shadow-1">
       <Icon aria-hidden className="h-10 w-10 text-ink-muted" />
-      <h2 className="text-h2 font-semibold">{title}</h2>
+      <Heading className="text-h2 font-semibold">{title}</Heading>
       {children}
     </section>
   )
@@ -28,9 +46,9 @@ export function LoadingState({ what, lines = 4 }: { what: string; lines?: number
   )
 }
 
-export function EmptyState({ title, children, action }: { title: string; children?: ReactNode; action?: ReactNode }) {
+export function EmptyState({ title, children, action, level }: { title: string; children?: ReactNode; action?: ReactNode; level?: HeadingLevel }) {
   return (
-    <StateFrame icon={Inbox} title={title}>
+    <StateFrame icon={Inbox} title={title} level={level}>
       {children ? <p className="text-ink-muted">{children}</p> : null}
       {action}
     </StateFrame>
@@ -38,9 +56,9 @@ export function EmptyState({ title, children, action }: { title: string; childre
 }
 
 /** Error with a way forward. Input on forms is kept by the form itself; this frame never clears it. */
-export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
+export function ErrorState({ message, onRetry, level }: { message: string; onRetry?: () => void; level?: HeadingLevel }) {
   return (
-    <StateFrame icon={AlertTriangle} title="Something went wrong" role="alert">
+    <StateFrame icon={AlertTriangle} title="Something went wrong" role="alert" level={level}>
       <p className="text-ink">{message}</p>
       <div className="flex flex-wrap justify-center gap-3">
         {onRetry ? (
@@ -48,7 +66,7 @@ export function ErrorState({ message, onRetry }: { message: string; onRetry?: ()
             Try again
           </Button>
         ) : null}
-        <Link to="/help/support" className="inline-flex min-h-touch items-center">
+        <Link to="/help/support" className="inline-flex min-h-touch min-w-touch items-center justify-center">
           Contact support
         </Link>
       </div>
@@ -62,9 +80,9 @@ export function ErrorState({ message, onRetry }: { message: string; onRetry?: ()
  */
 export function ForbiddenState({ home = '/' }: { home?: string }) {
   return (
-    <StateFrame icon={Lock} title="You don't have access to this page">
+    <StateFrame icon={Lock} title="You don't have access to this page" level="h1">
       <p className="text-ink">If you think this is wrong, contact the portal administrator.</p>
-      <Link to={home} className="inline-flex min-h-touch items-center">
+      <Link to={home} className="inline-flex min-h-touch min-w-touch items-center justify-center">
         Go to my home
       </Link>
     </StateFrame>
@@ -74,9 +92,9 @@ export function ForbiddenState({ home = '/' }: { home?: string }) {
 /** Not found (404): same layout as Forbidden so it cannot be used to probe whether a record exists. */
 export function NotFoundState({ home = '/' }: { home?: string }) {
   return (
-    <StateFrame icon={SearchX} title="We can't find this page">
+    <StateFrame icon={SearchX} title="We can't find this page" level="h1">
       <p className="text-ink">Check the address, or go back to your home page.</p>
-      <Link to={home} className="inline-flex min-h-touch items-center">
+      <Link to={home} className="inline-flex min-h-touch min-w-touch items-center justify-center">
         Go to my home
       </Link>
     </StateFrame>

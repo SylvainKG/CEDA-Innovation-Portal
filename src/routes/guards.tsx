@@ -13,7 +13,7 @@ export function RequireRole({ anyOf, children }: { anyOf: readonly Role[]; child
   const location = useLocation()
   const { data: user, isPending, isError, refetch } = useSession()
   if (isPending) return <LoadingState what="your session" />
-  if (isError) return <ErrorState message="We couldn't check your session." onRetry={() => void refetch()} />
+  if (isError) return <ErrorState level="h1" message="We couldn't check your session." onRetry={() => void refetch()} />
   if (!user) return <Navigate to={`/auth/sign-in?next=${encodeURIComponent(location.pathname)}`} replace />
   if (!user.roles.some((r) => anyOf.includes(r))) return <ForbiddenState home={homeFor(user.roles)} />
   return <>{children}</>
