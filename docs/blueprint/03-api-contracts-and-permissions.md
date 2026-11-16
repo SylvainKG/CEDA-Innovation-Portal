@@ -358,6 +358,8 @@ export interface RpcErrorBody { code: string; message: ApiErrorCode | 'IMMUTABLE
 | `009_scheduled_jobs.test.sql`: maintenance service-role only, expiry once with notice and system audit, case unchanged, replies refused after expiry, who may extend, extension and late reply, answered requests locked, relay trigger without Vault, schedules registered where pg_cron exists | PGlite stand-in | Passed, 20/20 |
 | Mutation checks (scheduled jobs): maintenance callable from browsers; expiry ignoring the deadline | Same | Each caught (3 and 3 failures) |
 | `pg_cron` schedules and the `pg_net` relay call | Supabase | **Not run** |
+| `010_security_privileges.test.sql`: exact allow-lists of functions callable signed out (2) and signed in (60), service-role-only relay and maintenance, private helpers limited to those policies use, every `SECURITY DEFINER` pins `search_path`, new functions start closed, no views in `public`, no table writes for browsers, private proposal bucket with no direct read/update/delete | PGlite stand-in | Passed, 11/11 |
+| Mutation checks (security): a new RPC granted to signed-out users; a `SECURITY DEFINER` function without `search_path` | Same | Each caught (1 and 1 failures) |
 | Mutation checks: open `can_read_case`, skip MFA, open peer view, drop version trigger | Same | Each caught (12, 1, 2 and 3 failures) |
 | Same suites on the Supabase stack (`supabase db reset && supabase test db`) | Local Docker / CI stage 3 | **Not run.** No Docker on Stacey's machine; CI stage 3 not added yet |
 | Storage upload policy with real `storage-api`; `attachment-url` Edge Function; 60 s expiry | Supabase local or staging | **Not run** |
@@ -387,6 +389,8 @@ export interface RpcErrorBody { code: string; message: ApiErrorCode | 'IMMUTABLE
 | `get_roadmap`, `list_email_outbox`, `claim_outbox_batch`, `record_outbox_result` added | T08 Feedback tab, T09 roadmap summary, NTF-02 relay and Simulated viewer |
 | Revision files carry forward as new attachment rows on the new version (same storage object) | Each version lists exactly its own files; earlier versions stay intact |
 | Admin settings are RPCs over the existing tables; no separate settings tables | T12 editors; every change audited |
+| Migration 010 hardens function privileges: global default (new functions start closed), `my_access` signed-in only, `private` helpers granted only where policies need them | Privilege review (SEC-02): schema-level default privileges cannot revoke PostgreSQL's built-in PUBLIC execute |
+| **Adding an RPC now requires** an explicit `grant execute … to authenticated` **and** adding it to the allow-list in `010_security_privileges.test.sql` | A function cannot become callable by accident |
 
 ## 11. Known gaps (debt)
 
