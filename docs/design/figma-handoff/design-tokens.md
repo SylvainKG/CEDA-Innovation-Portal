@@ -11,7 +11,9 @@ The code token names are fixed so implementation can start now. Only values chan
 
 **Where the "Figma" values come from:** the design source is a Figma Make prototype, which has no Figma variables. Values below were read from its stylesheet (`src/index.css`, CSS custom properties and repeated literals) and are marked `Figma (Make CSS)`. Contrast ratios were calculated with the WCAG 2 formula.
 
-> **Two values fail the project's own contrast targets** (spec §3.1: text ≥ 4.5:1, UI ≥ 3:1) and should not be built as they are. Proposed fixes are listed under *Open fixes*; they need team approval because they touch existing branding (D-39, handoff-notes #1, #9).
+> **Brand decision (16 Nov 2026, Sandra):** the existing Make brand colours are **approved** (D-04 closed for colour; handoff-notes #1). The placeholder teal palette is retired. Nothing below introduces a new brand colour.
+>
+> **Two values fail the project's own contrast targets** (spec §3.1: text ≥ 4.5:1, UI ≥ 3:1). F2 below resolves them using colours already in the Make file. The other fixes are listed under *Open fixes*.
 
 ## Colour
 
@@ -102,7 +104,7 @@ Make uses **Inter** (Google Fonts, weights 400/500/600/700/800) with no system f
 | # | Problem | Proposal | Keeps branding? |
 |---|---|---|---|
 | F1 | Type scale too small | Adopt the spec scale on Inter: body 16/24, small 14/20, h2 20/28, h3 17/24, inputs 16 px, badges and table headers 14 px (12 px uppercase only if contrast ≥ 4.5:1) | Yes (same typeface) |
-| F2 | Primary button and link contrast | Keep `#F58220` for fills that don't carry text (accents, active indicators, illustrations). For buttons with white text and for links, use a darker CEDA-orange step: candidates `#B65C0E` (4.64:1) or `#C2410C` (5.18:1). Alternative: dark text `#333` on `#F58220` | Yes, with a darker step — confirm with CEDA guidance |
+| F2 | Primary button and link contrast | **Decided 16 Nov (existing colours only):** primary buttons keep the `#F58220` fill with **dark label text `#1F1F1F` (6.35:1)** instead of white; orange **text** (links, table actions, active labels) uses `#B65C0E`, already in the Make file as the badge text colour (4.64:1 on white). `#F58220` stays for fills, icons, active indicators and illustrations. New tokens: `brand-primary-on` = `#1F1F1F`, `brand-primary-text` = `#B65C0E` | Yes — no new colour |
 | F3 | Grey text fails | Use `text-secondary #727272` for all secondary text; drop `#888`, `#999`, `#AAA` for text | Yes |
 | F4 | Status tones overlap or are missing | Separate Submitted and Under review; amber for Action required; add Closed; add icons next to the dot (spec: icon + text) | Mostly |
 | F5 | Radius sprawl | 4 (inputs, badges), 8 (cards, dialogs — round 9 → 8), 999 (pills) | Yes |
