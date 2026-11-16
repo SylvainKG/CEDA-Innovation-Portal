@@ -87,7 +87,7 @@ jobs:
       - name: Type-check
         run: |
           set -o pipefail
-          deno check supabase/functions/*/index.ts 2>&1 | tee check.log || {
+          deno check --node-modules-dir=auto supabase/functions/*/index.ts 2>&1 | tee check.log || {
             echo "::error title=deno check failed::$(tail -n 40 check.log | sed -e 's/\x1b\[[0-9;]*m//g' -e 's/%/%25/g' -e 's/\r//g' | sed ':a;N;$!ba;s/\n/%0A/g')"
             exit 1
           }
