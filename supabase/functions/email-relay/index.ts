@@ -50,6 +50,9 @@ function render(row: Row): { subject: string; text: string } {
       text: `CEDA has ${row.payload.kind === 'revision' ? 'asked you to revise your idea' : 'a question about your idea'} (${ref}). Sign in to respond.`,
     },
     proposal_revised: { subject: `Version ${row.payload.version_no ?? ''} received: ${ref}`, text: `Your revised idea was received. Reference ${ref}.` },
+    // The outcome is not put in the email: the applicant reads it after signing in.
+    decision_published: { subject: `Decision on ${ref}`, text: `A decision on ${ref} has been published. Sign in to read it.` },
+    award_recorded: { subject: `Award recorded: ${ref}`, text: `An award has been recorded for ${ref}. Sign in for details.` },
   }
   const m = t[row.template] ?? { subject: `Update on ${ref}`, text: `There is an update on ${ref}. Sign in to see it.` }
   return { subject: `[DEMO] ${m.subject}`, text: m.text + link + DEMO_NOTE }

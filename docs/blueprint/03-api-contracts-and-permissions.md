@@ -1,6 +1,6 @@
 # API contracts and permission matrix
 
-**Owner:** Stacey (author) · **Reviewer:** Obvious · **Status:** Draft for review · 16 Nov 2026 · **Updated:** 19 Nov 2026 (Slice 4)
+**Owner:** Stacey (author) · **Reviewer:** Obvious · **Status:** Draft for review · 16 Nov 2026 · **Updated:** 20 Nov 2026 (Slice 5)
 **Implements:** blueprint v0.3 §4 (data model, state machine, RPC summary), D-02, D-07, D-12, D-17; BCR-001 B2, B4, B9, B10 (applied as recommended, pending sign-off)
 **Code:** `supabase/migrations/`, `supabase/functions/`, `supabase/seed.sql`, tests in `supabase/tests/database/`
 
@@ -13,7 +13,8 @@
 | Slice 3: `declare_assignment`, `save_scorecard`, `submit_scorecard`, `get_score_panel`, `my_review_queue`, `mark_notifications_read`, quorum, Realtime, rubric locks | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
 | Slice 4: `request_feedback`, `respond_clarification`, `submit_revision`, `verify_feedback_task`, `get_roadmap`, outbox claim/record, `list_email_outbox` | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
 | `email-relay` Edge Function | Implemented — not verified (not run anywhere yet) |
-| Slices 5–6 | Proposed signatures only (§7) |
+| Slice 5: `record_decision`, `publish_decision`, `record_award`, `close_case` | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
+| Slice 6 | Proposed signatures only (§7) |
 | Generated TypeScript types | Not run: needs `supabase gen types` against a running stack. §8 gives hand-written types until then |
 
 ---
@@ -174,6 +175,19 @@ Roles and permissions are **data** (`roles`, `permissions`, `role_permissions`).
 - **Email (NTF-02, BCR-001 B4):** an outbox row is written in the same transaction as the event, only for users with `alerts_opt_in`. The `email-relay` Edge Function is the single sender: it claims due rows with a 10-minute lease, sends through SMTP with a 15-second timeout and records `accepted` (handed to the SMTP server, not "delivered"), `rejected`, `retryable` or `unknown_outcome`. Retries back off exponentially (2^attempts minutes ± 20%) up to `app_settings.email_max_attempts` (5), then the row is `rejected` with the reason. Delivery is at least once. **If SMTP is not configured, nothing is sent and the admin viewer must label email as Simulated.** Emails carry the reference and a link only, never proposal content.
 - **Not built:** automatic expiry of overdue requests (`status = 'expired'`) needs a scheduler; staff see the deadline instead.
 
+### 4.5 Slice 5 RPCs (DEC-01, DEC-02, D-05)
+
+| RPC | Who | Arguments | Returns | Errors | Writes |
+|---|---|---|---|---|---|
+| `record_decision` | `decision.record` (adjudicator) | `p_proposal_id`, `p_outcome` (`approved`/`not_approved`), `p_reason` (1–4,000) | `{ decision_id, outcome, published: false, supersedes, case_status }` | `FORBIDDEN`, `VALIDATION`, `INVALID_STATE` (not `in_adjudication`, or already published) | Unpublished decision on the current version. **The case stays `in_adjudication`; the applicant sees nothing and is not notified** (N4). Recording again before publication supersedes the earlier draft (kept, `superseded_at` set). Audited with the outcome |
+| `publish_decision` | `decision.publish` (adjudicator) | `p_decision_id` | `{ decision_id, outcome, published_at, case_status }` | `FORBIDDEN`, `INVALID_STATE` (superseded, already published, recorded on an earlier version, or a concurrent publish won) | `in_adjudication` → `approved` / `not_approved`; decision locked; applicant notified (+ email without the outcome) |
+| `record_award` | `award.record` (administrator, D-05) | `p_proposal_id`, `p_amount_minor` (thebe, 1 – 10,000,000,000), `p_description` (1–1,000) | `{ award_id, amount_minor, currency: "BWP", case_status: "awarded", replayed }` | `FORBIDDEN`, `CASE_NOT_APPROVED` (N5: no published approval), `VALIDATION`, `INVALID_STATE` (a different award already exists) | Award (append-only) linked to the published approval; `approved` → `awarded` as a **separate event** (DEC-02); applicant notified. The same award again returns `replayed: true` |
+| `close_case` | `case.close` (screening officer, adjudicator) | `p_proposal_id`, `p_reason` (1–500) | `{ proposal_id, case_status: "closed", expired_requests }` | `FORBIDDEN`, `VALIDATION`, `INVALID_STATE` (approved, awarded, draft or already closed) | Closed with the reason (visible to the applicant); any open feedback request marked `expired`; applicant notified |
+
+- **Who decides, who pays:** the adjudicator records and publishes; only the administrator records the award (D-05). The administrator cannot decide or publish.
+- **Unpublished means invisible:** the applicant's `decisions` rows, case status, case history and notifications all stay as "Under review" until `publish_decision`.
+- **Stale decisions:** if a revision was requested after a decision was drafted, the draft refers to the earlier version and cannot be published; record a new one.
+
 **Reviewer picker (T10 assign dialog):** the admin reads `profiles` and `user_roles` directly (RLS allows `role.manage`); filter `user_roles.role_key = 'reviewer'` and `revoked_at is null`.
 
 ### 4.1 `submit_proposal` rules (APP-03)
@@ -227,7 +241,6 @@ Receipt:
 | Slice | RPC | Arguments | Notes |
 |---|---|---|---|
 | 2 (next) | `invite_staff` (Edge Function) | email, role | IAM-01 "admin invites by email": needs the Auth admin API, so it runs as an Edge Function. Not built yet |
-| 5 | `record_decision`, `publish_decision`, `record_award`, `close_case` | | See §6 |
 | 6 | report and audit query RPCs, chat RPCs, admin config RPCs | | |
 
 ---
@@ -273,6 +286,8 @@ export interface RpcErrorBody { code: string; message: ApiErrorCode | 'IMMUTABLE
 | `005_slice4_revise.test.sql`: clarification loop (B1, D-21), revision with 3 tasks, revision-mode editing and upload, every `submit_revision` refusal, V2 + same reference + V1 kept, B9 retry and conflict, D-10 return, task and verification locks, verification gate on the V2 scorecard, B6 hiding, roadmap summary, quorum on V2, outbox claim/lease/settle/give-up | PGlite stand-in | Passed, 72/72 |
 | Mutation checks (Slice 4): drop the verification lock; keep the form editable after V2 | Same | Each caught (3 and 2 failures) |
 | `email-relay` against a real SMTP server | Staging | **Not run**: SMTP not configured; email is Simulated until it is |
+| `006_slice5_decide_award.test.sql`: role separation (D-05), unpublished decisions invisible to the applicant (N4), supersede history, N5 before approval and on not-approved, publish once, stale-version refusal, award + retry + two timeline stages, closure rules and request expiry, N6 on decisions, awards and history | PGlite stand-in | Passed, 45/45 |
+| Mutation checks (Slice 5): applicant can read unpublished decisions; award without approval | Same | Each caught (2 and 2 failures) |
 | Mutation checks: open `can_read_case`, skip MFA, open peer view, drop version trigger | Same | Each caught (12, 1, 2 and 3 failures) |
 | Same suites on the Supabase stack (`supabase db reset && supabase test db`) | Local Docker / CI stage 3 | **Not run.** No Docker on Stacey's machine; CI stage 3 not added yet |
 | Storage upload policy with real `storage-api`; `attachment-url` Edge Function; 60 s expiry | Supabase local or staging | **Not run** |

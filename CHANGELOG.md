@@ -4,6 +4,15 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `feature` Slice 5 backend (DEC-01, DEC-02, D-05):
+  - `record_decision`: unpublished, invisible to the applicant (N4), re-recordable before publication with history kept;
+  - `publish_decision`: approved / not approved, once, only for the current version;
+  - `record_award`: administrator only, after a published approval (N5 `CASE_NOT_APPROVED`), a separate Award stage, safe to retry;
+  - `close_case`: with a reason the applicant can read; expires open requests;
+  - email templates for decision and award (no outcome in the email).
+
+  Evidence: PGlite stand-in run, 006 suite 45/45 (all suites 329/329). Not run on the Supabase stack yet.
+
 - `feature` Slice 4 backend (REV-04, APP-04, INN-02, NTF-02):
   - `request_feedback`: clarification (a question) or revision with up to 10 roadmap tasks; the case waits on the applicant and remembers where it came from;
   - `respond_clarification`: required reply, no new version, case returns (BCR-001 B1);
