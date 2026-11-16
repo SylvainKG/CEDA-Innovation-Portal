@@ -1,0 +1,77 @@
+# Database and Edge Function checks (docs/process/ci-and-environments.md §2, "db" job; D-42).
+# Kept in its own workflow file so it never conflicts with changes to ci.yml.
+#   pglite    — migrations + seed + pgTAP in PGlite (fast stand-in, same files as below)
+#   supabase  — the real Supabase local stack: `supabase start` applies migrations and seed,
+#               then `supabase test db` runs every pgTAP file. Disposable; needs no secrets.
+#   functions — `deno check` on every Edge Function.
+name: Database
+
+on:
+  pull_request:
+    paths:
+      - 'supabase/**'
+      - 'tools/pglite-db-tests/**'
+      - '.github/workflows/db.yml'
+  push:
+    branches: [main, 'db/**', 'test/ci-db-**']
+    paths:
+      - 'supabase/**'
+      - 'tools/pglite-db-tests/**'
+      - '.github/workflows/db.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: db-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pglite:
+    name: pgTAP (PGlite stand-in)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: tools/pglite-db-tests/package-lock.json
+      - name: Install
+        working-directory: tools/pglite-db-tests
+        run: npm ci
+      - name: Migrations, seed and pgTAP
+        working-directory: tools/pglite-db-tests
+        run: npm test
+
+  supabase:
+    name: pgTAP (Supabase local stack)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.108.0
+      - name: Start Supabase (applies migrations and seed)
+        # Services the tests do not need are left out to keep the job fast.
+        run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,postgres-meta
+      - name: Run pgTAP tests
+        run: supabase test db
+      - name: Stop Supabase
+        if: always()
+        run: supabase stop --no-backup
+
+  functions:
+    name: Edge Functions (deno check)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check
+        run: deno check supabase/functions/*/index.ts
