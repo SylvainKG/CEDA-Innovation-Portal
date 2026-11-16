@@ -1,6 +1,8 @@
 # Security headers for every response served by AWS Amplify Hosting
-# (docs/process/hosting-aws-amplify.md §6). A Content-Security-Policy is added
-# once the Supabase project domains are known.
+# (docs/process/hosting-aws-amplify.md §6).
+# The CSP was proposed by Obvious (PR #6) and checked against the production
+# build: no violations on /, /ideas, /staff or /auth/sign-in. Inline styles are
+# needed by React style props and Radix. connect-src allows Supabase (HTTPS + Realtime).
 customHeaders:
   - pattern: '**'
     headers:
@@ -14,3 +16,5 @@ customHeaders:
         value: strict-origin-when-cross-origin
       - key: Permissions-Policy
         value: camera=(), microphone=(), geolocation=()
+      - key: Content-Security-Policy
+        value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
