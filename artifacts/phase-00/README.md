@@ -12,9 +12,9 @@
 | `main` protected and review rules applied, **or** "by agreement" recorded (plan limitation) | Sylvain | Not run | |
 | CI running: lint, type-check, Vitest, pgTAP, secret scan, `npm audit` | Sylvain | Not run | CI run link |
 | Supabase staging project, Vercel staging, `.env.example`, health check | Stacey + Sylvain | Not run | |
-| Migration 001: core tables, RLS default-deny, audit/immutability triggers, `has_permission()` | Stacey | Not run | |
-| Seed script (fictional, `DEMO_PASSWORD` from env), one user per role | Stacey | Not run | |
-| API contract doc + generated TS types | Stacey (author), Obvious (review) | Not run | |
+| Migration 001: core tables, RLS default-deny, audit/immutability triggers, `has_permission()` | Stacey | Passed (Supabase local stack in CI; not yet on the hosted project) | Workflow `Database`, run 43907353789, commit `cc7c6bb` on `db/security-checks`, 16 Nov 2026 16:25 UTC: `supabase start` applied migrations 001–010 and the seed; `supabase test db` passed every pgTAP file (incl. `001_foundation`, `010_security_privileges`). Branch not merged yet |
+| Seed script (fictional, `DEMO_PASSWORD` from env), one user per role | Stacey | Passed (Supabase local stack in CI) | Same run. `supabase/seed.sql` + `scripts/set-demo-passwords.mjs` (passwords set from `DEMO_PASSWORD`; the script itself not yet run against a project) |
+| API contract doc + generated TS types | Stacey (author), Obvious (review) | Contract written, review pending; generated types Not run (need a running database) | `docs/blueprint/03-api-contracts-and-permissions.md` on the `db/*` branches; hand-written types in its §8 |
 | Figma MCP verified; inventory, T01–T15 mapping, gap list, backlog | Sandra | Not run | |
 | `figma-handoff/` first snapshot | Sandra | Not run | |
 | Tokens → Tailwind theme; shell + navigation skeleton; state kit | Obvious | Not run | |
@@ -29,7 +29,7 @@ Commit: `__________`
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Sandra | | | | | | | | | | | | |
 | Obvious | | | | | | | | | | | | |
-| Stacey | | | | | | | | | | | | |
+| Stacey | Windows 11 Pro (10.0.26200) | 25.0.0 / 11.6.2 | Not installed | 2.108.0 | Passed (451 packages) | Not run (no Docker) | Not run (no Docker); covered by CI run 43907353789 | Passed | Passed | Passed (55/55) | Passed | Run on `621307e` (origin/main), 16 Nov 2026. Database checks also pass on the PGlite stand-in (`tools/pglite-db-tests`, 457/457 on `cc7c6bb`) |
 | Sylvain | | | | | | | | | | | | |
 
 ## Results summary
