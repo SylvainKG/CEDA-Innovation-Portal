@@ -19,11 +19,11 @@ export function PublicShell() {
           <Brand />
           <nav aria-label="Main" className="hidden items-center gap-4 md:flex">
             {LINKS.map((l) => (
-              <NavLink key={l.to} to={l.to} className="inline-flex min-h-touch items-center text-ink">
+              <NavLink key={l.to} to={l.to} className="inline-flex min-h-touch min-w-touch items-center justify-center px-2 text-ink">
                 {l.label}
               </NavLink>
             ))}
-            <Link to="/auth/sign-in" className="inline-flex min-h-touch items-center text-ink">
+            <Link to="/auth/sign-in" className="inline-flex min-h-touch min-w-touch items-center justify-center px-2 text-ink">
               Sign in
             </Link>
             <Link to="/auth/register" className="inline-flex min-h-touch items-center rounded-md bg-brand px-4 font-semibold text-brand-on no-underline">
@@ -47,7 +47,7 @@ export function PublicShell() {
         {open ? (
           <nav id="public-menu" aria-label="Main" className="flex flex-col border-t border-line px-4 py-2 md:hidden">
             {[...LINKS, { to: '/auth/sign-in', label: 'Sign in' }, { to: '/auth/register', label: 'Register' }].map((l) => (
-              <NavLink key={l.to} to={l.to} className="inline-flex min-h-touch items-center text-ink" onClick={() => setOpen(false)}>
+              <NavLink key={l.to} to={l.to} className="inline-flex min-h-touch min-w-touch items-center justify-center px-2 text-ink" onClick={() => setOpen(false)}>
                 {l.label}
               </NavLink>
             ))}

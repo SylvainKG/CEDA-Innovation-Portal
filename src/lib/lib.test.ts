@@ -87,12 +87,21 @@ describe('safe post-sign-in redirect (no open redirect)', () => {
 })
 
 describe('API mode (composition root)', () => {
-  it('defaults to mock', () => {
-    expect(resolveApiMode(undefined)).toBe('mock')
+  it('defaults to mock in development only', () => {
+    expect(resolveApiMode(undefined, true)).toBe('mock')
+  })
+
+  it('refuses an unset mode in a production build, so the mock session is never published by accident', () => {
+    expect(() => resolveApiMode(undefined, false)).toThrow(/VITE_API_MODE is not set/)
+    expect(() => resolveApiMode('  ', false)).toThrow(/VITE_API_MODE is not set/)
+  })
+
+  it('accepts an explicit mock mode in a production build (staging demo)', () => {
+    expect(resolveApiMode('mock', false)).toBe('mock')
   })
 
   it('fails fast for the Supabase mode until its adapters exist, and for unknown values', () => {
-    expect(() => resolveApiMode('supabase')).toThrow(/not available yet/)
-    expect(() => resolveApiMode('prod')).toThrow(/Unknown VITE_API_MODE/)
+    expect(() => resolveApiMode('supabase', true)).toThrow(/not available yet/)
+    expect(() => resolveApiMode('prod', false)).toThrow(/Unknown VITE_API_MODE/)
   })
 })

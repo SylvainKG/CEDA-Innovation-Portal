@@ -16,7 +16,7 @@ export function ApplicantShell() {
               <NavLink
                 key={item.to}
                 to={item.to}
-                className={({ isActive }) => cn('inline-flex min-h-touch items-center gap-2 text-ink', isActive && 'font-semibold')}
+                className={({ isActive }) => cn('inline-flex min-h-touch min-w-touch items-center gap-2 px-2 text-ink', isActive && 'font-semibold')}
               >
                 <item.icon aria-hidden className="h-5 w-5" />
                 {item.label}

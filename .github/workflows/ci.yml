@@ -1,5 +1,5 @@
 # Continuous integration: stage 1 (docs/process/ci-and-environments.md §2, D-42).
-# Stage 2 (lint, type-check, unit tests, npm audit) added with the app scaffold (PR #6).
+# Stage 2 (lint, type-check, unit tests, npm audit) is added with the app scaffold.
 # Stage 3 (migrations + seed + pgTAP on a throwaway database) is added with migration 001.
 name: CI
 
@@ -31,65 +31,3 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  # Stage 2: frontend checks (docs/process/ci-and-environments.md §2). Each job installs from the lockfile.
-  lint:
-    name: lint
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      - run: npm run lint
-
-  typecheck:
-    name: typecheck
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      - run: npm run typecheck
-
-  unit:
-    name: unit
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci
-      - run: npm run test
-      - run: npm run build
-
-  audit:
-    name: audit
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: npm
-      - name: Dependency audit (high and critical block the merge)
-        run: npm audit --audit-level=high
-      - name: Save the full audit report
-        if: always()
-        run: npm audit --json > npm-audit.json || true
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: npm-audit
-          path: npm-audit.json

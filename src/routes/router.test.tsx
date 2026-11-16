@@ -43,7 +43,8 @@ describe('routing and role shells (UI convenience; the server enforces access)',
 
   it('shows Forbidden to an applicant on the audit log', async () => {
     renderAt('/audit', 'applicant')
-    expect(await screen.findByRole('heading', { name: "You don't have access to this page" })).toBeInTheDocument()
+    // Page-level state: its title is the page's h1 (Sylvain's PR #6 review, finding 2).
+    expect(await screen.findByRole('heading', { level: 1, name: "You don't have access to this page" })).toBeInTheDocument()
   })
 
   it('shows the administrator the audit log and settings links', async () => {

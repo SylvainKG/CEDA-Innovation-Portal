@@ -50,11 +50,3 @@ src/
   pages/            screens (unbuilt routes show an honest "Not built yet" placeholder)
   styles/           design tokens (tokens.css) and base styles
 ```
-
-### Hosting (team review site)
-The `main` branch is built and published by **AWS Amplify Hosting** at <https://main.d270qrk6a7zs47.amplifyapp.com/> on every push to `main`. The build steps and security headers are in [`amplify.yml`](amplify.yml).
-
-- The site runs in `mock` mode (fictional data, no backend) until `VITE_API_MODE` and the Supabase variables are set in the Amplify environment variables.
-- Deep links need one rewrite rule in the Amplify console; it is documented at the top of `amplify.yml`.
-- The development-only component gallery is at `/dev/components`.
-
