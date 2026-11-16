@@ -60,7 +60,7 @@ jobs:
         # On failure the last lines become a public annotation, readable without opening the log.
         run: |
           set -o pipefail
-          supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,postgres-meta 2>&1 | tee start.log || {
+          supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor 2>&1 | tee start.log || {
             echo "::error title=supabase start failed::$(tail -n 40 start.log | sed -e 's/%/%25/g' -e 's/\r//g' | sed ':a;N;$!ba;s/\n/%0A/g')"
             exit 1
           }
@@ -71,6 +71,17 @@ jobs:
             echo "::error title=supabase test db failed::$(grep -E 'not ok|Failed|ERROR|planned|Result' test.log | tail -n 40 | sed -e 's/%/%25/g' -e 's/\r//g' | sed ':a;N;$!ba;s/\n/%0A/g')"
             exit 1
           }
+      - name: Generate TypeScript types from the migrated schema
+        # The frontend copies this file into src/lib/api/ (contract §8). Download it from the run's artifacts.
+        run: |
+          supabase gen types typescript --local --schema public > database.types.ts
+          echo "Generated $(wc -l < database.types.ts) lines for schema public" >> "$GITHUB_STEP_SUMMARY"
+          test -s database.types.ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: database-types
+          path: database.types.ts
+          retention-days: 30
       - name: Stop Supabase
         if: always()
         run: supabase stop --no-backup
