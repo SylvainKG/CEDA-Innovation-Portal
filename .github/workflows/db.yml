@@ -57,9 +57,20 @@ jobs:
           version: 2.108.0
       - name: Start Supabase (applies migrations and seed)
         # Services the tests do not need are left out to keep the job fast.
-        run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,postgres-meta
+        # On failure the last lines become a public annotation, readable without opening the log.
+        run: |
+          set -o pipefail
+          supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor,postgres-meta 2>&1 | tee start.log || {
+            echo "::error title=supabase start failed::$(tail -n 40 start.log | sed -e 's/%/%25/g' -e 's/\r//g' | sed ':a;N;$!ba;s/\n/%0A/g')"
+            exit 1
+          }
       - name: Run pgTAP tests
-        run: supabase test db
+        run: |
+          set -o pipefail
+          supabase test db 2>&1 | tee test.log || {
+            echo "::error title=supabase test db failed::$(grep -E 'not ok|Failed|ERROR|planned|Result' test.log | tail -n 40 | sed -e 's/%/%25/g' -e 's/\r//g' | sed ':a;N;$!ba;s/\n/%0A/g')"
+            exit 1
+          }
       - name: Stop Supabase
         if: always()
         run: supabase stop --no-backup
@@ -74,4 +85,9 @@ jobs:
         with:
           deno-version: v2.x
       - name: Type-check
-        run: deno check supabase/functions/*/index.ts
+        run: |
+          set -o pipefail
+          deno check supabase/functions/*/index.ts 2>&1 | tee check.log || {
+            echo "::error title=deno check failed::$(tail -n 40 check.log | sed -e 's/\x1b\[[0-9;]*m//g' -e 's/%/%25/g' -e 's/\r//g' | sed ':a;N;$!ba;s/\n/%0A/g')"
+            exit 1
+          }
