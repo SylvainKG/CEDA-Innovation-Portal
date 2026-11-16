@@ -129,7 +129,12 @@ insert into public.challenge_versions (id, challenge_id, version_no, brief_md, f
 -- Demo accounts (blueprint §3.1). Password set later by scripts/set-demo-passwords.mjs.
 -- -----------------------------------------------------------------------------
 
-create function pg_temp.demo_user(p_id uuid, p_email text, p_name text, p_org text, p_roles text[])
+-- Helper functions live in a scratch schema that is dropped at the end of the seed.
+-- (Temporary-schema functions are not supported by the Supabase CLI's seeding.)
+drop schema if exists seed_helpers cascade;
+create schema seed_helpers;
+
+create function seed_helpers.demo_user(p_id uuid, p_email text, p_name text, p_org text, p_roles text[])
 returns void
 language plpgsql
 as $$
@@ -158,26 +163,31 @@ begin
 end;
 $$;
 
-select pg_temp.demo_user('00000000-0000-4000-8000-0000000000a1', 'applicant.a@demo.ceda-portal.test', 'Demo Applicant A', 'Lesedi Agro Demo', array['applicant']);
-select pg_temp.demo_user('00000000-0000-4000-8000-0000000000a2', 'applicant.b@demo.ceda-portal.test', 'Demo Applicant B', 'Demo Business B', array['applicant']);
-select pg_temp.demo_user('00000000-0000-4000-8000-0000000000b1', 'screening@demo.ceda-portal.test', 'Demo Screening Officer', 'CEDA (DEMO)', array['screening_officer']);
-select pg_temp.demo_user('00000000-0000-4000-8000-0000000000c1', 'reviewer.1@demo.ceda-portal.test', 'Demo Reviewer 1', 'CEDA (DEMO)', array['reviewer']);
-select pg_temp.demo_user('00000000-0000-4000-8000-0000000000c2', 'reviewer.2@demo.ceda-portal.test', 'Demo Reviewer 2', 'CEDA (DEMO)', array['reviewer']);
-select pg_temp.demo_user('00000000-0000-4000-8000-0000000000c3', 'reviewer.3@demo.ceda-portal.test', 'Demo Reviewer 3', 'CEDA (DEMO)', array['reviewer']);
-select pg_temp.demo_user('00000000-0000-4000-8000-0000000000d1', 'adjudicator@demo.ceda-portal.test', 'Demo Adjudicator', 'CEDA (DEMO)', array['adjudicator']);
-select pg_temp.demo_user('00000000-0000-4000-8000-0000000000e1', 'admin@demo.ceda-portal.test', 'Demo Administrator', 'CEDA (DEMO)', array['admin','auditor']);
-select pg_temp.demo_user('00000000-0000-4000-8000-0000000000f1', 'consultant@demo.ceda-portal.test', 'Demo Support Consultant', 'CEDA (DEMO)', array['support_consultant','support_lead']);
-select pg_temp.demo_user('00000000-0000-4000-8000-0000000000f2', 'committee.ext@demo.ceda-portal.test', 'Demo Committee Member', 'External committee (DEMO)', array['committee_member']);
--- Background applicants (own the background cases; cannot sign in until a password is set).
-select pg_temp.demo_user('00000000-0000-4000-8000-0000000000a3', 'applicant.c@demo.ceda-portal.test', 'Demo Applicant C', 'Kalahari Drip Demo', array['applicant']);
-select pg_temp.demo_user('00000000-0000-4000-8000-0000000000a4', 'applicant.d@demo.ceda-portal.test', 'Demo Applicant D', 'Okavango Greens Demo', array['applicant']);
-select pg_temp.demo_user('00000000-0000-4000-8000-0000000000a5', 'applicant.e@demo.ceda-portal.test', 'Demo Applicant E', 'Tswana Herd Tech Demo', array['applicant']);
+-- Called inside a DO block: the CLI prepares top-level statements before running any of them,
+-- so a top-level call could not see a function created earlier in this file.
+do $$
+begin
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000a1', 'applicant.a@demo.ceda-portal.test', 'Demo Applicant A', 'Lesedi Agro Demo', array['applicant']);
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000a2', 'applicant.b@demo.ceda-portal.test', 'Demo Applicant B', 'Demo Business B', array['applicant']);
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000b1', 'screening@demo.ceda-portal.test', 'Demo Screening Officer', 'CEDA (DEMO)', array['screening_officer']);
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000c1', 'reviewer.1@demo.ceda-portal.test', 'Demo Reviewer 1', 'CEDA (DEMO)', array['reviewer']);
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000c2', 'reviewer.2@demo.ceda-portal.test', 'Demo Reviewer 2', 'CEDA (DEMO)', array['reviewer']);
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000c3', 'reviewer.3@demo.ceda-portal.test', 'Demo Reviewer 3', 'CEDA (DEMO)', array['reviewer']);
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000d1', 'adjudicator@demo.ceda-portal.test', 'Demo Adjudicator', 'CEDA (DEMO)', array['adjudicator']);
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000e1', 'admin@demo.ceda-portal.test', 'Demo Administrator', 'CEDA (DEMO)', array['admin','auditor']);
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000f1', 'consultant@demo.ceda-portal.test', 'Demo Support Consultant', 'CEDA (DEMO)', array['support_consultant','support_lead']);
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000f2', 'committee.ext@demo.ceda-portal.test', 'Demo Committee Member', 'External committee (DEMO)', array['committee_member']);
+  -- Background applicants (own the background cases; cannot sign in until a password is set).
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000a3', 'applicant.c@demo.ceda-portal.test', 'Demo Applicant C', 'Kalahari Drip Demo', array['applicant']);
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000a4', 'applicant.d@demo.ceda-portal.test', 'Demo Applicant D', 'Okavango Greens Demo', array['applicant']);
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000a5', 'applicant.e@demo.ceda-portal.test', 'Demo Applicant E', 'Tswana Herd Tech Demo', array['applicant']);
+end $$;
 
 -- -----------------------------------------------------------------------------
 -- Cases: CEDA-2026-0001 … 0008 (BCR-001 B10). Status paths follow §4.3.
 -- -----------------------------------------------------------------------------
 
-create function pg_temp.demo_case(p_owner uuid, p_title text, p_status text, p_submitted timestamptz,
+create function seed_helpers.demo_case(p_owner uuid, p_title text, p_status text, p_submitted timestamptz,
                                   p_return_stage text default null, p_closed_reason text default null)
 returns uuid
 language plpgsql
@@ -236,7 +246,7 @@ begin
 end;
 $$;
 
-create function pg_temp.demo_assign(p_pid uuid, p_reviewer uuid, p_declared boolean)
+create function seed_helpers.demo_assign(p_pid uuid, p_reviewer uuid, p_declared boolean)
 returns uuid
 language sql
 as $$
@@ -252,7 +262,7 @@ as $$
 $$;
 
 -- Submitted scorecard on the case's current version; scores in criterion order.
-create function pg_temp.demo_score(p_assignment uuid, p_scores int[])
+create function seed_helpers.demo_score(p_assignment uuid, p_scores int[])
 returns void
 language plpgsql
 as $$
@@ -272,7 +282,7 @@ begin
 end;
 $$;
 
-create function pg_temp.demo_decide(p_pid uuid, p_outcome text)
+create function seed_helpers.demo_decide(p_pid uuid, p_outcome text)
 returns uuid
 language sql
 as $$
@@ -290,47 +300,47 @@ declare
   r2 constant uuid := '00000000-0000-4000-8000-0000000000c2';
 begin
   -- 0001 Submitted, awaiting screening
-  c1 := pg_temp.demo_case('00000000-0000-4000-8000-0000000000a3', 'Solar-powered drip kits for smallholders', 'submitted', '2026-11-10T09:15:00+02:00');
+  c1 := seed_helpers.demo_case('00000000-0000-4000-8000-0000000000a3', 'Solar-powered drip kits for smallholders', 'submitted', '2026-11-10T09:15:00+02:00');
 
   -- 0002 In evaluation, one of two scorecards in
-  c2 := pg_temp.demo_case('00000000-0000-4000-8000-0000000000a4', 'Greywater reuse for market gardens', 'in_evaluation', '2026-11-02T10:30:00+02:00');
-  a := pg_temp.demo_assign(c2, r1, true);  perform pg_temp.demo_score(a, array[4,3,4,3]);
-  b := pg_temp.demo_assign(c2, r2, true);
+  c2 := seed_helpers.demo_case('00000000-0000-4000-8000-0000000000a4', 'Greywater reuse for market gardens', 'in_evaluation', '2026-11-02T10:30:00+02:00');
+  a := seed_helpers.demo_assign(c2, r1, true);  perform seed_helpers.demo_score(a, array[4,3,4,3]);
+  b := seed_helpers.demo_assign(c2, r2, true);
 
   -- 0003 Action required: clarification from screening
-  c3 := pg_temp.demo_case('00000000-0000-4000-8000-0000000000a5', 'Soil-moisture SMS alerts', 'action_required', '2026-11-05T14:00:00+02:00', 'submitted');
+  c3 := seed_helpers.demo_case('00000000-0000-4000-8000-0000000000a5', 'Soil-moisture SMS alerts', 'action_required', '2026-11-05T14:00:00+02:00', 'submitted');
   select current_version_id into v from public.proposals where id = c3;
   insert into public.feedback_requests (proposal_id, version_id, requested_by, from_stage, kind, message, due_at, created_at)
   values (c3, v, '00000000-0000-4000-8000-0000000000b1', 'submitted', 'clarification',
           'Please confirm the district of your pilot farms (DEMO).', '2026-11-20T16:00:00+02:00', '2026-11-07T14:00:00+02:00');
 
   -- 0004 In adjudication, both scorecards in
-  c4 := pg_temp.demo_case('00000000-0000-4000-8000-0000000000a3', 'Fog-net water harvesting', 'in_adjudication', '2026-10-20T09:00:00+02:00');
-  a := pg_temp.demo_assign(c4, r1, true);  perform pg_temp.demo_score(a, array[5,4,4,4]);
-  b := pg_temp.demo_assign(c4, r2, true);  perform pg_temp.demo_score(b, array[4,4,3,4]);
+  c4 := seed_helpers.demo_case('00000000-0000-4000-8000-0000000000a3', 'Fog-net water harvesting', 'in_adjudication', '2026-10-20T09:00:00+02:00');
+  a := seed_helpers.demo_assign(c4, r1, true);  perform seed_helpers.demo_score(a, array[5,4,4,4]);
+  b := seed_helpers.demo_assign(c4, r2, true);  perform seed_helpers.demo_score(b, array[4,4,3,4]);
 
   -- 0005 Not approved (published)
-  c5 := pg_temp.demo_case('00000000-0000-4000-8000-0000000000a4', 'Cattle trough float valves', 'not_approved', '2026-10-12T11:00:00+02:00');
-  a := pg_temp.demo_assign(c5, r1, true);  perform pg_temp.demo_score(a, array[2,3,3,2]);
-  b := pg_temp.demo_assign(c5, r2, true);  perform pg_temp.demo_score(b, array[2,2,3,2]);
-  perform pg_temp.demo_decide(c5, 'not_approved');
+  c5 := seed_helpers.demo_case('00000000-0000-4000-8000-0000000000a4', 'Cattle trough float valves', 'not_approved', '2026-10-12T11:00:00+02:00');
+  a := seed_helpers.demo_assign(c5, r1, true);  perform seed_helpers.demo_score(a, array[2,3,3,2]);
+  b := seed_helpers.demo_assign(c5, r2, true);  perform seed_helpers.demo_score(b, array[2,2,3,2]);
+  perform seed_helpers.demo_decide(c5, 'not_approved');
 
   -- 0006 Approved, then awarded
-  c6 := pg_temp.demo_case('00000000-0000-4000-8000-0000000000a5', 'Hydroponic fodder units', 'awarded', '2026-10-05T08:45:00+02:00');
-  a := pg_temp.demo_assign(c6, r1, true);  perform pg_temp.demo_score(a, array[5,5,4,4]);
-  b := pg_temp.demo_assign(c6, r2, true);  perform pg_temp.demo_score(b, array[4,5,4,5]);
-  d := pg_temp.demo_decide(c6, 'approved');
+  c6 := seed_helpers.demo_case('00000000-0000-4000-8000-0000000000a5', 'Hydroponic fodder units', 'awarded', '2026-10-05T08:45:00+02:00');
+  a := seed_helpers.demo_assign(c6, r1, true);  perform seed_helpers.demo_score(a, array[5,5,4,4]);
+  b := seed_helpers.demo_assign(c6, r2, true);  perform seed_helpers.demo_score(b, array[4,5,4,5]);
+  d := seed_helpers.demo_decide(c6, 'approved');
   insert into public.awards (proposal_id, decision_id, amount_minor, currency, description, recorded_by, recorded_at)
   values (c6, d, 25000000, 'BWP', 'Fictional seed grant (DEMO).', '00000000-0000-4000-8000-0000000000e1', '2026-10-15T10:00:00+02:00');
 
   -- 0007 Closed at screening (ineligible)
-  c7 := pg_temp.demo_case('00000000-0000-4000-8000-0000000000a3', 'Imported irrigation resale', 'closed', '2026-10-25T13:20:00+02:00',
+  c7 := seed_helpers.demo_case('00000000-0000-4000-8000-0000000000a3', 'Imported irrigation resale', 'closed', '2026-10-25T13:20:00+02:00',
                           null, 'Ineligible: outside the challenge scope (DEMO)');
 
   -- 0008 Applicant A's earlier idea: under review, reviewers not yet declared
-  c8 := pg_temp.demo_case('00000000-0000-4000-8000-0000000000a1', 'Rainwater tanks for poultry farms', 'in_evaluation', '2026-11-08T09:40:00+02:00');
-  a := pg_temp.demo_assign(c8, r1, false);
-  b := pg_temp.demo_assign(c8, r2, false);
+  c8 := seed_helpers.demo_case('00000000-0000-4000-8000-0000000000a1', 'Rainwater tanks for poultry farms', 'in_evaluation', '2026-11-08T09:40:00+02:00');
+  a := seed_helpers.demo_assign(c8, r1, false);
+  b := seed_helpers.demo_assign(c8, r2, false);
 end $$;
 
 -- -----------------------------------------------------------------------------
@@ -354,3 +364,5 @@ from public.chat_sessions s where s.status = 'closed';
 
 insert into public.audit_events (action, target_type, metadata)
 values ('seed.loaded', 'database', jsonb_build_object('note', 'Fictional demo seed', 'cases', 8));
+
+drop schema seed_helpers cascade;
