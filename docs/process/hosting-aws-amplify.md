@@ -67,7 +67,10 @@ Nothing about the database, RLS, RPCs or Edge Functions changes. Four things dep
    - **Site URL:** the Amplify staging URL (`https://main.<app-id>.amplifyapp.com`, which Sylvain sends you), later the judging URL.
    - **Redirect URLs:** the same Amplify URL(s) plus `http://localhost:5173` for local development. Add no wildcard domains.
 3. **Values to hand over:** only the **project URL** and the **anon (public) key**, sent to Sylvain directly, not in the repository, a PR or a group chat that is logged. They are public by design (RLS protects the data), but they still don't belong in git. The **service-role key stays in Supabase** (Edge Function secrets) and is never shared.
-4. **Email links and Edge Functions:** any link the email relay builds should use the Site URL setting, not a hard-coded Vercel address.
+4. **Edge Function secrets that name the site** (Supabase → Edge Functions → Secrets, per project). The functions on the `db/*` branches read these (API contract §5 and README):
+   - `APP_ORIGINS`: the browser origins allowed to call `attachment-url` and `invite-staff`, comma-separated. Staging: `https://main.d270qrk6a7zs47.amplifyapp.com,http://localhost:5173`. Judging: the `release` branch URL only. **If the Amplify URL is missing, file downloads and staff invitations fail** with a cross-origin error.
+   - `PORTAL_URL`: the site address used in invitation emails and alert emails. Staging: `https://main.d270qrk6a7zs47.amplifyapp.com`. Judging: the `release` URL.
+   - Neither is secret, but both are set in Supabase, not in Amplify or git.
 
 ## 5. Safety rules for the switch
 
@@ -89,5 +92,5 @@ Prepared on branch `ops/amplify-build`. It opens as a pull request once the fron
 - [ ] Amplify inventory and access recorded in `artifacts/phase-00/README.md`; a second AWS user exists; MFA and the budget alert are on
 - [ ] `amplify.yml` and `customHttp.yml` merged; the `main` build succeeds in Amplify
 - [ ] Live check of the staging URL passes: deep links refresh without a 404, no horizontal scroll at 360 px, DEMO badge shown, mock switcher visible only while `VITE_API_MODE=mock` is set on purpose
-- [ ] Stacey's Supabase Auth URLs point at the Amplify URL
+- [ ] Stacey's Supabase Auth URLs, `APP_ORIGINS` and `PORTAL_URL` point at the Amplify URL
 - [ ] `ci-and-environments.md`, README and runbook say Amplify, not Vercel
