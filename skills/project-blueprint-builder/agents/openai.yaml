@@ -1,0 +1,4 @@
+interface:
+  display_name: "Project Blueprint Builder"
+  short_description: "Plan products from discovery through phased delivery"
+  default_prompt: "Use $project-blueprint-builder to turn my project idea into a decision-complete product blueprint, technical plan and phased developer execution system."
