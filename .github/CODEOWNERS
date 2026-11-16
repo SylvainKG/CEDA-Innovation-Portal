@@ -1,0 +1,23 @@
+# Code owners: blueprint v0.3 §7.2–7.3, docs/process/repository-rules.md §7.
+# Every path lists a primary owner and a backup, because GitHub never lets a
+# PR author satisfy the code-owner review on their own PR.
+# Any listed owner's approval satisfies the rule for that path.
+
+# Frontend shared components: Obvious (primary), Sylvain (backup)
+/src/components/                @Shawnjembu @SylvainKG
+
+# Database, RLS, RPCs, Edge Functions, pgTAP: Stacey (primary), Sylvain (backup)
+/supabase/                      @staceynthoi0-droid @SylvainKG
+
+# Figma handoff set: Sandra (primary), Obvious (backup)
+/docs/design/figma-handoff/     @sandra-oc @Shawnjembu
+
+# Blueprint: Sylvain plus one other member. All four are listed so Sylvain's
+# own blueprint PRs can be approved; Sylvain reviews blueprint PRs by others
+# before they merge (repository-rules.md §2).
+/docs/blueprint/                @SylvainKG @Shawnjembu @staceynthoi0-droid @sandra-oc
+
+# CI, repository settings and root dependencies: Sylvain (primary), Obvious (backup)
+/.github/                       @SylvainKG @Shawnjembu
+/package.json                   @SylvainKG @Shawnjembu
+/package-lock.json              @SylvainKG @Shawnjembu
