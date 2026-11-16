@@ -15,7 +15,8 @@
 | `email-relay` Edge Function | Implemented — not verified (not run anywhere yet) |
 | Slice 5: `record_decision`, `publish_decision`, `record_award`, `close_case` | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
 | Slice 6a: `get_programme_report`, `report_case_rows`, `query_audit`, chat (`chat_status`, `start_chat`, `send_chat_message`, `accept_chat`, `close_chat`, `my_chat_inbox`, `chat_statistics`) | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
-| Slice 6b (admin settings, invite) | In progress |
+| Slice 6b: content pages, chat hours and override, roles (ARC-01), rubric drafts and criteria, challenges and forms | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
+| `invite-staff` Edge Function | Implemented — not verified (not run anywhere yet) |
 | Generated TypeScript types | Not run: needs `supabase gen types` against a running stack. §8 gives hand-written types until then |
 
 ---
@@ -209,6 +210,30 @@ Roles and permissions are **data** (`roles`, `permissions`, `role_permissions`).
 - **Live chat:** subscribe to `postgres_changes` on `chat_messages` (filter `session_id=eq.<id>`) and `chat_sessions`. RLS limits events to the participants; a waiting conversation is visible to every consultant.
 - **Reconciliation (RPT-01):** report and CSV are computed from the same case set; the seed gives 8 cases, 4 applicants, stages `{submission 1, review 3, feedback 1, approval 1, award 1, closed 1}` and an award total of 25,000,000 thebe (§9).
 
+### 4.7 Slice 6b RPCs: admin settings (T12; ADM-01/02, HLP-01, CHT-02, ARC-01, IAM-01)
+
+All need `config.manage` (administrator) unless stated. Every change is audited. Errors: `FORBIDDEN`, `VALIDATION` (`fields`), `INVALID_STATE`.
+
+| RPC | Arguments | Notes |
+|---|---|---|
+| `save_content_page` | `p_slug`, `p_kind` (`faq`, `contact`, `referral`, `support`, `privacy`, `declaration`, `page`), `p_title`, `p_body_md`, `p_status?` (`draft`/`published`), `p_position?`, `p_is_sample?` (default true), `p_version?` | Create or update by slug. A page cannot change type. **Privacy notice and declaration need a version, and changed wording needs a new version** (consents and declarations are stored with it; new submissions then require the new version) |
+| `set_service_hours` | `p_weekday` (1 = Monday … 7), `p_is_working`, `p_opens_at`, `p_closes_at` | Gaborone local time |
+| `set_service_closure` | `p_day`, `p_reason?` | With a reason the day is closed; without one the closure is removed |
+| `set_chat_override` | `p_mode` (`open`, `closed` or null) | Demo override for judges (CHT-02); returns the resulting `open` |
+| `create_role` | `p_key`, `p_label`, `p_permissions text[]`, `p_requires_mfa?` (default true) | `role.manage`. **ARC-01:** a new role is data; grant it with `grant_role` and it works at once |
+| `set_role_permissions` | `p_role_key`, `p_permissions text[]` | `role.manage`. Only for roles created this way; built-in roles keep their permissions (`INVALID_STATE`) so the access tests stay meaningful |
+| `create_rubric` | `p_key`, `p_title` | Creates the rubric and an empty draft version 1 |
+| `create_rubric_draft` | `p_rubric_id` | New draft version copying the latest criteria; returns the open draft if one exists (`existing: true`) |
+| `save_rubric_criterion` / `remove_rubric_criterion` | `p_rubric_version_id`, `p_key`, `p_label`, `p_weight`, `p_anchors {"1","3","5" required}`, `p_guidance?`, `p_position?` | Draft versions only; returns `weights_total` for the "Total 100% ✓" indicator. **ARC-01:** a new criterion |
+| `publish_rubric_version` | `p_rubric_version_id` | Weights must total 100; then locked |
+| `create_challenge` / `update_challenge` | `p_slug` (create only), `p_title`, `p_summary`, `p_opens_at`, `p_closes_at`, `p_audience?` | Created as `draft`; closing after opening |
+| `save_challenge_version` | `p_challenge_id`, `p_brief_md`, `p_form_schema`, `p_required_docs`, `p_rubric_version_id`, `p_template_files?` | Updates the unpublished version, or creates the next version if the latest is published (published versions never change). Form rules: at least one section; unique field keys; types `text`, `textarea`, `select` (with options), `email`; `max_length` 1–20,000; **a required `title` field**. Errors keyed `field:<key>`, `form_schema`, `required_docs` |
+| `publish_challenge` | `p_challenge_id` | Publishes the draft form version (its rubric must be published) and opens the challenge. Existing ideas keep the version they started on (ADM-02) |
+| `set_challenge_status` | `p_challenge_id`, `p_status` (`unpublished`/`closed`) | Unpublished or closed challenges take no new ideas; drafts are kept |
+| `delete_challenge` | `p_challenge_id` | Only a never-published draft with no ideas (ADM-02); otherwise unpublish or close |
+
+**`invite-staff` Edge Function (IAM-01):** `POST /functions/v1/invite-staff` with `{ email, full_name, role_key }` and the admin's token. It checks `role.manage` as the caller, sends a Supabase Auth invitation (or finds the existing account), grants the role through `grant_role` **as the caller** (same rules and audit, so a self-grant is refused), and removes the default applicant role from a newly invited account. Returns `{ user_id, invited, role_key, already_had_role }`, or `403 FORBIDDEN`, `422 VALIDATION` (`fields`), `503 UNAVAILABLE`. Needs `PORTAL_URL` (invitation link) and `APP_ORIGINS`.
+
 **Reviewer picker (T10 assign dialog):** the admin reads `profiles` and `user_roles` directly (RLS allows `role.manage`); filter `user_roles.role_key = 'reviewer'` and `revoked_at is null`.
 
 ### 4.1 `submit_proposal` rules (APP-03)
@@ -311,6 +336,9 @@ export interface RpcErrorBody { code: string; message: ApiErrorCode | 'IMMUTABLE
 | Mutation checks (Slice 5): applicant can read unpublished decisions; award without approval | Same | Each caught (2 and 2 failures) |
 | `007_slice6_reports_audit_chat.test.sql`: report access, every report figure reconciled with the seed, period and challenge filters, CSV rows match, audit filters and paging, literal wildcards, Gaborone hours incl. UTC conversion, weekend and holiday, override both ways, chat isolation, multi-session consultant, closing, statistics against the seed | PGlite stand-in | Passed, 45/45 |
 | Mutation checks (Slice 6a): audit query open to anyone; chat always open | Same | Each caught (6 and 1 failures) |
+| `008_slice6_admin_settings.test.sql`: admin-only access, FAQ draft/publish visibility, declaration version rule, hours/closures/override, new role granted and withdrawn (ARC-01), built-in roles protected, rubric v2 with a new criterion and the 100% rule (ARC-01), form-schema validation, challenge publish, new form version while an idea keeps version 1 (ADM-02), unpublish, delete rules, audit | PGlite stand-in | Passed, 52/52 |
+| Mutation checks (Slice 6b): built-in roles editable; declaration wording changed without a new version | Same | Each caught (1 and 6 failures) |
+| `invite-staff` against Supabase Auth | Staging | **Not run** |
 | Mutation checks: open `can_read_case`, skip MFA, open peer view, drop version trigger | Same | Each caught (12, 1, 2 and 3 failures) |
 | Same suites on the Supabase stack (`supabase db reset && supabase test db`) | Local Docker / CI stage 3 | **Not run.** No Docker on Stacey's machine; CI stage 3 not added yet |
 | Storage upload policy with real `storage-api`; `attachment-url` Edge Function; 60 s expiry | Supabase local or staging | **Not run** |
@@ -339,6 +367,7 @@ export interface RpcErrorBody { code: string; message: ApiErrorCode | 'IMMUTABLE
 | `request_revision` is `request_feedback(kind, …)` | BCR-001 A3 |
 | `get_roadmap`, `list_email_outbox`, `claim_outbox_batch`, `record_outbox_result` added | T08 Feedback tab, T09 roadmap summary, NTF-02 relay and Simulated viewer |
 | Revision files carry forward as new attachment rows on the new version (same storage object) | Each version lists exactly its own files; earlier versions stay intact |
+| Admin settings are RPCs over the existing tables; no separate settings tables | T12 editors; every change audited |
 
 ## 11. Known gaps (debt)
 
