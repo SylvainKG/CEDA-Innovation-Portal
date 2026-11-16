@@ -6,18 +6,18 @@
 
 | Part | Status |
 |---|---|
-| Phase 0: schema, RLS, triggers, `has_permission()`, `health()`, `my_access()`, seed | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
-| Slice 1: `save_draft`, `submit_proposal`, `get_submission_receipt`, attachments, `record_consent` | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
-| `attachment-url` Edge Function | Implemented — not verified (not run anywhere yet) |
-| Slice 2: `record_screening`, `assign_reviewers`, `revoke_assignment`, `grant_role`, `revoke_role`, `add_internal_note`, `list_case_status`, `case_stage_counts` | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
-| Slice 3: `declare_assignment`, `save_scorecard`, `submit_scorecard`, `get_score_panel`, `my_review_queue`, `mark_notifications_read`, quorum, Realtime, rubric locks | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
-| Slice 4: `request_feedback`, `respond_clarification`, `submit_revision`, `verify_feedback_task`, `get_roadmap`, outbox claim/record, `list_email_outbox` | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
-| `email-relay` Edge Function | Implemented — not verified (not run anywhere yet) |
-| Slice 5: `record_decision`, `publish_decision`, `record_award`, `close_case` | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
-| Slice 6a: `get_programme_report`, `report_case_rows`, `query_audit`, chat (`chat_status`, `start_chat`, `send_chat_message`, `accept_chat`, `close_chat`, `my_chat_inbox`, `chat_statistics`) | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
-| Slice 6b: content pages, chat hours and override, roles (ARC-01), rubric drafts and criteria, challenges and forms | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
-| `invite-staff` Edge Function | Implemented — not verified (not run anywhere yet) |
-| Scheduled maintenance: `run_maintenance`, `extend_feedback_deadline`, email-relay trigger, `pg_cron` schedules | Implemented — not verified on Supabase (schedules need pg_cron). Passed on the PGlite stand-in (§9) |
+| Phase 0: schema, RLS, triggers, `has_permission()`, `health()`, `my_access()`, seed | **Passed** on the Supabase local stack in CI and on the PGlite stand-in (§9). Not yet on the hosted project |
+| Slice 1: `save_draft`, `submit_proposal`, `get_submission_receipt`, attachments, `record_consent` | **Passed** on the Supabase local stack in CI and on the PGlite stand-in (§9). Not yet on the hosted project |
+| `attachment-url` Edge Function | Implemented — not verified. Type-checks (`deno check`, CI); not yet deployed or run |
+| Slice 2: `record_screening`, `assign_reviewers`, `revoke_assignment`, `grant_role`, `revoke_role`, `add_internal_note`, `list_case_status`, `case_stage_counts` | **Passed** on the Supabase local stack in CI and on the PGlite stand-in (§9). Not yet on the hosted project |
+| Slice 3: `declare_assignment`, `save_scorecard`, `submit_scorecard`, `get_score_panel`, `my_review_queue`, `mark_notifications_read`, quorum, Realtime, rubric locks | **Passed** on the Supabase local stack in CI and on the PGlite stand-in (§9). Not yet on the hosted project |
+| Slice 4: `request_feedback`, `respond_clarification`, `submit_revision`, `verify_feedback_task`, `get_roadmap`, outbox claim/record, `list_email_outbox` | **Passed** on the Supabase local stack in CI and on the PGlite stand-in (§9). Not yet on the hosted project |
+| `email-relay` Edge Function | Implemented — not verified. Type-checks (`deno check`, CI); not yet deployed or run |
+| Slice 5: `record_decision`, `publish_decision`, `record_award`, `close_case` | **Passed** on the Supabase local stack in CI and on the PGlite stand-in (§9). Not yet on the hosted project |
+| Slice 6a: `get_programme_report`, `report_case_rows`, `query_audit`, chat (`chat_status`, `start_chat`, `send_chat_message`, `accept_chat`, `close_chat`, `my_chat_inbox`, `chat_statistics`) | **Passed** on the Supabase local stack in CI and on the PGlite stand-in (§9). Not yet on the hosted project |
+| Slice 6b: content pages, chat hours and override, roles (ARC-01), rubric drafts and criteria, challenges and forms | **Passed** on the Supabase local stack in CI and on the PGlite stand-in (§9). Not yet on the hosted project |
+| `invite-staff` Edge Function | Implemented — not verified. Type-checks (`deno check`, CI); not yet deployed or run |
+| Scheduled maintenance: `run_maintenance`, `extend_feedback_deadline`, email-relay trigger, `pg_cron` schedules | **Passed** on the Supabase local stack in CI, schedules registered with pg_cron (§9). Relay call not yet run against a deployed function |
 | Generated TypeScript types | Not run: needs `supabase gen types` against a running stack. §8 gives hand-written types until then |
 
 ---
@@ -361,7 +361,9 @@ export interface RpcErrorBody { code: string; message: ApiErrorCode | 'IMMUTABLE
 | `010_security_privileges.test.sql`: exact allow-lists of functions callable signed out (2) and signed in (60), service-role-only relay and maintenance, private helpers limited to those policies use, every `SECURITY DEFINER` pins `search_path`, new functions start closed, no views in `public`, no table writes for browsers, private proposal bucket with no direct read/update/delete | PGlite stand-in | Passed, 11/11 |
 | Mutation checks (security): a new RPC granted to signed-out users; a `SECURITY DEFINER` function without `search_path` | Same | Each caught (1 and 1 failures) |
 | Mutation checks: open `can_read_case`, skip MFA, open peer view, drop version trigger | Same | Each caught (12, 1, 2 and 3 failures) |
-| Same suites on the Supabase stack (`supabase db reset && supabase test db`) | Local Docker / CI stage 3 | **Not run.** No Docker on Stacey's machine; CI stage 3 not added yet |
+| Same suites on the Supabase stack: `supabase start` (migrations 001–010 + seed) then `supabase test db` | Supabase local stack (Postgres 17.6.1.139, Auth, Storage, pg_cron) in GitHub Actions, workflow `Database`, run 43907353789, commit `cc7c6bb` (branch `db/security-checks`), 16 Nov 2026 16:25–16:27 UTC | **Passed.** Every pgTAP file; also green on `test/ci-db-stage-3` (`6e5e8c5`, run 43905831617) and `db/scheduled-jobs` (`21715bc`, run 43907257484) |
+| Edge Functions type-check (`deno check`, attachment-url, email-relay, invite-staff) | Same run | **Passed** |
+| First Supabase-stack runs found two seed problems the stand-in accepted (temporary-schema helpers; top-level calls prepared before the functions existed) | Runs 43899239039, 43902689794 | **Fixed** in `095f2ad` and `6e5e8c5` |
 | Storage upload policy with real `storage-api`; `attachment-url` Edge Function; 60 s expiry | Supabase local or staging | **Not run** |
 | Seeded accounts sign in after `scripts/set-demo-passwords.mjs` | Supabase local or staging | **Not run** |
 
