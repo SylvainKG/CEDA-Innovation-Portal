@@ -1,6 +1,6 @@
 # API contracts and permission matrix
 
-**Owner:** Stacey (author) · **Reviewer:** Obvious · **Status:** Draft for review · 16 Nov 2026
+**Owner:** Stacey (author) · **Reviewer:** Obvious · **Status:** Draft for review · 16 Nov 2026 · **Updated:** 17 Nov 2026 (Slice 2)
 **Implements:** blueprint v0.3 §4 (data model, state machine, RPC summary), D-02, D-07, D-12, D-17; BCR-001 B2, B4, B9, B10 (applied as recommended, pending sign-off)
 **Code:** `supabase/migrations/`, `supabase/functions/`, `supabase/seed.sql`, tests in `supabase/tests/database/`
 
@@ -9,7 +9,8 @@
 | Phase 0: schema, RLS, triggers, `has_permission()`, `health()`, `my_access()`, seed | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
 | Slice 1: `save_draft`, `submit_proposal`, `get_submission_receipt`, attachments, `record_consent` | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
 | `attachment-url` Edge Function | Implemented — not verified (not run anywhere yet) |
-| Slices 2–6 | Proposed signatures only (§7) |
+| Slice 2: `record_screening`, `assign_reviewers`, `revoke_assignment`, `grant_role`, `revoke_role`, `add_internal_note`, `list_case_status`, `case_stage_counts` | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
+| Slices 3–6 | Proposed signatures only (§7) |
 | Generated TypeScript types | Not run: needs `supabase gen types` against a running stack. §8 gives hand-written types until then |
 
 ---
@@ -117,6 +118,25 @@ Roles and permissions are **data** (`roles`, `permissions`, `role_permissions`).
 
 `authorize_attachment_download` exists for the Edge Function. The browser should call `attachment-url`, not this RPC.
 
+### 4.2 Slice 2 RPCs (REV-01, IAM-01, D-08)
+
+| RPC | Permission | Arguments | Returns | Errors | Writes |
+|---|---|---|---|---|---|
+| `record_screening` | `case.screen` | `p_proposal_id`, `p_result` (`eligible` or `ineligible`), `p_reason` (1–1,000 chars) | `{ proposal_id, status, result }` | `FORBIDDEN`, `VALIDATION`, `INVALID_STATE` (not `submitted`) | `submitted` → `in_evaluation`, or → `closed` with `closed_reason = "Ineligible: <reason>"`; case event with reason; audit; applicant notified |
+| `assign_reviewers` | `case.assign` | `p_proposal_id`, `p_reviewer_ids uuid[]` (1–10), `p_due_at?` (default now + 14 days, must be future) | `{ proposal_id, assigned: [{assignment_id, reviewer_id}], already_assigned: […], active_reviewers }` | `FORBIDDEN`, `VALIDATION` (not a reviewer, the applicant, yourself, declared a conflict on this case, bad due date), `INVALID_STATE` (not `in_evaluation`) | One assignment per new reviewer, audit, reviewer notified. Already-active reviewers are skipped (safe to retry). All reviewers are checked before anything is written |
+| `revoke_assignment` | `case.assign` | `p_assignment_id`, `p_reason` (1–500) | `{ assignment_id, revoked: true }` | `FORBIDDEN`, `VALIDATION`, `INVALID_STATE` (already removed) | Revocation (scorecards are kept), audit, reviewer notified |
+| `grant_role` | `role.manage` | `p_user_id`, `p_role_key`, `p_reason?` | `{ ok: true, already, user_role_id }` **or** `{ ok: false, code: "FORBIDDEN", message }` for a self-grant | `FORBIDDEN` (no permission), `VALIDATION` (unknown role or user) | Role, audit, user notified. **Self-grant (N8): not raised but returned**, so its `role.grant_refused` audit row is kept |
+| `revoke_role` | `role.manage` | `p_user_id`, `p_role_key`, `p_reason` (1–500) | `{ ok: true, user_role_id }` or `{ ok: false, code: "FORBIDDEN", message }` for your own roles | `FORBIDDEN`, `VALIDATION`, `INVALID_STATE` (role not held) | Revocation (a revoked grant can never be reactivated; grant again instead), audit, user notified |
+| `add_internal_note` | `case.note` and can read the case; never the applicant | `p_proposal_id`, `p_body` (1–4,000) | `{ id, created_at }` | `FORBIDDEN`, `VALIDATION` | Note; audit records that a note was added, **not its text** |
+| `list_case_status` | `case.read_status` or `case.read_all` | `p_challenge_id?` | Rows `{ reference, challenge_title, public_stage, last_update }`, latest 500 | `FORBIDDEN` | — |
+| `case_stage_counts` | `case.read_status`, `case.read_all` or `report.read` | `p_challenge_id?` | `{ "submission": n, "review": n, "feedback": n, "approval": n, "award": n, "closed": n }` | `FORBIDDEN` | — |
+
+**Frontend note for `grant_role` / `revoke_role`:** check `ok` in the result as well as catching errors.
+
+**D-08 (committee):** the committee member reads no case tables at all. `list_case_status` gives reference, challenge and applicant-facing stage only: no titles, text, scores, notes or unpublished outcomes. If CEDA confirms titles may be shown (spec Q4), add a column; no access rule changes.
+
+**Reviewer picker (T10 assign dialog):** the admin reads `profiles` and `user_roles` directly (RLS allows `role.manage`); filter `user_roles.role_key = 'reviewer'` and `revoked_at is null`.
+
 ### 4.1 `submit_proposal` rules (APP-03)
 
 1. **Idempotent by `p_client_request_id`.** Generate the key once, when the user first presses **Submit idea**, and keep it (in local storage too) until a receipt arrives. Same key + same case returns the original receipt with `replayed: true`. Same key + another case returns `REQUEST_CONFLICT`. Concurrent calls are serialised on the case row.
@@ -167,10 +187,7 @@ Receipt:
 
 | Slice | RPC | Arguments | Notes |
 |---|---|---|---|
-| 2 | `record_screening` | `p_proposal_id`, `p_result` ('eligible' or 'ineligible'), `p_reason` | `submitted` → `in_evaluation` / `closed` |
-| 2 | `assign_reviewers` | `p_proposal_id`, `p_reviewer_ids uuid[]`, `p_due_at` | Notifies each reviewer |
-| 2 | `revoke_assignment` | `p_assignment_id`, `p_reason` | |
-| 2 | `grant_role` / `revoke_role` | `p_user_id`, `p_role_key`, `p_reason?` | Self-grant refused **and audited** (N8). The refusal is returned as a result, not raised, so its audit row commits |
+| 2 (next) | `invite_staff` (Edge Function) | email, role | IAM-01 "admin invites by email": needs the Auth admin API, so it runs as an Edge Function. Not built yet |
 | 3 | `declare_assignment` | `p_assignment_id`, `p_has_conflict`, `p_confidentiality_accepted` | Conflict revokes the assignment (N11) |
 | 3 | `save_scorecard` / `submit_scorecard` | `p_assignment_id`, `p_items [{criterion_id, score, reason}]`, `p_overall_comment` | Quorum → `in_adjudication` (D-11) |
 | 3 | `mark_notifications_read` | `p_ids uuid[]?` (null = all) | |
@@ -216,6 +233,8 @@ export interface RpcErrorBody { code: string; message: ApiErrorCode | 'IMMUTABLE
 | Migrations 001–002 + seed apply in order | PGlite 0.5.16 (Postgres 18.6), `tools/pglite-db-tests` | Passed |
 | `001_foundation.test.sql`: RLS on every table, no write grants, append-only (N6), MFA rule (D-07), seed shape (B10), N3, N4, N5, N7, N10 and peer isolation at the data layer | Same | Passed, 39/39 |
 | `002_slice1_submit.test.sql`: draft, attachments, submit, idempotency, `REQUEST_CONFLICT`, receipt lookup, N1, N2, N3, N6, N7, N9, verification, consent, sign-up | Same | Passed, 56/56 |
+| `003_slice2_screen_assign.test.sql`: screening both ways, assignment rules and retries, revocation, roles incl. N8 refused + audited, notes hidden from applicants, committee view (D-08), N3, N7, N10 | Same | Passed, 56/56 |
+| Mutation checks (Slice 2): drop the self-grant constraint; let any signed-in user hold every permission | Same | Each caught (1 and 18 failures) |
 | Mutation checks: open `can_read_case`, skip MFA, open peer view, drop version trigger | Same | Each caught (12, 1, 2 and 3 failures) |
 | Same suites on the Supabase stack (`supabase db reset && supabase test db`) | Local Docker / CI stage 3 | **Not run.** No Docker on Stacey's machine; CI stage 3 not added yet |
 | Storage upload policy with real `storage-api`; `attachment-url` Edge Function; 60 s expiry | Supabase local or staging | **Not run** |
@@ -236,6 +255,8 @@ export interface RpcErrorBody { code: string; message: ApiErrorCode | 'IMMUTABLE
 | Seed: 7 background cases + Applicant A's earlier idea (8 in total) | BCR-001 B10, so the demo case is `CEDA-2026-0009` |
 | `decisions.superseded_at`; one active decision per case | "One active decision per case" without deleting history |
 | Unpublished decision keeps status `in_adjudication` | §6 |
+| `user_roles` and `assignments` are revoke-only (update triggers); revoked rows never reactivate | IAM-01 audit trail stays truthful |
+| `revoke_assignment`, `add_internal_note`, `list_case_status`, `case_stage_counts` added | T10 reassign, T08 Notes tab, T06/T07 committee views (D-08) |
 
 ## 11. Known gaps (debt)
 
