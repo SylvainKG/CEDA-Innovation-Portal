@@ -1,6 +1,6 @@
 # API contracts and permission matrix
 
-**Owner:** Stacey (author) · **Reviewer:** Obvious · **Status:** Draft for review · 16 Nov 2026 · **Updated:** 20 Nov 2026 (Slice 5)
+**Owner:** Stacey (author) · **Reviewer:** Obvious · **Status:** Draft for review · 16 Nov 2026 · **Updated:** 21 Nov 2026 (Slice 6)
 **Implements:** blueprint v0.3 §4 (data model, state machine, RPC summary), D-02, D-07, D-12, D-17; BCR-001 B2, B4, B9, B10 (applied as recommended, pending sign-off)
 **Code:** `supabase/migrations/`, `supabase/functions/`, `supabase/seed.sql`, tests in `supabase/tests/database/`
 
@@ -14,7 +14,8 @@
 | Slice 4: `request_feedback`, `respond_clarification`, `submit_revision`, `verify_feedback_task`, `get_roadmap`, outbox claim/record, `list_email_outbox` | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
 | `email-relay` Edge Function | Implemented — not verified (not run anywhere yet) |
 | Slice 5: `record_decision`, `publish_decision`, `record_award`, `close_case` | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
-| Slice 6 | Proposed signatures only (§7) |
+| Slice 6a: `get_programme_report`, `report_case_rows`, `query_audit`, chat (`chat_status`, `start_chat`, `send_chat_message`, `accept_chat`, `close_chat`, `my_chat_inbox`, `chat_statistics`) | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
+| Slice 6b (admin settings, invite) | In progress |
 | Generated TypeScript types | Not run: needs `supabase gen types` against a running stack. §8 gives hand-written types until then |
 
 ---
@@ -188,6 +189,26 @@ Roles and permissions are **data** (`roles`, `permissions`, `role_permissions`).
 - **Unpublished means invisible:** the applicant's `decisions` rows, case status, case history and notifications all stay as "Under review" until `publish_decision`.
 - **Stale decisions:** if a revision was requested after a decision was drafted, the draft refers to the earlier version and cannot be published; record a new one.
 
+### 4.6 Slice 6a RPCs: reports, audit, chat (RPT-01, SEC-03, CHT-01/02/03)
+
+| RPC | Who | Arguments | Returns | Errors |
+|---|---|---|---|---|
+| `get_programme_report` | `report.read` (adjudicator, admin) | `p_challenge_id?`, `p_from?`, `p_to?` (period on the submission time) | `{ filters, generated_at, participation{submitted, distinct_applicants, drafts_started, by_challenge[]}, outcomes{by_current_stage{stage: n}, approved, not_approved, awarded, closed, award_total_minor, currency}, funnel[{stage, reached}], time_in_stage[{status, cases, median_days}], overdue{feedback_requests, reviews}, impact{reached_later_stage, reached_later_stage_share, resubmitted_after_feedback, roadmap_tasks_verified_share} }` | `FORBIDDEN`, `VALIDATION` (period ends before it starts) |
+| `report_case_rows` | `report.read` | Same filters | One row per case for the CSV: `{ reference, challenge_title, public_stage, status, submitted_at, versions, last_update, days_in_current_stage, published_outcome, award_minor, currency }` (no proposal content) | `FORBIDDEN` |
+| `query_audit` | `audit.read` (admin, auditor) | `p_reference?` (case-insensitive), `p_actor_id?`, `p_action?` (prefix, e.g. `case.`; wildcards matched literally), `p_from?`, `p_to?`, `p_limit?` (≤ 500, default 100), `p_before_id?` (keyset paging: pass the smallest `id` you have) | Rows `{ id, at, actor_id, actor_name, actor_role, action, target_type, target_id, reference, metadata }`, newest first | `FORBIDDEN` |
+| `chat_status` | Anyone (also signed out) | — | `{ open, mode: calendar / demo_override_open / demo_override_closed, timezone, server_time_display, hours[] }` | — |
+| `start_chat` | `chat.start` (applicants; D-13 registered users only) | `p_message` (1–2,000) | `{ session_id, status, queued_at }`; returns the open conversation if there is one | `FORBIDDEN`, `VALIDATION`, `INVALID_STATE` with `details.reason = "CHAT_CLOSED"` outside hours |
+| `send_chat_message` | Conversation's applicant or consultant | `p_session_id`, `p_body` (1–2,000) | `{ message_id, session_id }` | `FORBIDDEN`, `VALIDATION`, `INVALID_STATE` (ended) |
+| `accept_chat` | `chat.handle` | `p_session_id` | `{ session_id, status: "active", accepted_at }` | `FORBIDDEN`, `INVALID_STATE` (someone else took it, or it ended) |
+| `close_chat` | Either participant | `p_session_id` | `{ session_id, status, replayed }` (closing a never-accepted chat records it as missed) | `FORBIDDEN` |
+| `my_chat_inbox` | `chat.handle` | — | Waiting conversations plus own active ones (a consultant can hold several): `{ session_id, status, applicant_name, queued_at, waiting_seconds, last_message_at, last_message }` | `FORBIDDEN` |
+| `chat_statistics` | `chat.stats` (support lead) | `p_from?`, `p_to?` | `{ volume, handled, missed, waiting_now, average_wait_seconds, by_day[{day, volume, missed}] }` | `FORBIDDEN` |
+
+- **Hours (CHT-02):** open when the Gaborone local time is within `service_calendar` hours on a working day and the date is not in `service_closures`. `app_settings.chat_demo_override` (`"open"`, `"closed"` or `null`) lets judges see both states.
+- **Missed chats:** a waiting conversation not accepted within 30 minutes, or still waiting when the service closes, becomes `missed`. There is no scheduler: this sweep runs whenever a chat is started, accepted, listed or counted.
+- **Live chat:** subscribe to `postgres_changes` on `chat_messages` (filter `session_id=eq.<id>`) and `chat_sessions`. RLS limits events to the participants; a waiting conversation is visible to every consultant.
+- **Reconciliation (RPT-01):** report and CSV are computed from the same case set; the seed gives 8 cases, 4 applicants, stages `{submission 1, review 3, feedback 1, approval 1, award 1, closed 1}` and an award total of 25,000,000 thebe (§9).
+
 **Reviewer picker (T10 assign dialog):** the admin reads `profiles` and `user_roles` directly (RLS allows `role.manage`); filter `user_roles.role_key = 'reviewer'` and `revoked_at is null`.
 
 ### 4.1 `submit_proposal` rules (APP-03)
@@ -288,6 +309,8 @@ export interface RpcErrorBody { code: string; message: ApiErrorCode | 'IMMUTABLE
 | `email-relay` against a real SMTP server | Staging | **Not run**: SMTP not configured; email is Simulated until it is |
 | `006_slice5_decide_award.test.sql`: role separation (D-05), unpublished decisions invisible to the applicant (N4), supersede history, N5 before approval and on not-approved, publish once, stale-version refusal, award + retry + two timeline stages, closure rules and request expiry, N6 on decisions, awards and history | PGlite stand-in | Passed, 45/45 |
 | Mutation checks (Slice 5): applicant can read unpublished decisions; award without approval | Same | Each caught (2 and 2 failures) |
+| `007_slice6_reports_audit_chat.test.sql`: report access, every report figure reconciled with the seed, period and challenge filters, CSV rows match, audit filters and paging, literal wildcards, Gaborone hours incl. UTC conversion, weekend and holiday, override both ways, chat isolation, multi-session consultant, closing, statistics against the seed | PGlite stand-in | Passed, 45/45 |
+| Mutation checks (Slice 6a): audit query open to anyone; chat always open | Same | Each caught (6 and 1 failures) |
 | Mutation checks: open `can_read_case`, skip MFA, open peer view, drop version trigger | Same | Each caught (12, 1, 2 and 3 failures) |
 | Same suites on the Supabase stack (`supabase db reset && supabase test db`) | Local Docker / CI stage 3 | **Not run.** No Docker on Stacey's machine; CI stage 3 not added yet |
 | Storage upload policy with real `storage-api`; `attachment-url` Edge Function; 60 s expiry | Supabase local or staging | **Not run** |
