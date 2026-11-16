@@ -1,29 +1,31 @@
 # Claim register
 
-**Owner:** Sylvain · **Status:** Draft · 15 Nov 2026
+**Owner:** Sylvain · **Status:** Draft · 15 Nov 2026 · **Updated:** 16 Nov 2026 (database-layer results, Stacey)
 One row per claim made in the proposal, README, manual, judge guide or demo video. A claim may be made publicly only when *Observed result* is **Passed** with an evidence link. Otherwise, use the status word in the claim's wording ("Simulated", "Deferred", "Not run").
+
+"Passed (database layer)" means the rule is proven in the database itself (pgTAP on the Supabase local stack in CI). A public claim that the *portal* behaves this way also needs the Playwright or hosted-build check, still Not run.
 
 | # | Claim | Proposed check | Observed result | Evidence link | Unresolved gap |
 |---|---|---|---|---|---|
-| C-01 | An applicant cannot read another applicant's proposal | N1 (pgTAP + Playwright) | Not run | — | — |
-| C-02 | Attachment links are private and expire after 60 seconds | N2 | Not run | — | — |
-| C-03 | An unassigned reviewer sees nothing of a case | N3 | Not run | — | — |
-| C-04 | Applicants never receive an unpublished decision | N4 | Not run | — | — |
-| C-05 | An award can only follow a published approval | N5 | Not run | — | — |
-| C-06 | Submitted versions and audit entries cannot be changed or deleted, even by an administrator | N6 | Not run | — | — |
-| C-07 | Support consultants cannot see proposals or scores | N7 | Not run | — | — |
-| C-08 | Administrators cannot grant themselves roles | N8 | Not run | — | — |
-| C-09 | Closed challenges refuse submissions and keep the draft | N9 | Not run | — | — |
-| C-10 | Reviewers must declare conflicts before seeing a proposal | N10, N11 | Not run | — | — |
-| C-11 | Submitting twice never creates two cases | S1 idempotency + concurrency script | Not run | — | — |
-| C-12 | Reviewers score independently; peer scores are hidden until they submit | S3 peer isolation | Not run | — | — |
-| C-13 | Version 1 scores are kept after a resubmission | S4 | Not run | — | — |
-| C-14 | Every workflow action is recorded in the audit trail | SEC-01 pgTAP per RPC + step 17 | Not run | — | — |
+| C-01 | An applicant cannot read another applicant's proposal | N1 (pgTAP + Playwright) | Passed (database layer) | [CI run 43907353789](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/43907353789); `001_foundation`, `002_slice1_submit` | Playwright and hosted build Not run. Database layer only, on `db/security-checks` (`cc7c6bb`, not merged yet) |
+| C-02 | Attachment links are private and expire after 60 seconds | N2 | Partly passed: refusal Passed (database layer); 60-second expiry Not run | [CI run 43907353789](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/43907353789); `002_slice1_submit` (N2) | Expiry needs the deployed `attachment-url` function; Playwright and hosted build Not run |
+| C-03 | An unassigned reviewer sees nothing of a case | N3 | Passed (database layer) | [CI run 43907353789](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/43907353789); `001`, `002`, `003`, `005` | Playwright and hosted build Not run. Database layer only, on `db/security-checks` (`cc7c6bb`, not merged yet) |
+| C-04 | Applicants never receive an unpublished decision | N4 | Passed (database layer) | [CI run 43907353789](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/43907353789); `001_foundation`, `006_slice5_decide_award` | Playwright and hosted build Not run. Database layer only, on `db/security-checks` (`cc7c6bb`, not merged yet) |
+| C-05 | An award can only follow a published approval | N5 | Passed (database layer) | [CI run 43907353789](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/43907353789); `001_foundation`, `006_slice5_decide_award` | Playwright and hosted build Not run. Database layer only, on `db/security-checks` (`cc7c6bb`, not merged yet) |
+| C-06 | Submitted versions and audit entries cannot be changed or deleted, even by an administrator | N6 | Passed (database layer) | [CI run 43907353789](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/43907353789); `001_foundation`, `002`, `006` | Triggers refuse even the table owner. Database layer only, on `db/security-checks` (`cc7c6bb`, not merged yet) |
+| C-07 | Support consultants cannot see proposals or scores | N7 | Passed (database layer) | [CI run 43907353789](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/43907353789); `001`, `002`, `003`, `007` | Playwright and hosted build Not run. Database layer only, on `db/security-checks` (`cc7c6bb`, not merged yet) |
+| C-08 | Administrators cannot grant themselves roles | N8 | Passed (database layer) | [CI run 43907353789](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/43907353789); `001_foundation`, `003_slice2_screen_assign` | Refusal is also audited. Playwright and hosted build Not run |
+| C-09 | Closed challenges refuse submissions and keep the draft | N9 | Passed (database layer) | [CI run 43907353789](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/43907353789); `002_slice1_submit` (N9) | Playwright and hosted build Not run. Database layer only, on `db/security-checks` (`cc7c6bb`, not merged yet) |
+| C-10 | Reviewers must declare conflicts before seeing a proposal | N10, N11 | Passed (database layer) | [CI run 43907353789](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/43907353789); `001`, `003`, `004_slice3_evaluate` (N10, N11) | Playwright and hosted build Not run. Database layer only, on `db/security-checks` (`cc7c6bb`, not merged yet) |
+| C-11 | Submitting twice never creates two cases | S1 idempotency + concurrency script | Partly passed: same key returns the same case (database layer); concurrent double-submit Not run | [CI run 43907353789](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/43907353789); `002_slice1_submit` | Concurrency script and browser double-click Not run |
+| C-12 | Reviewers score independently; peer scores are hidden until they submit | S3 peer isolation | Passed (database layer) | [CI run 43907353789](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/43907353789); `001_foundation`, `004_slice3_evaluate` | Playwright and hosted build Not run. Database layer only, on `db/security-checks` (`cc7c6bb`, not merged yet) |
+| C-13 | Version 1 scores are kept after a resubmission | S4 | Passed (database layer) | [CI run 43907353789](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/43907353789); `005_slice4_revise` | Playwright and hosted build Not run. Database layer only, on `db/security-checks` (`cc7c6bb`, not merged yet) |
+| C-14 | Every workflow action is recorded in the audit trail | SEC-01 pgTAP per RPC + step 17 | Partly passed: audit rows asserted for every workflow RPC family (database layer) | [CI run 43907353789](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/43907353789); suites `002`–`009` | Main-journey step 17 (audit viewer by case) Not run |
 | C-15 | The full lifecycle works end to end on the hosted build | Main journey on judging build | Not run | — | — |
 | C-16 | Live updates don't leak to other accounts | S3 leak test | Not run | — | — |
 | C-17 | No proposal data is sent to external AI services | Code review + network check on T04 (INN-03) | Not run | — | — |
 | C-18 | Page loads within the proposed p95 targets | QA-01 timed sample (D-16, Proposed) | Not run | — | Targets not yet agreed |
 | C-19 | Works in Chrome, Edge, Firefox and on mobile | QA-01 matrix | Not run | — | — |
 | C-20 | Backups can be restored | OPS-01 restore drill | Not run | — | — |
-| C-21 | Designed with reference to the Data Protection Act, 2024 (never "compliant", D-18) | Data-handling note reviewed | Not run | — | Wording only; no compliance claim |
-| C-22 | Email alerts | NTF-02 outbox check | Not run | — | Shown as **Simulated** if SMTP is not ready |
+| C-21 | Designed with reference to the Data Protection Act, 2024 (never "compliant", D-18) | Data-handling note reviewed | Note drafted; team review pending | `docs/submission/data-handling-note.md` on `docs/backend-runbook-data-handling` | Wording only; no compliance claim (D-18) |
+| C-22 | Email alerts | NTF-02 outbox check | Simulated (outbox implemented and tested; no SMTP configured) | [CI run 43907353789](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/43907353789); `005_slice4_revise` (outbox claim, lease, settle, give-up) | Shown as **Simulated** until SMTP is configured and a send is observed |
