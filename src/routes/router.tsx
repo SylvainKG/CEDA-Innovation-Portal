@@ -8,6 +8,8 @@ import { NotFoundState } from '@/components/states/States'
 import { STAFF_ROLES, type Role } from '@/lib/api/types'
 import { NotBuiltYet } from '@/pages/NotBuiltYet'
 import { SignInPlaceholder } from '@/pages/SignInPlaceholder'
+import { ComponentGalleryRoute } from '@/pages/ComponentGalleryRoute'
+import { apiMode } from '@/lib/api'
 import { RequireRole } from './guards'
 
 /** Routes from docs/design/figma-handoff/navigation-map.md ("Routes by template"). */
@@ -31,6 +33,15 @@ export const routes: RouteObject[] = [
       { path: '/help/contacts', element: nb('T03', 'Regulatory contacts') },
       { path: '/help/support', element: nb('T03', 'Fault support') },
       { path: '/privacy', element: nb('T03', 'Privacy notice') },
+      // Development-only component gallery: only registered in mock mode, never with a real backend.
+      ...(apiMode === 'mock'
+        ? [
+            {
+              path: '/dev/components',
+              element: <ComponentGalleryRoute />,
+            },
+          ]
+        : []),
     ],
   },
   {
