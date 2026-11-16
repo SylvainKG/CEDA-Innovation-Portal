@@ -163,20 +163,25 @@ begin
 end;
 $$;
 
-select seed_helpers.demo_user('00000000-0000-4000-8000-0000000000a1', 'applicant.a@demo.ceda-portal.test', 'Demo Applicant A', 'Lesedi Agro Demo', array['applicant']);
-select seed_helpers.demo_user('00000000-0000-4000-8000-0000000000a2', 'applicant.b@demo.ceda-portal.test', 'Demo Applicant B', 'Demo Business B', array['applicant']);
-select seed_helpers.demo_user('00000000-0000-4000-8000-0000000000b1', 'screening@demo.ceda-portal.test', 'Demo Screening Officer', 'CEDA (DEMO)', array['screening_officer']);
-select seed_helpers.demo_user('00000000-0000-4000-8000-0000000000c1', 'reviewer.1@demo.ceda-portal.test', 'Demo Reviewer 1', 'CEDA (DEMO)', array['reviewer']);
-select seed_helpers.demo_user('00000000-0000-4000-8000-0000000000c2', 'reviewer.2@demo.ceda-portal.test', 'Demo Reviewer 2', 'CEDA (DEMO)', array['reviewer']);
-select seed_helpers.demo_user('00000000-0000-4000-8000-0000000000c3', 'reviewer.3@demo.ceda-portal.test', 'Demo Reviewer 3', 'CEDA (DEMO)', array['reviewer']);
-select seed_helpers.demo_user('00000000-0000-4000-8000-0000000000d1', 'adjudicator@demo.ceda-portal.test', 'Demo Adjudicator', 'CEDA (DEMO)', array['adjudicator']);
-select seed_helpers.demo_user('00000000-0000-4000-8000-0000000000e1', 'admin@demo.ceda-portal.test', 'Demo Administrator', 'CEDA (DEMO)', array['admin','auditor']);
-select seed_helpers.demo_user('00000000-0000-4000-8000-0000000000f1', 'consultant@demo.ceda-portal.test', 'Demo Support Consultant', 'CEDA (DEMO)', array['support_consultant','support_lead']);
-select seed_helpers.demo_user('00000000-0000-4000-8000-0000000000f2', 'committee.ext@demo.ceda-portal.test', 'Demo Committee Member', 'External committee (DEMO)', array['committee_member']);
--- Background applicants (own the background cases; cannot sign in until a password is set).
-select seed_helpers.demo_user('00000000-0000-4000-8000-0000000000a3', 'applicant.c@demo.ceda-portal.test', 'Demo Applicant C', 'Kalahari Drip Demo', array['applicant']);
-select seed_helpers.demo_user('00000000-0000-4000-8000-0000000000a4', 'applicant.d@demo.ceda-portal.test', 'Demo Applicant D', 'Okavango Greens Demo', array['applicant']);
-select seed_helpers.demo_user('00000000-0000-4000-8000-0000000000a5', 'applicant.e@demo.ceda-portal.test', 'Demo Applicant E', 'Tswana Herd Tech Demo', array['applicant']);
+-- Called inside a DO block: the CLI prepares top-level statements before running any of them,
+-- so a top-level call could not see a function created earlier in this file.
+do $$
+begin
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000a1', 'applicant.a@demo.ceda-portal.test', 'Demo Applicant A', 'Lesedi Agro Demo', array['applicant']);
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000a2', 'applicant.b@demo.ceda-portal.test', 'Demo Applicant B', 'Demo Business B', array['applicant']);
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000b1', 'screening@demo.ceda-portal.test', 'Demo Screening Officer', 'CEDA (DEMO)', array['screening_officer']);
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000c1', 'reviewer.1@demo.ceda-portal.test', 'Demo Reviewer 1', 'CEDA (DEMO)', array['reviewer']);
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000c2', 'reviewer.2@demo.ceda-portal.test', 'Demo Reviewer 2', 'CEDA (DEMO)', array['reviewer']);
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000c3', 'reviewer.3@demo.ceda-portal.test', 'Demo Reviewer 3', 'CEDA (DEMO)', array['reviewer']);
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000d1', 'adjudicator@demo.ceda-portal.test', 'Demo Adjudicator', 'CEDA (DEMO)', array['adjudicator']);
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000e1', 'admin@demo.ceda-portal.test', 'Demo Administrator', 'CEDA (DEMO)', array['admin','auditor']);
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000f1', 'consultant@demo.ceda-portal.test', 'Demo Support Consultant', 'CEDA (DEMO)', array['support_consultant','support_lead']);
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000f2', 'committee.ext@demo.ceda-portal.test', 'Demo Committee Member', 'External committee (DEMO)', array['committee_member']);
+  -- Background applicants (own the background cases; cannot sign in until a password is set).
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000a3', 'applicant.c@demo.ceda-portal.test', 'Demo Applicant C', 'Kalahari Drip Demo', array['applicant']);
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000a4', 'applicant.d@demo.ceda-portal.test', 'Demo Applicant D', 'Okavango Greens Demo', array['applicant']);
+  perform seed_helpers.demo_user('00000000-0000-4000-8000-0000000000a5', 'applicant.e@demo.ceda-portal.test', 'Demo Applicant E', 'Tswana Herd Tech Demo', array['applicant']);
+end $$;
 
 -- -----------------------------------------------------------------------------
 -- Cases: CEDA-2026-0001 … 0008 (BCR-001 B10). Status paths follow §4.3.

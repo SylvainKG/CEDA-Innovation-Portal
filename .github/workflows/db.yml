@@ -85,9 +85,12 @@ jobs:
         with:
           deno-version: v2.x
       - name: Type-check
+        # Checked from a copy outside the repository: the root package.json belongs to the
+        # frontend and would make Deno resolve (and install) the frontend's dependencies.
         run: |
           set -o pipefail
-          deno check --node-modules-dir=auto supabase/functions/*/index.ts 2>&1 | tee check.log || {
+          mkdir -p "$RUNNER_TEMP/fn" && cp -r supabase/functions/. "$RUNNER_TEMP/fn/"
+          (cd "$RUNNER_TEMP/fn" && deno check */index.ts) 2>&1 | tee check.log || {
             echo "::error title=deno check failed::$(tail -n 40 check.log | sed -e 's/\x1b\[[0-9;]*m//g' -e 's/%/%25/g' -e 's/\r//g' | sed ':a;N;$!ba;s/\n/%0A/g')"
             exit 1
           }
