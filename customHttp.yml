@@ -1,0 +1,16 @@
+# Security headers for every response served by AWS Amplify Hosting
+# (docs/process/hosting-aws-amplify.md §6). A Content-Security-Policy is added
+# once the Supabase project domains are known.
+customHeaders:
+  - pattern: '**'
+    headers:
+      - key: Strict-Transport-Security
+        value: max-age=31536000; includeSubDomains
+      - key: X-Content-Type-Options
+        value: nosniff
+      - key: X-Frame-Options
+        value: DENY
+      - key: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - key: Permissions-Policy
+        value: camera=(), microphone=(), geolocation=()
