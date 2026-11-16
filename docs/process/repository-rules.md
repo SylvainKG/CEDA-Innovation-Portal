@@ -75,7 +75,7 @@ Usernames are now known (blueprint §6 item 8); apply these settings:
 
 **ASSUMED, to verify:** protected branches and required code-owner reviews on a **private** repository need a paid GitHub plan on the owning account. If the plan doesn't allow it, the same rules apply **by team agreement**, and Sylvain checks each merged PR against them daily. Record which applies in `artifacts/phase-00/README.md`.
 
-## 6. Pull request template (proposed `.github/pull_request_template.md`)
+## 6. Pull request template (`.github/pull_request_template.md`)
 
 ```markdown
 ## What and why
@@ -99,18 +99,20 @@ Usernames are now known (blueprint §6 item 8); apply these settings:
 <!-- Anything that differs from Figma or the blueprint; also logged in handoff-notes.md -->
 ```
 
-## 7. Code owners (proposed `.github/CODEOWNERS`)
+## 7. Code owners (`.github/CODEOWNERS`)
 
 GitHub usernames: Sandra `sandra-oc` · Obvious `Shawnjembu` · Stacey `staceynthoi0-droid` · Sylvain `SylvainKG`.
 
-```text
-# Default: any one other member reviews (enforced by the 1-approval rule)
-/src/components/                   @Shawnjembu
-/supabase/                         @staceynthoi0-droid
-/docs/design/figma-handoff/        @sandra-oc @Shawnjembu
-/docs/blueprint/                   @SylvainKG
-/.github/                          @SylvainKG
-/package.json                      @SylvainKG
-```
+The file lives at `.github/CODEOWNERS`. Every path has a **primary and a backup owner** (blueprint §7.2 P/B columns), because GitHub never lets a PR author satisfy the code-owner review on their own PR. With one owner per path, Stacey could never merge her own migrations.
 
-The "Sylvain **and** one other member" rule for `docs/blueprint/` can't be expressed in CODEOWNERS alone. It is met by the code-owner review plus the general approval rule, and checked by the reviewer.
+| Path | Owners (any one approves) |
+|---|---|
+| `/src/components/` | Obvious, Sylvain |
+| `/supabase/` | Stacey, Sylvain |
+| `/docs/design/figma-handoff/` | Sandra, Obvious |
+| `/docs/blueprint/` | all four (see below) |
+| `/.github/`, `/package.json`, `/package-lock.json` | Sylvain, Obvious |
+
+The "Sylvain **and** one other member" rule for `docs/blueprint/` can't be expressed in CODEOWNERS. All four members are listed so Sylvain's own blueprint PRs can be approved; for blueprint PRs by others, Sylvain's review is required by this agreement and checked before merge.
+
+The proposed template in §6 is committed as `.github/pull_request_template.md`. GitHub fills it into every new PR description.
