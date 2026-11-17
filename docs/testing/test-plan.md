@@ -21,6 +21,14 @@ Every check starts as **Not run**. A check becomes Passed or Failed only with a 
 
 **Rule:** a test that passed only against mocks proves only the mock. RLS and RPC claims need pgTAP or a run against a real database.
 
+## 1a. Browser test harness (in place from 16 Nov)
+
+- **Run:** `npm run test:e2e -- --trace off`. By default it builds the app in mock mode and serves the production build. `E2E_BASE_URL=https://… npm run test:e2e -- --trace off` runs the same tests against a deployed site (staging or judging). The `E2E` workflow can do the same through *Run workflow* with a `base_url`.
+- **Projects:** Chromium at **360 px** and **1280 px** (spec §3.3). Edge and Firefox are added for QA-01 (§5).
+- **Specs:** `tests/e2e/`. `shell-smoke.spec.ts` covers what exists today: page heading and DEMO label, no horizontal scroll, skip link, signed-out redirect, Forbidden and Not-found states, 44 px targets.
+- **What it does not prove:** the route guard is a UI convenience. **Access control is evidenced only by the N-tests against the real backend** (pgTAP now, Playwright once screens call the RPCs).
+- **CI:** `.github/workflows/e2e.yml`, separate from `ci.yml`. Not a required check until the N1–N11 suite runs against the backend.
+
 ## 2. Negative suite (blueprint §3.3), required on video and automated
 
 Each case is tested at **every entry route** that applies: the page, the PostgREST table/view, the RPC, Storage and Realtime.
