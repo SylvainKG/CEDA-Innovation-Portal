@@ -25,6 +25,7 @@ const KNOWN_CODES: readonly ApiErrorCode[] = [
   'CASE_NOT_APPROVED',
   'CHALLENGE_CLOSED',
   'REQUEST_CONFLICT',
+  'IMMUTABLE',
 ]
 
 export class ApiError extends Error {

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { checkForm, completeness } from '@/lib/form-check'
+import { charLength, checkForm, completeness, isChallengeOpen } from '@/lib/form-check'
 import { fromRpcError, parseFieldErrors, rpcError } from './errors'
 import { WATER_SMART_ID, YOUTH_DIGITAL_ID, MOCK_CHALLENGE_FORMS, MOCK_DECLARATION } from './mock/fixtures'
 import { mockSession } from './mock/session'
@@ -58,7 +58,11 @@ describe('RPC error mapping (contract §1.1)', () => {
   })
 
   it('throws for an unexpected error when there is nothing to reconcile', () => {
-    expect(() => fromRpcError({ message: 'IMMUTABLE' })).toThrow('IMMUTABLE')
+    expect(() => fromRpcError({ message: 'SOMETHING_NEW' })).toThrow('SOMETHING_NEW')
+  })
+
+  it('treats IMMUTABLE as a definite refusal, never as unknown', () => {
+    expect(fromRpcError({ message: 'IMMUTABLE', hint: 'x' }, 'key-1')).toMatchObject({ kind: 'refused', code: 'IMMUTABLE' })
   })
 
   it('ignores malformed details', () => {
@@ -91,6 +95,19 @@ describe('form check mirrors the server wording (migration 002)', () => {
       'doc:business_plan': 'Attach this document',
     })
   })
+  it('counts characters like Postgres, so an emoji is one character', () => {
+    expect(charLength('💧'.repeat(120))).toBe(120)
+    expect(checkForm(form.form_schema, { ...COMPLETE, title: '💧'.repeat(120) }, form.required_docs, new Set(['business_plan']))).toEqual({})
+  })
+
+  it('decides "open" from status and dates, like private.challenge_is_open', () => {
+    const base = { status: 'published' as const, opens_at: '2026-10-01T00:00:00Z', closes_at: '2026-12-31T14:00:00Z' }
+    expect(isChallengeOpen(base, new Date('2026-11-17T10:00:00Z'))).toBe(true)
+    expect(isChallengeOpen(base, new Date('2026-12-31T14:00:00Z'))).toBe(false) // still "published", but past the deadline
+    expect(isChallengeOpen(base, new Date('2026-09-30T23:59:59Z'))).toBe(false)
+    expect(isChallengeOpen({ ...base, status: 'unpublished' }, new Date('2026-11-17T10:00:00Z'))).toBe(false)
+  })
+
   it('counts required items for the completeness meter', () => {
     expect(completeness(form.form_schema, COMPLETE, form.required_docs)).toEqual({ done: 8, total: 9 })
     expect(completeness(form.form_schema, COMPLETE, form.required_docs, new Set(['business_plan']))).toEqual({ done: 9, total: 9 })
@@ -113,6 +130,17 @@ describe('mock Slice 1 adapter follows the contract', () => {
   it('refuses non-applicants', async () => {
     await mockSession.switchDemoRole?.('reviewer')
     expect(await api.saveDraft({ challengeId: WATER_SMART_ID, data: {} })).toMatchObject({ kind: 'refused', code: 'FORBIDDEN' })
+  })
+
+  it('uses the server wording and field keys (migration 002)', async () => {
+    const { proposal_id } = okData(await api.saveDraft({ challengeId: WATER_SMART_ID, data: {} }))
+    expect(await api.uploadAttachment({ proposalId: proposal_id, file: pdf(), docKey: 'nope' })).toMatchObject({
+      kind: 'refused',
+      message: 'Choose which document this is.',
+      fields: { doc_key: 'Unknown document type' },
+    })
+    const exe = new File(['x'], 'run.exe', { type: 'application/x-msdownload' })
+    expect(await api.uploadAttachment({ proposalId: proposal_id, file: exe })).toMatchObject({ fields: { file: 'Unsupported file type' } })
   })
 
   it('rejects disallowed and oversized files', async () => {
