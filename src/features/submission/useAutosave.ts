@@ -50,6 +50,8 @@ export function readLocalDraft(challengeId: string, proposalId?: string): DraftD
 
 export function useAutosave({ challengeId, proposalId: initialId, onCreated, debounceMs = 1_500 }: AutosaveOptions) {
   const [state, setState] = useState<AutosaveState>({ kind: 'idle' })
+  // The id lives in a ref for the save loop and in state for the caller, so a re-render always sees it.
+  const [proposalId, setProposalId] = useState(initialId)
   const idRef = useRef(initialId)
   const latest = useRef<DraftData | null>(null)
   const inFlight = useRef(false)
@@ -80,7 +82,11 @@ export function useAutosave({ challengeId, proposalId: initialId, onCreated, deb
         attempt.current = 0
         if (creating) {
           idRef.current = outcome.data.proposal_id
-          // Move the device copy from the "new" slot to the draft's own slot.
+          setProposalId(outcome.data.proposal_id)
+          // Move the device copy from the "new" slot to the draft's own slot. Typing that happened while this
+          // first save was in flight went to the "new" slot, so copy the latest answers across before removing
+          // it; otherwise "Saved on this device" could be shown with nothing stored (Stacey's #18 review).
+          if (dirty.current && latest.current) keepLocally(localDraftKey(challengeId, idRef.current), latest.current)
           try {
             window.localStorage.removeItem(localDraftKey(challengeId))
           } catch {
@@ -141,5 +147,5 @@ export function useAutosave({ challengeId, proposalId: initialId, onCreated, deb
     }
   }, [flush])
 
-  return { state, change, saveNow: flush, proposalId: idRef.current }
+  return { state, change, saveNow: flush, proposalId }
 }

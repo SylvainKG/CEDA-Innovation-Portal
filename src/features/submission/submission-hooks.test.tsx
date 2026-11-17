@@ -138,3 +138,70 @@ describe('useAutosave', () => {
     expect(spy).toHaveBeenCalledTimes(1)
   })
 })
+
+describe('review fixes (#18: Stacey, Sylvain)', () => {
+  it('keeps typing made during the first save on the device under the new draft id', async () => {
+    let release: () => void = () => undefined
+    const real = mockSubmission.saveDraft.bind(mockSubmission)
+    const spy = vi.spyOn(mockSubmission, 'saveDraft').mockImplementationOnce(async (input) => {
+      await new Promise<void>((resolve) => {
+        release = resolve
+      })
+      return real(input)
+    })
+    const onCreated = vi.fn()
+    const { result } = renderHook(() => useAutosave({ challengeId: WATER_SMART_ID, onCreated, debounceMs: 0 }), { wrapper })
+    act(() => result.current.change({ title: 'First' }))
+    await waitFor(() => expect(result.current.state.kind).toBe('saving'))
+    act(() => result.current.change({ title: 'First, then more' })) // typed while the first save is in flight
+    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false) // and then the connection drops
+    await act(async () => release())
+    await waitFor(() => expect(onCreated).toHaveBeenCalled())
+    const id = onCreated.mock.calls[0]?.[0] as string
+    await waitFor(() => expect(result.current.state.kind).toBe('local'))
+    expect(readLocalDraft(WATER_SMART_ID, id)).toEqual({ title: 'First, then more' })
+    expect(result.current.proposalId).toBe(id)
+    spy.mockRestore()
+  })
+
+  it('already submitted from another device: shows that receipt instead of a refusal', async () => {
+    const id = await readyDraft()
+    await mockSubmission.submitProposal({ proposalId: id, clientRequestId: 'other-device-key', declarationVersion: MOCK_DECLARATION.version })
+    const { result } = renderHook(() => useSubmitIdea(id), { wrapper })
+    await act(() => result.current.submit(MOCK_DECLARATION.version))
+    expect(result.current.state).toMatchObject({ kind: 'submitted', receipt: { proposal_id: id } })
+  })
+
+  it('REQUEST_CONFLICT: never shows another idea’s receipt; looks up this idea only', async () => {
+    const a = await readyDraft()
+    const b = await readyDraft()
+    await mockSubmission.submitProposal({ proposalId: a, clientRequestId: submitKeyFor(a), declarationVersion: MOCK_DECLARATION.version })
+    vi.spyOn(mockSubmission, 'submitProposal').mockResolvedValueOnce({ kind: 'refused', code: 'REQUEST_CONFLICT', message: 'used' })
+    const { result } = renderHook(() => useSubmitIdea(b), { wrapper })
+    await act(() => result.current.submit(MOCK_DECLARATION.version))
+    expect(result.current.state).toMatchObject({ kind: 'refused', code: 'REQUEST_CONFLICT' })
+    expect(pendingSubmitKey(b)).toBeUndefined()
+  })
+
+  it('a pending key that belongs to another idea is dropped, not shown', async () => {
+    const a = await readyDraft()
+    const b = await readyDraft()
+    const key = submitKeyFor(a)
+    await mockSubmission.submitProposal({ proposalId: a, clientRequestId: key, declarationVersion: MOCK_DECLARATION.version })
+    window.localStorage.setItem(`ceda.submit.key.${b}`, key)
+    const { result } = renderHook(() => useSubmitIdea(b), { wrapper })
+    await waitFor(() => expect(result.current.state).toEqual({ kind: 'idle' }))
+    expect(pendingSubmitKey(b)).toBeUndefined()
+  })
+
+  it('switching person clears draft copies and submit keys from the device', async () => {
+    window.localStorage.setItem('ceda.draft.local.x', '{"data":{"title":"secret"}}')
+    submitKeyFor('y')
+    window.localStorage.setItem('ceda.mock.role', 'applicant')
+    const { clearDeviceData } = await import('@/lib/device-data')
+    clearDeviceData()
+    expect(window.localStorage.getItem('ceda.draft.local.x')).toBeNull()
+    expect(pendingSubmitKey('y')).toBeUndefined()
+    expect(window.localStorage.getItem('ceda.mock.role')).toBe('applicant')
+  })
+})

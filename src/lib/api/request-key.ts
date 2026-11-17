@@ -47,6 +47,11 @@ export function submitKeyFor(proposalId: string): string {
   return key
 }
 
+/** Forget every pending key held in memory (local storage is cleared by `clearDeviceData`). */
+export function clearAllSubmitKeys(): void {
+  memory.clear()
+}
+
 /** Forget the key once a receipt (original or replayed) has been shown. */
 export function clearSubmitKey(proposalId: string): void {
   memory.delete(proposalId)

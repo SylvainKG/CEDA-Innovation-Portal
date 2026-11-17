@@ -13,6 +13,10 @@ import { submissionKeys } from './queries'
  *   looks the receipt up by the same key. "Submit again" is safe: it resends the same key.
  * - If a key is still pending when the screen opens (the reply was lost before a reload), the hook starts in
  *   `unknown` and checks once, so the applicant never submits blind.
+ * - `INVALID_STATE` (already submitted, e.g. from another device with another key) and `REQUEST_CONFLICT` (this
+ *   key belongs to a different case) both mean "look at what this case already has": the hook looks the receipt
+ *   up by THIS case's id and shows it if found. It never looks up by the conflicting key, which could return
+ *   another idea's receipt (the server replays a same-case key, so a conflict is always another case).
  */
 export type SubmitState =
   | { kind: 'idle' }
@@ -49,8 +53,12 @@ export function useSubmitIdea(proposalId: string | undefined) {
     setState({ kind: 'unknown', checking: true })
     try {
       const lookup = await api.submission.getSubmissionReceipt({ clientRequestId: key })
-      if (lookup.found) finish(lookup)
-      else {
+      if (lookup.found && lookup.proposal_id === proposalId) finish(lookup)
+      else if (lookup.found) {
+        // The key belongs to another idea (should never happen): drop it rather than show the wrong receipt.
+        clearSubmitKey(proposalId)
+        setState({ kind: 'idle' })
+      } else {
         // Not received (yet). Keep the key: submitting again with it cannot create a duplicate.
         setState({ kind: 'unknown', checking: false })
       }
@@ -72,6 +80,13 @@ export function useSubmitIdea(proposalId: string | undefined) {
         else {
           // A refusal changed nothing on the server (contract §4.1 rule 3); the next attempt is a new action.
           clearSubmitKey(proposalId)
+          if (outcome.code === 'INVALID_STATE' || outcome.code === 'REQUEST_CONFLICT') {
+            const existing = await api.submission.getSubmissionReceipt({ proposalId }).catch(() => ({ found: false as const }))
+            if (existing.found) {
+              finish(existing)
+              return
+            }
+          }
           setState({ kind: 'refused', code: outcome.code, message: outcome.message, fields: outcome.fields })
         }
       } catch {
