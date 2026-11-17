@@ -22,6 +22,7 @@ This portal is a **demonstration prototype that uses fictional data only**. It i
 | Case history, notifications | `case_events`, `notifications` | Timeline and alerts (NTF-01) | Those who can read the case; notifications only their recipient |
 | Email queue | `email_outbox` | Opt-in email alerts (NTF-02) | No browser access; only the relay function (service role). Emails carry the reference and a link, **never proposal content or outcomes** |
 | Chat messages | `chat_sessions`, `chat_messages` | Support (CHT-01) | The applicant and the consultant handling the conversation; statistics are counts only |
+| Copies on the applicant's device | Browser local storage: unsaved draft answers (`ceda.draft.local.*`) and pending submit keys (`ceda.submit.key.*`) | Typing is never lost when the connection drops; a lost submit reply can be checked without creating a duplicate (APP-01, APP-03) | Anyone using that browser profile. **Rule: the frontend clears both on sign-out**, and draft copies once the server confirms the save (**Proposed**: requested in the review of PR #18, not built yet) |
 | Audit trail | `audit_events` | Accountability (SEC-01, SEC-03) | Administrator and auditor. Contains who, what, when and outcome; **no passwords, no proposal text, no note text** |
 
 **Data minimisation:** the form stores only fields the published challenge form defines (unknown fields are dropped); phone is optional; file names are kept as display names only, never in storage paths.
@@ -35,7 +36,7 @@ This portal is a **demonstration prototype that uses fictional data only**. It i
 - **Staff MFA.** Staff permissions require a second factor (aal2). Seeded demo staff accounts are exempt behind a flag so judges can sign in (D-07); this exemption must be switched off for any real use.
 - **Passwords** are handled by Supabase Auth (hashed; minimum length 10; email confirmation required; neutral "if an account exists" recovery message). Auth rate limits apply to sign-in and recovery.
 - **Transport.** The hosted site and Supabase endpoints are HTTPS only.
-- **Evidence.** 457 pgTAP assertions, including negative tests N1–N11 and a privilege regression suite, pass on the PGlite stand-in; the Supabase-stack and hosted runs are recorded in `artifacts/` when done. The claim register states which are verified.
+- **Evidence.** 463 pgTAP assertions, including negative tests N1–N11 and a privilege regression suite, **pass on the hosted project** (17 Nov 2026, migrations 001–012), on the Supabase local stack in CI and on the PGlite stand-in (contract §9). Browser-level checks (Playwright) are not run yet. The claim register states which claims are verified.
 
 ## 3. Proposed retention (D-15)
 
@@ -58,9 +59,9 @@ Not automated in the MVP. Proposed process: the request goes to the portal admin
 
 | Processor | Role | Location |
 |---|---|---|
-| Supabase (Postgres, Auth, Storage, Realtime, Edge Functions) | Database, authentication, files | Region chosen by measured latency from Gaborone (D-14); **not yet measured** |
+| Supabase (Postgres, Auth, Storage, Realtime, Edge Functions) | Database, authentication, files | **EU Central (Frankfurt)**. Measured from Gaborone on mobile data: p50 263 ms, p95 315 ms (`artifacts/phase-00/region-latency.md`, D-14); the Mumbai comparison is not run. Free plan now; Pro recommended from judging (runbook §1) |
 | Web hosting (team decision: AWS Amplify, `docs/process/hosting-aws-amplify.md` when merged) | Serves the static frontend; holds no proposal data | To be recorded |
-| SMTP provider (not yet chosen) | Sends opt-in alerts with reference and link only | To be recorded; until configured, email is **Simulated** |
+| SMTP provider | **None for the MVP** (deferred, 17 Nov 2026). Opt-in alerts are queued but not sent; the admin outbox view shows **Simulated** | — |
 
 Data leaves Botswana because no African Supabase region exists. This is recorded as a known limitation for any real deployment.
 
@@ -73,4 +74,5 @@ The named contact (backlog DEF-01/OPS-03) is alerted; affected access is revoked
 - No malware scan on uploads; file type is checked from the declared content type, not the file's bytes.
 - Retention and data-subject requests are manual.
 - Demo staff MFA exemption (D-07) must be off for real use.
-- Region and processors still to be recorded.
+- The web host's region is still to be recorded; the Mumbai latency comparison is not run.
+- Device copies (local storage) depend on the frontend clearing them on sign-out; on a shared computer, the applicant must sign out.
