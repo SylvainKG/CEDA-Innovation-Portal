@@ -5,7 +5,7 @@ import { newRequestId } from '../request-key'
 import type { SubmissionPort } from '../submission'
 import type { AttachmentInfo, ChallengeForm, CommandOutcome, DraftData, MyIdea, SubmissionReceipt } from '../types'
 import { mockSession } from './session'
-import { FIRST_DEMO_REFERENCE_NUMBER, MOCK_CHALLENGES, MOCK_CHALLENGE_FORMS, MOCK_DECLARATION, MOCK_SEEDED_IDEA } from './fixtures'
+import { FIRST_DEMO_REFERENCE_NUMBER, MOCK_BRIEFS, MOCK_CHALLENGES, MOCK_CHALLENGE_FORMS, MOCK_DECLARATION, MOCK_SEEDED_IDEA } from './fixtures'
 
 /**
  * MOCK Slice 1 adapter: development and demo-preview only. It follows the contract's rules (§4, §4.1, §5) so
@@ -88,6 +88,13 @@ export const mockSubmission: SubmissionPort = {
   async listChallenges() {
     await wait()
     return MOCK_CHALLENGES.filter((c) => c.status !== 'unpublished')
+  },
+
+  async getChallengeBrief(slug) {
+    await wait()
+    const challenge = MOCK_CHALLENGES.find((c) => c.slug === slug && c.status !== 'unpublished')
+    const brief = challenge ? MOCK_BRIEFS[challenge.id] : undefined
+    return challenge && brief ? { challenge, ...brief } : null
   },
 
   async listMyIdeas() {

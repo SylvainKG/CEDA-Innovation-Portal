@@ -1,4 +1,4 @@
-import type { ChallengeForm, ChallengeSummary, DeclarationText, MyIdea } from '../types'
+import type { ChallengeBrief, ChallengeForm, ChallengeSummary, DeclarationText, MyIdea } from '../types'
 
 /**
  * MOCK fixtures. Copied from Stacey's seed (`supabase/seed.sql`, branch db/phase-0-foundation) so screens built
@@ -149,4 +149,27 @@ export const MOCK_SEEDED_IDEA: MyIdea = {
     { stage: 'submission', at: '2026-11-08T07:40:00Z' },
     { stage: 'review', at: '2026-11-09T07:40:00Z' },
   ],
+}
+
+/** Brief, templates and rubric summary per challenge (seed `challenge_versions`, `rubric_criteria`). */
+export const MOCK_BRIEFS: Record<string, Omit<ChallengeBrief, 'challenge'>> = {
+  [WATER_SMART_ID]: {
+    brief_md: '**Fictional demo challenge.** Propose a product or service that reduces water use on Botswana farms.',
+    templates: [{ name: 'Proposal template (sample).docx', path: 'water-smart-agriculture-2026/proposal-template.docx' }],
+    criteria: [
+      { key: 'innovation', label: 'Innovation', weight: 30, guidance: 'How new is the idea for Botswana agriculture?' },
+      { key: 'market_potential', label: 'Market potential', weight: 25, guidance: 'Is there a clear customer and demand?' },
+      { key: 'feasibility', label: 'Feasibility', weight: 25, guidance: 'Can the team deliver it with the resources described?' },
+      { key: 'economic_impact', label: 'Economic impact', weight: 20, guidance: 'Jobs, income and water savings.' },
+    ],
+  },
+  [YOUTH_DIGITAL_ID]: {
+    brief_md: '**Fictional demo challenge (closed).** Digital services that young people can use on a phone.',
+    templates: [],
+    criteria: [
+      { key: 'digital_innovation', label: 'Digital innovation', weight: 40, guidance: 'Use of technology to solve the problem.' },
+      { key: 'user_reach', label: 'User reach', weight: 30, guidance: 'How many young people will use it?' },
+      { key: 'team_capability', label: 'Team capability', weight: 30, guidance: 'Skills and track record of the team.' },
+    ],
+  },
 }

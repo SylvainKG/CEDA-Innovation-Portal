@@ -206,3 +206,16 @@ export interface MyIdea {
   /** Public stages reached, oldest first, with the time of the first event in each (`case_events`). */
   stages: { stage: PublicStage; at: string }[]
 }
+
+/**
+ * A challenge brief (T03): the challenge, its current published version's brief and templates, and the rubric
+ * criteria summary (labels, weights and guidance; never the scoring anchors). Read from `challenges`,
+ * `challenge_versions` and `rubric_criteria` (§3: published rows, also `anon`).
+ */
+export interface ChallengeBrief {
+  challenge: ChallengeSummary
+  brief_md: string
+  /** `challenge_versions.template_files`. No download route is in the contract yet (asked of Stacey). */
+  templates: { name: string; path: string }[]
+  criteria: { key: string; label: string; weight: number; guidance: string }[]
+}

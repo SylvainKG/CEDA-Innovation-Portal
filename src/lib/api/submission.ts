@@ -1,5 +1,6 @@
 import type {
   AttachmentInfo,
+  ChallengeBrief,
   ChallengeForm,
   ChallengeSummary,
   CommandOutcome,
@@ -20,6 +21,7 @@ import type {
  * | Method                | Contract                                                                 |
  * |-----------------------|--------------------------------------------------------------------------|
  * | listChallenges        | read `challenges` (§3, published and closed; also anon)                   |
+ * | getChallengeBrief     | read `challenges` + `challenge_versions` + `rubric_criteria` (§3, public) |
  * | getChallengeForm      | read `challenges` + `challenge_versions` (§3, published rows)             |
  * | getDeclaration        | read `content_pages` kind `declaration` (§3)                              |
  * | getDraft              | read `proposal_drafts` + `attachments` (§3, own only)                     |
@@ -36,6 +38,8 @@ import type {
  */
 export interface SubmissionPort {
   listChallenges(): Promise<ChallengeSummary[]>
+  /** `null` when no published or closed challenge has this slug (an unpublished one renders Not found). */
+  getChallengeBrief(slug: string): Promise<ChallengeBrief | null>
   getChallengeForm(challengeId: string): Promise<ChallengeForm | null>
   getDeclaration(): Promise<DeclarationText>
   getDraft(proposalId: string): Promise<DraftView | null>

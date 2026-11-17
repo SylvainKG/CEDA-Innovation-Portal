@@ -19,6 +19,15 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
   Evidence: 7 new tests (rules and page), 108 in total.
 
+- `feature` **T01 public home and challenge list, T03 challenge brief**, built from the written spec (BCR-003). Routes `/`, `/challenges`, `/challenges/:slug`:
+  - intro band with Register and Sign in;
+  - challenge cards (Open / Closing soon / Closed, closing date in CAT with a relative hint), open first; "How it works" in the 5 public stages;
+  - brief with status, dates and audience; "How your idea is assessed" (criteria and weights, never anchors); templates listed; the primary action is a sticky aside on desktop and a bottom bar on mobile, "Continue your draft" for an applicant with one, disabled with the reason when closed; unknown or unpublished → Not found;
+  - new read `getChallengeBrief`; `challengeTiming` ("Closing soon" = last 7 days, an assumption); `PlainMarkdown` renders seeded text without interpreting HTML; `ChallengeCard`.
+  - The e2e smoke test's expected home heading changes from the placeholder to the spec's title.
+
+  Evidence: 7 new tests, 115 in total; lint, type-check and build pass.
+
 - `feature` Slice 1 behaviour hooks (APP-01, APP-03; no screens yet), in `src/features/submission/`:
   - `useSubmitIdea`: one request key per draft, reused on every retry; a lost reply is "Not confirmed yet" with a status check by key; opening the page with a pending key checks before allowing another submit;
   - `useAutosave`: debounced, one save at a time, every change also kept on the device; lost updates retried with back-off; the first (unkeyed) save and refusals are never retried blindly;

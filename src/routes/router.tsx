@@ -12,6 +12,8 @@ import { ComponentGalleryRoute } from '@/pages/ComponentGalleryRoute'
 import { ProposalFormPage } from '@/pages/applicant/ProposalForm'
 import { ReceiptPage } from '@/pages/applicant/ReceiptPage'
 import { MyIdeasPage } from '@/pages/applicant/MyIdeasPage'
+import { ChallengesPage, PublicHome } from '@/pages/public/PublicHome'
+import { ChallengeBriefPage } from '@/pages/public/ChallengeBriefPage'
 import { apiMode } from '@/lib/api'
 import { RequireRole } from './guards'
 
@@ -23,9 +25,9 @@ export const routes: RouteObject[] = [
   {
     element: <PublicShell />,
     children: [
-      { path: '/', element: nb('T01', 'Innovation challenges', 'Public home') },
-      { path: '/challenges', element: nb('T01', 'Challenges') },
-      { path: '/challenges/:slug', element: nb('T03', 'Challenge brief') },
+      { path: '/', element: <PublicHome /> },
+      { path: '/challenges', element: <ChallengesPage /> },
+      { path: '/challenges/:slug', element: <ChallengeBriefPage /> },
       { path: '/auth/sign-in', element: <SignInPlaceholder /> },
       { path: '/auth/register', element: nb('T02', 'Register') },
       { path: '/auth/verify', element: nb('T02', 'Verify your email') },
