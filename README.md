@@ -60,7 +60,7 @@ supabase/
   migrations/       one numbered sequence (owner: backend lead)
   seed.sql          fictional demo data: one account per role, 8 cases (demo case becomes CEDA-2026-0009)
   tests/database/   pgTAP tests (access isolation, negatives N1–N10, idempotency, append-only history)
-  functions/        Edge Functions (attachment-url: 60-second download links; email-relay: outbox sender)
+  functions/        Edge Functions (attachment-url: 60-second download links; email-relay: outbox sender; invite-staff)
 scripts/            set-demo-passwords.mjs (sets DEMO_PASSWORD on seeded accounts through the Auth admin API)
 tools/pglite-db-tests/  runs migrations + seed + pgTAP without Docker (stand-in, not the Supabase stack)
 ```
@@ -86,4 +86,4 @@ cd tools/pglite-db-tests && npm install && npm test
 | `APP_ORIGINS` | Edge Function secret | Comma-separated browser origins allowed to call `attachment-url` |
 | `RELAY_SECRET` | Edge Function secret | Shared secret the scheduler sends as `x-relay-secret` to `email-relay` |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Edge Function secrets | SMTP for `email-relay`. Unset = no email is sent and the outbox is shown as Simulated |
-| `PORTAL_URL` | Edge Function secret | Link included in emails |
+| `PORTAL_URL` | Edge Function secret | Link in emails and the staff invitation redirect |

@@ -4,6 +4,24 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `feature` Slice 6b backend: admin settings (ADM-01/02, HLP-01, CHT-02, ARC-01, IAM-01):
+  - content pages with draft/published and versioned privacy and declaration wording;
+  - chat hours, closure days and the demo override;
+  - new roles and their permissions as data (ARC-01); built-in roles protected;
+  - rubric drafts, criteria with 1/3/5 anchors, publish at 100% (ARC-01 new criterion);
+  - challenges: create, edit, validated form schema, publish, new form versions without touching existing ideas, unpublish/close, delete unused drafts;
+  - `invite-staff` Edge Function.
+
+  Evidence: PGlite stand-in run, 008 suite 52/52 (all suites 426/426). Not run on the Supabase stack yet.
+
+- `feature` Slice 6a backend: reports, audit, chat (RPT-01, SEC-03, CHT-01/02/03):
+  - `get_programme_report` (participation, outcomes, funnel, time in stage, overdue, impact) and `report_case_rows` for CSV, reconciled with the seed;
+  - `query_audit` with case, actor, action-prefix and date filters and keyset paging;
+  - chat: hours in Gaborone time with holidays and a demo override, one conversation per applicant, consultants hold several, missed-chat sweep, statistics, Realtime on messages and sessions.
+- `repair` Audit action filter: `%` and `_` are matched literally instead of acting as wildcards.
+
+  Evidence: PGlite stand-in run, 007 suite 45/45 (all suites 374/374). Not run on the Supabase stack yet.
+
 - `feature` Slice 5 backend (DEC-01, DEC-02, D-05):
   - `record_decision`: unpublished, invisible to the applicant (N4), re-recordable before publication with history kept;
   - `publish_decision`: approved / not approved, once, only for the current version;
