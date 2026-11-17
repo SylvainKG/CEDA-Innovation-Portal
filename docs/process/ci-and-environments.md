@@ -32,6 +32,7 @@ One workflow file, `.github/workflows/ci.yml`, maintained by Sylvain. **Stage 1*
 | `secrets` | Secret scanner over the PR diff and full history (e.g. gitleaks) | **Immediately**, even before code exists | Covers R-10 |
 | `audit` | `npm audit --audit-level=high`, report saved as a job artifact | Scaffold merge | The report feeds SEC-02. A finding blocks merge unless recorded with a reason in the PR |
 | `e2e` | Playwright against staging, `--trace off` | **Not required** for merge; runs after deploy to staging and on demand | Chrome, Edge, Firefox + one mobile viewport (QA-01). Results go to `artifacts/phase-NN/` |
+| `keep-alive` (`.github/workflows/keep-alive.yml`) | `POST /rest/v1/rpc/health` with the publishable key, every second day at 06:17 UTC, and on demand | Not a merge check | Keeps the Free-plan project from pausing until judging ends (OPS-03). Needs the `SUPABASE_URL` variable and the `SUPABASE_PUBLISHABLE_KEY` secret, set by a repository admin. Fails if the project does not answer `ok: true` |
 
 **Rules:**
 - CI never receives production or staging secrets for the jobs above. The `e2e` job needs staging demo account passwords, held in GitHub Actions secrets, never in the repo.
