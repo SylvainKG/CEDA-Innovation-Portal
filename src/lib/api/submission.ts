@@ -1,10 +1,12 @@
 import type {
   AttachmentInfo,
   ChallengeForm,
+  ChallengeSummary,
   CommandOutcome,
   DeclarationText,
   DraftData,
   DraftView,
+  MyIdea,
   ReceiptLookup,
   SaveDraftResult,
   SubmissionReceipt,
@@ -17,9 +19,11 @@ import type {
  *
  * | Method                | Contract                                                                 |
  * |-----------------------|--------------------------------------------------------------------------|
+ * | listChallenges        | read `challenges` (§3, published and closed; also anon)                   |
  * | getChallengeForm      | read `challenges` + `challenge_versions` (§3, published rows)             |
  * | getDeclaration        | read `content_pages` kind `declaration` (§3)                              |
  * | getDraft              | read `proposal_drafts` + `attachments` (§3, own only)                     |
+ * | listMyIdeas           | read `proposals` + `feedback_requests` + `case_events` (§3, own cases)    |
  * | saveDraft             | RPC `save_draft` (§4)                                                     |
  * | uploadAttachment      | Storage upload to `proposal-files`, then RPC `register_attachment` (§5)   |
  * | removeAttachment      | RPC `remove_attachment` (§4)                                              |
@@ -31,9 +35,11 @@ import type {
  * which includes "does not exist" (RLS; contract §1).
  */
 export interface SubmissionPort {
+  listChallenges(): Promise<ChallengeSummary[]>
   getChallengeForm(challengeId: string): Promise<ChallengeForm | null>
   getDeclaration(): Promise<DeclarationText>
   getDraft(proposalId: string): Promise<DraftView | null>
+  listMyIdeas(): Promise<MyIdea[]>
 
   saveDraft(input: { data: DraftData; proposalId?: string; challengeId?: string }): Promise<CommandOutcome<SaveDraftResult>>
   uploadAttachment(input: { proposalId: string; file: File; docKey?: string }): Promise<CommandOutcome<AttachmentInfo>>

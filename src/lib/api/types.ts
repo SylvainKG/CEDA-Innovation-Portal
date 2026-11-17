@@ -176,3 +176,33 @@ export interface DeclarationText {
   body_md: string
   is_sample: boolean
 }
+
+/** A challenge as listed publicly (read from `challenges`; RLS: published and closed, also `anon`). */
+export interface ChallengeSummary {
+  id: string
+  slug: string
+  title: string
+  summary: string
+  audience: string
+  status: 'published' | 'closed' | 'unpublished'
+  opens_at: string
+  closes_at: string
+}
+
+/**
+ * One of the applicant's own ideas, for "My ideas" (T06). Read from `proposals` (own, including drafts) with
+ * its challenge, its open `feedback_requests` row (if any) and the `public_stage` of its `case_events`.
+ */
+export interface MyIdea {
+  id: string
+  /** Null while the idea is a draft. */
+  reference: string | null
+  title: string
+  status: CaseStatus
+  challenge: { id: string; title: string; closes_at: string }
+  updated_at: string
+  /** The open clarification or revision request, if the case is waiting on the applicant. */
+  open_feedback: { kind: FeedbackKind; due_at: string } | null
+  /** Public stages reached, oldest first, with the time of the first event in each (`case_events`). */
+  stages: { stage: PublicStage; at: string }[]
+}

@@ -3,9 +3,9 @@ import { checkForm, isChallengeOpen, schemaKeys } from '@/lib/form-check'
 import { fromRpcError, rpcError } from '../errors'
 import { newRequestId } from '../request-key'
 import type { SubmissionPort } from '../submission'
-import type { AttachmentInfo, ChallengeForm, CommandOutcome, DraftData, SubmissionReceipt } from '../types'
+import type { AttachmentInfo, ChallengeForm, CommandOutcome, DraftData, MyIdea, SubmissionReceipt } from '../types'
 import { mockSession } from './session'
-import { FIRST_DEMO_REFERENCE_NUMBER, MOCK_CHALLENGE_FORMS, MOCK_DECLARATION } from './fixtures'
+import { FIRST_DEMO_REFERENCE_NUMBER, MOCK_CHALLENGES, MOCK_CHALLENGE_FORMS, MOCK_DECLARATION, MOCK_SEEDED_IDEA } from './fixtures'
 
 /**
  * MOCK Slice 1 adapter: development and demo-preview only. It follows the contract's rules (§4, §4.1, §5) so
@@ -35,6 +35,7 @@ interface MockProposal {
   files: AttachmentInfo[]
   receipt?: SubmissionReceipt
   clientRequestId?: string
+  submittedTitle?: string
 }
 
 const state = {
@@ -80,7 +81,37 @@ function ownProposal(id: string, userId: string): MockProposal | undefined {
   return p && p.ownerId === userId ? p : undefined
 }
 
+/** The seeded earlier idea belongs to Demo Applicant A only. */
+const SEEDED_OWNER = 'demo-applicant-a'
+
 export const mockSubmission: SubmissionPort = {
+  async listChallenges() {
+    await wait()
+    return MOCK_CHALLENGES.filter((c) => c.status !== 'unpublished')
+  },
+
+  async listMyIdeas() {
+    await wait()
+    const userId = await currentApplicantId()
+    if (!userId) return []
+    const mine: MyIdea[] = [...state.proposals.values()]
+      .filter((p) => p.ownerId === userId)
+      .map((p) => {
+        const form = formFor(p.challengeId) as ChallengeForm
+        return {
+          id: p.id,
+          reference: p.receipt?.reference ?? null,
+          title: (p.receipt ? p.submittedTitle : p.data.title)?.trim() || 'Untitled idea',
+          status: p.status,
+          challenge: { id: form.challenge_id, title: form.title, closes_at: form.closes_at },
+          updated_at: p.receipt?.submitted_at ?? p.savedAt,
+          open_feedback: null,
+          stages: p.receipt ? [{ stage: 'submission' as const, at: p.receipt.submitted_at }] : [],
+        }
+      })
+    return userId === SEEDED_OWNER ? [...mine, MOCK_SEEDED_IDEA] : mine
+  },
+
   async getChallengeForm(challengeId) {
     await wait()
     return formFor(challengeId) ?? null
@@ -215,6 +246,7 @@ export const mockSubmission: SubmissionPort = {
     }
     p.status = 'submitted'
     p.receipt = receipt
+    p.submittedTitle = p.data.title
     p.clientRequestId = clientRequestId
 
     if (state.loseNextSubmitReply) {

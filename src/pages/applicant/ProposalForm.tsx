@@ -148,7 +148,10 @@ function ProposalForm({ form, draft, onCreated }: { form: ChallengeForm; draft?:
   // Leaving the form: the cached draft is refreshed next time, so it shows what autosave sent.
   useEffect(() => {
     if (!proposalId) return
-    return () => void qc.invalidateQueries({ queryKey: submissionKeys.draft(proposalId) })
+    return () => {
+      void qc.invalidateQueries({ queryKey: submissionKeys.draft(proposalId) })
+      void qc.invalidateQueries({ queryKey: submissionKeys.myIdeas })
+    }
   }, [proposalId, qc])
 
   // After a confirmed submit, go to the receipt (spec T05). The receipt is already in the cache.

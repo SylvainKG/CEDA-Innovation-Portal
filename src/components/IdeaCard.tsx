@@ -20,6 +20,8 @@ export interface IdeaCardModel {
   feedbackKind?: FeedbackKind
   updatedAt: string
   deadline?: string
+  /** Words before the deadline: "Respond by" (feedback, default) or "Submit by" (a draft before the challenge closes). */
+  deadlineLabel?: string
   stages: StageEntry[]
   primaryAction: { label: string; to: string }
 }
@@ -44,7 +46,7 @@ export function IdeaCard({ idea, now }: { idea: IdeaCardModel; now?: Date }) {
         {idea.deadline ? (
           <span className="flex items-center gap-1 font-semibold text-ink">
             <CalendarClock aria-hidden className="h-4 w-4 text-status-action-fg" />
-            Respond by {formatDateTimeCAT(idea.deadline)} ({relativeDays(idea.deadline, now)})
+            {idea.deadlineLabel ?? 'Respond by'} {formatDateTimeCAT(idea.deadline)} ({relativeDays(idea.deadline, now)})
           </span>
         ) : null}
       </div>

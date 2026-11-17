@@ -1,4 +1,4 @@
-import type { ChallengeForm, DeclarationText } from '../types'
+import type { ChallengeForm, ChallengeSummary, DeclarationText, MyIdea } from '../types'
 
 /**
  * MOCK fixtures. Copied from Stacey's seed (`supabase/seed.sql`, branch db/phase-0-foundation) so screens built
@@ -111,3 +111,42 @@ export const MOCK_DECLARATION: DeclarationText = {
 
 /** The seed holds 8 cases, so the first idea submitted in the demo is CEDA-2026-0009 (BCR-001 B10). */
 export const FIRST_DEMO_REFERENCE_NUMBER = 9
+
+/** Public listing fields for the same two challenges (seed `challenges`). */
+export const MOCK_CHALLENGES: ChallengeSummary[] = [
+  {
+    id: WATER_SMART_ID,
+    slug: 'water-smart-agriculture-2026',
+    title: 'Water-Smart Agriculture Challenge 2026',
+    summary: 'Fictional demo challenge: ideas that help farmers grow more with less water.',
+    audience: 'Citizen-owned businesses and individuals (DEMO)',
+    status: 'published',
+    opens_at: '2026-09-30T22:00:00Z',
+    closes_at: '2026-12-31T14:00:00Z',
+  },
+  {
+    id: YOUTH_DIGITAL_ID,
+    slug: 'youth-digital-services-2026',
+    title: 'Youth Digital Services Challenge 2026',
+    summary: 'Fictional demo challenge (closed): digital services built by young entrepreneurs.',
+    audience: 'Entrepreneurs aged 18–35 (DEMO)',
+    status: 'closed',
+    opens_at: '2026-05-31T22:00:00Z',
+    closes_at: '2026-09-30T14:00:00Z',
+  },
+]
+
+/** Applicant A's earlier idea, seed case 0008: in evaluation, so "My ideas" shows two cards in the demo. */
+export const MOCK_SEEDED_IDEA: MyIdea = {
+  id: '30000000-0000-4000-8000-000000000008',
+  reference: 'CEDA-2026-0008',
+  title: 'Rainwater tanks for poultry farms',
+  status: 'in_evaluation',
+  challenge: { id: WATER_SMART_ID, title: 'Water-Smart Agriculture Challenge 2026', closes_at: '2026-12-31T14:00:00Z' },
+  updated_at: '2026-11-09T07:40:00Z',
+  open_feedback: null,
+  stages: [
+    { stage: 'submission', at: '2026-11-08T07:40:00Z' },
+    { stage: 'review', at: '2026-11-09T07:40:00Z' },
+  ],
+}

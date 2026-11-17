@@ -3,6 +3,8 @@ import { api } from '@/lib/api'
 
 /** Read hooks for Slice 1. `null` means "not visible", which includes "does not exist" (contract §1). */
 export const submissionKeys = {
+  challenges: ['challenges'] as const,
+  myIdeas: ['my-ideas'] as const,
   challengeForm: (challengeId: string) => ['challenge-form', challengeId] as const,
   declaration: ['declaration'] as const,
   draft: (proposalId: string) => ['draft', proposalId] as const,
@@ -36,4 +38,12 @@ export function useReceipt(proposalId: string | undefined, versionNo = 1) {
     queryFn: () => api.submission.getSubmissionReceipt({ proposalId: proposalId as string, versionNo }),
     enabled: Boolean(proposalId),
   })
+}
+
+export function useChallenges() {
+  return useQuery({ queryKey: submissionKeys.challenges, queryFn: () => api.submission.listChallenges(), staleTime: 60_000 })
+}
+
+export function useMyIdeas() {
+  return useQuery({ queryKey: submissionKeys.myIdeas, queryFn: () => api.submission.listMyIdeas() })
 }

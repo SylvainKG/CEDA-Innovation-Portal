@@ -11,6 +11,7 @@ import { SignInPlaceholder } from '@/pages/SignInPlaceholder'
 import { ComponentGalleryRoute } from '@/pages/ComponentGalleryRoute'
 import { ProposalFormPage } from '@/pages/applicant/ProposalForm'
 import { ReceiptPage } from '@/pages/applicant/ReceiptPage'
+import { MyIdeasPage } from '@/pages/applicant/MyIdeasPage'
 import { apiMode } from '@/lib/api'
 import { RequireRole } from './guards'
 
@@ -49,7 +50,7 @@ export const routes: RouteObject[] = [
   {
     element: <ApplicantShell />,
     children: [
-      { path: '/ideas', element: guard(['applicant'], nb('T06', 'My ideas', 'Applicant')) },
+      { path: '/ideas', element: guard(['applicant'], <MyIdeasPage />) },
       { path: '/ideas/new', element: guard(['applicant'], <ProposalFormPage />) },
       { path: '/ideas/:id', element: guard(['applicant'], nb('T08', 'Idea', 'Applicant case view')) },
       { path: '/ideas/:id/edit', element: guard(['applicant'], <ProposalFormPage />) },
