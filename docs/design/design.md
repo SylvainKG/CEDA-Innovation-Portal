@@ -26,48 +26,55 @@ Who is the single authority for each record (evidence skill, principle 10). Ever
 
 ## 2. Traceability matrix
 
-Backlog ID → capability → slice → RPC/mechanism → checks → demo step → evidence. The backlog file itself (`requirements/Portal_Backlog.md`) is **not in the repository yet**. Capabilities below come from blueprint §1.2; the exact requirement wording is added once the backlog is committed.
+Backlog ID → priority → rubric points → capability → slice → RPC/mechanism → checks → demo step → evidence. Requirement wording, priority and rubric points come from [`docs/requirements/Portal_Backlog.md`](../requirements/Portal_Backlog.md) (10 Nov 2026 baseline); capability, class and slice come from blueprint §1.2 and §5. Gaps between the two are in BCR-002. **\*** = criterion shared with other items (the points are not added twice).
 
-| Backlog | Capability (blueprint §1.2) | Class | Slice | RPC / mechanism | Checks (see `docs/testing/test-plan.md`) | Demo step | Evidence | Status |
-|---|---|---|---|---|---|---|---|---|
-| FND-01 | Contracts, scaffold, staging | Full | P0 | CI, migrations, seed, `health()` | CI green on `main`; same-commit check ×4 | — | phase-00 | Not run |
-| UX-01 | Role navigation, responsive components, low-bandwidth | Full | S1+ | Shells, state kit | QA-01 viewports; offline draft backup; upload retry; session-expiry warning | 2 | phase-01, P7 | Not run |
-| IAM-01 | Staff roles, invite, grant/revoke | Simplified | S2 | `grant_role`, `revoke_role` | pgTAP self-grant refused + audited; **N8** | — | phase-02 | Not run |
-| IAM-02 | Register, verify, sign in, consent | Full | S1 | Supabase Auth; `profiles.consent_*` | Unverified account cannot submit; consent version stored | 0 | phase-01 | Not run |
-| IAM-03 | Change / recover password | Full | S1 | Supabase Auth | Neutral "if an account exists" message; single-use link | — | phase-01 | Not run |
-| — (security design) | Staff MFA | Simplified | S1 | Supabase Auth TOTP; `DEMO_MFA_EXEMPT` flag | Real staff account prompted; demo account exempt and labelled (D-07) | — | phase-01 | Not run |
-| ADM-01 | Publish challenge, form, documents | Simplified | S1 (seed), S6 (editor) | Admin RPCs; `challenge_versions` | Published version immutable; applicants see published version only | 1 | phase-06 | Not run |
-| ADM-02 | Edit / unpublish / delete | Simplified | S6 | Admin RPCs | Submitted case keeps its `challenge_version`; delete only unused drafts | — | phase-06 | Not run |
-| APP-01 | Discover challenge, save draft | Full | S1 | `save_draft` | Draft keeps every field after leave/resume | 2 | phase-01 | Not run |
-| APP-02 | Confidential attachments | Full | S1 | Storage policies, `get_attachment_url` | Type/size refused; **N2**; 60 s expiry | 2 | phase-01 | Not run |
-| APP-03 | Submit and get reference | Full | S1 | `submit_proposal` | Missing field refused, draft kept; reference + locked V1; retry returns same reference; **N9** | 3, 4 | phase-01 | Not run |
-| SEC-01 | Audit events | Full | S1+ | Inside every RPC; insert-only triggers | Each RPC writes one audit row; **N6** | 17 | every phase | Not run |
-| REV-01 | Screening + assign ≥ 2 reviewers | Full | S2 | `record_screening`, `assign_reviewers` | Eligible → in evaluation; reviewers notified; **N3** | 5, 6 | phase-02 | Not run |
-| REV-02 | Versioned rubric | Full | S3 | `rubric_versions`, `rubric_criteria` | Weights sum to 100; scorecard keeps `rubric_version_id` | 1 | phase-03 | Not run |
-| REV-03 | Independent scoring + panel | Full | S3 | `declare_assignment`, `save/submit_scorecard`, quorum trigger | Gate before content; **N10**, **N11**; peer isolation; reason required; auto-adjudication on quorum | 7, 8, 11 | phase-03 | Not run |
-| REV-04 | Clarification / revision request | Full | S4 | `request_feedback`, `respond_clarification` | Empty reply refused; reply creates no version; applicant sees Action required | 5, 9 | phase-04 | Not run |
-| APP-04 | Resubmit V2 with history | Full | S4 | `submit_revision` | Change note required; same reference; V1 readable; V1 scores kept; returns to `return_stage` | 10, 11 | phase-04 | Not run |
-| INN-02 | Constructive Feedback Roadmap | Full (S4) | S4 | `request_feedback(tasks[])`, `submit_revision(task_responses[])`, `verify_feedback_task` | V2 refused while a task lacks status/explanation; applicant cannot edit tasks or verifications; unassigned reviewer cannot verify; panel shows summary | 9–12 | phase-04 | Not run |
-| DEC-01 | Record + publish decision | Full | S5 | `record_decision`, `publish_decision` | Unpublished decision absent from applicant payload (**N4**); concurrent publish → one event | 12, 13 | phase-05 | Not run |
-| DEC-02 | Award after approval | Full | S5 | `record_award` | Separate Awarded event; **N5** | 14 | phase-05 | Not run |
-| NTF-01 | Timeline, live dashboards, notifications | Full | S3 | Realtime on `notifications`, `case_events`; `mark_notifications_read` | Live update without refresh; second account receives no events (leak test) | 5, 15 | phase-03 | Not run |
-| NTF-02 | Opt-in email alerts | Simplified | S4 | `email_outbox` + relay Edge Function | Outbox row written in the same transaction; opt-out writes none; Simulated label if SMTP missing | 9 | phase-04 | Not run |
-| HLP-01 | FAQs + regulatory contacts | Simplified | S6 | `content_pages` | Sample labels shown; reachable in one click from T04 | 2 | phase-06 | Not run |
-| CHT-01 | Applicant ↔ consultant chat | Simplified | S6 | Chat tables + RLS | Sessions private; **N7** | 16 | phase-06 | Not run |
-| CHT-02 | Chat hours | Full | S6 | Server-side hours check, `service_calendar` | Open and closed states via demo override | 16 | phase-06 | Not run |
-| CHT-03 | Chat statistics | Simplified | S6 | Stats query | Figures reconcile with 6 seeded sessions | 17 | phase-06 | Not run |
-| RPT-01 | Participation, outcomes, time-in-stage | Simplified | S6 | Report views/RPCs from `case_events` | Counts reconcile with seed + demo case; CSV matches screen | 17 | phase-06 | Not run |
-| SEC-02 | Negative tests, privacy, scan | Full | P7 | pgTAP + Playwright suite; `npm audit` | N1–N11 on the hosted build; audit report; data-handling note | N1–N11 | P7 | Not run |
-| SEC-03 | Audit viewer | Full | S6 | Audit query RPC | Filter by case `CEDA-2026-0009` shows full journey; non-admin forbidden | 17 | phase-06 | Not run |
-| OPS-01 | Hosting, backup/restore | Simplified | P7 | Supabase Pro | Restore drill recorded; region/cost note | — | P7 | Not run |
-| OPS-02 | Fault support page | Full | S6 | `content_pages` | Page renders for all roles | — | phase-06 | Not run |
-| ARC-01 | Extensibility | Simplified | S6 | Admin role/criterion settings | New role + criterion without code change; second challenge with its own form/rubric; OpenAPI export | — | phase-06 | Not run |
-| QA-01 | Browsers, devices, response time | Simplified | P7 | Playwright matrix; timed sample | Chrome/Edge/Firefox + mobile; p95 with sample size (D-16 targets) | — | P7 | Not run |
-| INN-01 | V1/V2 compare | Simplified (P2) | S7 | Read-only diff | Field and attachment diff shown | 11 | phase-07 | Not run |
-| INN-03 | Smart Idea Development Assistant (rule-based) | Simplified (P2) | S7 | Client-side rules | No network call carries proposal data | 2 | phase-07 | Not run |
-| INN-05 | Next steps panel | Simulated (P2) | S7 | `content_pages` | Sample label + "not an endorsement" | 13 | phase-07 | Not run |
-| INN-04 | Readiness Passport (optional) | Optional (P2) | S7 | `set_readiness`, `confirm_readiness` | Only started after SEC-02 passes on staging (D-29) | 11 | phase-07 | Not run |
-| DOC-01/02, REL-01, DEM-01, SUB-01, OPS-03, DEF-01 | Proposal, manuals, release, demo, submission, operations | — | P7 | — | Backlog wording needed | — | P7 | Not run |
+| Backlog | Pri | Rubric criteria (pts) | Capability (blueprint §1.2) | Class | Slice | RPC / mechanism | Checks (see `docs/testing/test-plan.md`) | Demo step | Evidence | Status |
+|---|---|---|---|---|---|---|---|---|---|---|
+| FND-01 | P0 | — | Contracts, scaffold, staging | Full | P0 | CI, migrations, seed, `health()` | CI green on `main`; same-commit check ×4 | — | phase-00 | Not run |
+| UX-01 | P0 | CEDA layout, colours, fonts 2 · Intuitive 5* · Navigation, labels, icons, links 5 · Aesthetic 5 | Role navigation, responsive components, low-bandwidth | Full | S1+ | Shells, state kit | QA-01 viewports; offline draft backup; upload retry; session-expiry warning | 2 | phase-01, P7 | Not run |
+| IAM-01 | P0 | Role-based access 5* | Staff roles, invite, grant/revoke | Simplified | S2 | `grant_role`, `revoke_role` | pgTAP self-grant refused + audited; **N8** | — | phase-02 | Not run |
+| IAM-02 | P0 | Self registration 2 · Authentication 2 · Passwords 2* | Register, verify, sign in, consent | Full | S1 | Supabase Auth; `profiles.consent_*` | Unverified account cannot submit; consent version stored | 0 | phase-01 | Not run |
+| IAM-03 | P1 | Passwords 2* | Change / recover password | Full | S1 | Supabase Auth | Neutral "if an account exists" message; single-use link | — | phase-01 | Not run |
+| — (security design) | — | — | Staff MFA | Simplified | S1 | Supabase Auth TOTP; `DEMO_MFA_EXEMPT` flag | Real staff account prompted; demo account exempt and labelled (D-07) | — | phase-01 | Not run |
+| ADM-01 | P0 | Admin content, form, documents 3* | Publish challenge, form, documents | Simplified | S1 (seed), S6 (editor) | Admin RPCs; `challenge_versions` | Published version immutable; applicants see published version only | 1 | phase-06 | Not run |
+| ADM-02 | P1 | Admin content, form, documents 3* | Edit / unpublish / delete | Simplified | S6 | Admin RPCs | Submitted case keeps its `challenge_version`; delete only unused drafts | — | phase-06 | Not run |
+| APP-01 | P0 | — | Discover challenge, save draft | Full | S1 | `save_draft` | Draft keeps every field after leave/resume | 2 | phase-01 | Not run |
+| APP-02 | P0 | Cyber security, privacy 5* | Confidential attachments | Full | S1 | Storage policies, `get_attachment_url` | Type/size refused; **N2**; 60 s expiry | 2 | phase-01 | Not run |
+| APP-03 | P0 | — | Submit and get reference | Full | S1 | `submit_proposal` | Missing field refused, draft kept; reference + locked V1; retry returns same reference; **N9** | 3, 4 | phase-01 | Not run |
+| SEC-01 | P0 | Audit trail 5* | Audit events | Full | S1+ | Inside every RPC; insert-only triggers | Each RPC writes one audit row; **N6** | 17 | every phase | Not run |
+| REV-01 | P0 | Multi-level evaluation 3* | Screening + assign ≥ 2 reviewers | Full | S2 | `record_screening`, `assign_reviewers` | Eligible → in evaluation; reviewers notified; **N3** | 5, 6 | phase-02 | Not run |
+| REV-02 | P0 | Multi-level evaluation 3* | Versioned rubric | Full | S3 | `rubric_versions`, `rubric_criteria` | Weights sum to 100; scorecard keeps `rubric_version_id` | 1 | phase-03 | Not run |
+| REV-03 | P0 | Multi-level evaluation 3* | Independent scoring + panel | Full | S3 | `declare_assignment`, `save/submit_scorecard`, quorum trigger | Gate before content; **N10**, **N11**; peer isolation; reason required; auto-adjudication on quorum | 7, 8, 11 | phase-03 | Not run |
+| REV-04 | P0 | Feedback and iteration 3* | Clarification / revision request | Full | S4 | `request_feedback`, `respond_clarification` | Empty reply refused; reply creates no version; applicant sees Action required | 5, 9 | phase-04 | Not run |
+| APP-04 | P0 | Feedback and iteration 3* | Resubmit V2 with history | Full | S4 | `submit_revision` | Change note required; same reference; V1 readable; V1 scores kept; returns to `return_stage` | 10, 11 | phase-04 | Not run |
+| INN-02 | — (not in backlog; blueprint core, Slice 4) | Innovation 10 (proposed, BCR-002 #5) | Constructive Feedback Roadmap | Full (S4) | S4 | `request_feedback(tasks[])`, `submit_revision(task_responses[])`, `verify_feedback_task` | V2 refused while a task lacks status/explanation; applicant cannot edit tasks or verifications; unassigned reviewer cannot verify; panel shows summary | 9–12 | phase-04 | Not run |
+| DEC-01 | P0 | Multi-level evaluation 3* | Record + publish decision | Full | S5 | `record_decision`, `publish_decision` | Unpublished decision absent from applicant payload (**N4**); concurrent publish → one event | 12, 13 | phase-05 | Not run |
+| DEC-02 | P0 | — | Award after approval | Full | S5 | `record_award` | Separate Awarded event; **N5** | 14 | phase-05 | Not run |
+| NTF-01 | P0 | — | Timeline, live dashboards, notifications | Full | S3 | Realtime on `notifications`, `case_events`; `mark_notifications_read` | Live update without refresh; second account receives no events (leak test) | 5, 15 | phase-03 | Not run |
+| NTF-02 | P1 | Free alerts 2 | Opt-in email alerts | Simplified | S4 | `email_outbox` + relay Edge Function | Outbox row written in the same transaction; opt-out writes none; Simulated label if SMTP missing | 9 | phase-04 | Not run |
+| HLP-01 | P1 | FAQs, regulatory contacts 2 | FAQs + regulatory contacts | Simplified | S6 | `content_pages` | Sample labels shown; reachable in one click from T04 | 2 | phase-06 | Not run |
+| CHT-01 | P1 | Chat 2* | Applicant ↔ consultant chat | Simplified | S6 | Chat tables + RLS | Sessions private; **N7** | 16 | phase-06 | Not run |
+| CHT-02 | P1 | Chat 2* | Chat hours | Full | S6 | Server-side hours check, `service_calendar` | Open and closed states via demo override | 16 | phase-06 | Not run |
+| CHT-03 | P1 | Chat 2* | Chat statistics | Simplified | S6 | Stats query | Figures reconcile with 6 seeded sessions | 17 | phase-06 | Not run |
+| RPT-01 | P1 | Reporting dashboards 3 | Participation, outcomes, time-in-stage | Simplified | S6 | Report views/RPCs from `case_events` | Counts reconcile with seed + demo case; CSV matches screen | 17 | phase-06 | Not run |
+| SEC-02 | P0 | Role-based access 5* · Cyber security, privacy 5* | Negative tests, privacy, scan | Full | P7 | pgTAP + Playwright suite; `npm audit` | N1–N11 on the hosted build; audit report; data-handling note | N1–N11 | P7 | Not run |
+| SEC-03 | P1 | Audit trail 5* | Audit viewer | Full | S6 | Audit query RPC | Filter by case `CEDA-2026-0009` shows full journey; non-admin forbidden | 17 | phase-06 | Not run |
+| OPS-01 | P1 | Cloud provider, region, cost 2 · 24/7 availability 3* | Hosting, backup/restore | Simplified | P7 | Supabase Pro | Restore drill recorded; region/cost note | — | P7 | Not run |
+| OPS-02 | P1 | Fault support 2 | Fault support page | Full | S6 | `content_pages` | Page renders for all roles | — | phase-06 | Not run |
+| ARC-01 | P1 | Scalability 2.5 | Extensibility | Simplified | S6 | Admin role/criterion settings | New role + criterion without code change; second challenge with its own form/rubric; OpenAPI export | — | phase-06 | Not run |
+| QA-01 | P1 | Browser access 2 · Intuitive 5* · Response time 5 · Cross browser/device 2.5 | Browsers, devices, response time | Simplified | P7 | Playwright matrix; timed sample | Chrome/Edge/Firefox + mobile; p95 with sample size (D-16 targets) | — | P7 | Not run |
+| INN-01 | P2 | Innovation 10 (see BCR-002 #5) | V1/V2 compare | Simplified (P2) | S7 | Read-only diff | Field and attachment diff shown | 11 | phase-07 | Not run |
+| INN-03 | P2 (blueprint) | — | Smart Idea Development Assistant (rule-based) | Simplified (P2) | S7 | Client-side rules | No network call carries proposal data | 2 | phase-07 | Not run |
+| INN-05 | P2 (blueprint) | — | Next steps panel | Simulated (P2) | S7 | `content_pages` | Sample label + "not an endorsement" | 13 | phase-07 | Not run |
+| INN-04 | P2 (blueprint) | — | Readiness Passport (optional) | Optional (P2) | S7 | `set_readiness`, `confirm_readiness` | Only started after SEC-02 passes on staging (D-29) | 11 | phase-07 | Not run |
+| DOC-01 | P0 | Technical proposal 5 | Technical proposal ≤ 10 pages + research log from 13 Nov | — | P7 | — | Claims linked to evidence (`claim-register.md`); research log kept | — | — | Not run |
+| DOC-02 | P0 | — | Role-based user manual, judge guide, README | — | P7 | — | A second member follows the README from a clean checkout | — | — | Not run |
+| REL-01 | P0 | — | Hosted build verified; source package with licence list and install script / container build | — | P7 | — | Live URL on a separate device; no credentials; ≤ 150 MB (confirm) | — | — | Not run |
+| DEM-01 | P0 | Demo 5* | Recorded walkthrough | — | P7 | — | Shows submission → award, dashboard, chat, audit, access control; playback checked | — | — | Not run |
+| SUB-01 | P0 | — | Final bundle and upload | — | P7 | — | Team-named folder; checklist against the brief; upload by 12:00 CAT 23 Nov; confirmation kept | — | — | Not run |
+| OPS-03 | P0 | 24/7 availability 3* | Keep the submitted build live through judging | — | Phase E | — | URL and judge accounts up until 3 Dec; alerts reach a named person; no unapproved deploys | — | — | Not run |
+| DEF-01 | P0 | — | Respond to judging clarifications | — | Phase E | — | Named contact 08:00–17:00 weekdays; same-day replies | — | — | Not run |
+| PRE-01 | P0 if shortlisted | Demo 5* · Presentation 5 · Public vote 10% | Top 5 presentation, 3 Dec | — | Phase E | — | 10 min incl. Q&A; organiser template; recorded fallback | — | — | Not run |
 
 ## 3. Failure cuts
 
