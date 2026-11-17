@@ -44,5 +44,6 @@ export interface SubmissionPort {
     clientRequestId: string
     declarationVersion: string
   }): Promise<CommandOutcome<SubmissionReceipt>>
-  getSubmissionReceipt(query: { proposalId: string } | { clientRequestId: string }): Promise<ReceiptLookup>
+  /** `versionNo` picks a specific version's receipt (V2 receipts, Slice 4); omitted means the first. */
+  getSubmissionReceipt(query: ({ proposalId: string } | { clientRequestId: string }) & { versionNo?: number }): Promise<ReceiptLookup>
 }

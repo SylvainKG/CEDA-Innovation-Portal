@@ -1,11 +1,25 @@
-import type { DraftData, FormSchema, RequiredDoc } from '@/lib/api/types'
+import type { ChallengeForm, DraftData, FormSchema, RequiredDoc } from '@/lib/api/types'
 
 /**
- * Client-side mirror of the server's form check (migration 002, `private.check_form`), used for instant
+ * Client-side mirror of the server's form check (migration 002, `private.validate_submission`), used for instant
  * feedback before submit and by the mock adapter. The server is the authority: it runs the same rules again
  * and its answer wins. Messages are the server's own wording so the two never disagree on screen.
  */
 const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/
+
+/** Length in characters, as Postgres `char_length` counts them (not UTF-16 units: an emoji is 1, not 2). */
+export function charLength(value: string): number {
+  return [...value].length
+}
+
+/**
+ * Whether a challenge accepts ideas now: published AND inside its dates, exactly as the server's
+ * `private.challenge_is_open`. A challenge stays `published` after its deadline, so status alone is not enough.
+ */
+export function isChallengeOpen(form: Pick<ChallengeForm, 'status' | 'opens_at' | 'closes_at'>, now: Date = new Date()): boolean {
+  const t = now.getTime()
+  return form.status === 'published' && t >= new Date(form.opens_at).getTime() && t < new Date(form.closes_at).getTime()
+}
 
 export function checkForm(
   schema: FormSchema,
@@ -18,7 +32,7 @@ export function checkForm(
     for (const field of section.fields) {
       const value = (data[field.key] ?? '').trim()
       if (field.required && value === '') errors[field.key] = 'Required'
-      else if (field.max_length !== undefined && value.length > field.max_length)
+      else if (field.max_length !== undefined && charLength(value) > field.max_length)
         errors[field.key] = `Use ${field.max_length} characters or fewer`
       else if (value !== '' && field.type === 'select' && !(field.options ?? []).includes(value))
         errors[field.key] = 'Choose one of the listed options'

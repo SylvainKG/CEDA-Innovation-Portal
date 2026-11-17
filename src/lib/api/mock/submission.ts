@@ -1,5 +1,5 @@
 import { formatDateTimeCAT } from '@/lib/format'
-import { checkForm, schemaKeys } from '@/lib/form-check'
+import { checkForm, isChallengeOpen, schemaKeys } from '@/lib/form-check'
 import { fromRpcError, rpcError } from '../errors'
 import { newRequestId } from '../request-key'
 import type { SubmissionPort } from '../submission'
@@ -119,7 +119,7 @@ export const mockSubmission: SubmissionPort = {
     } else {
       const form = challengeId ? formFor(challengeId) : undefined
       if (!form) return refused('VALIDATION', 'Choose a challenge.', { challenge: 'Required' })
-      if (form.status !== 'published') return refused('CHALLENGE_CLOSED', 'This challenge is not accepting ideas.')
+      if (!isChallengeOpen(form)) return refused('CHALLENGE_CLOSED', 'This challenge is not accepting ideas.')
     }
 
     const form = formFor(p?.challengeId ?? (challengeId as string)) as ChallengeForm
@@ -147,13 +147,13 @@ export const mockSubmission: SubmissionPort = {
     const userId = await currentApplicantId()
     const p = userId ? ownProposal(proposalId, userId) : undefined
     if (!p) return refused('FORBIDDEN', "You don't have access to this.")
-    if (p.status !== 'draft') return refused('INVALID_STATE', 'Files can only be changed while the idea is a draft.')
-    if (!ALLOWED_MIME.has(file.type)) return refused('VALIDATION', 'Use a PDF, DOCX, XLSX, PNG or JPG file.', { file: 'File type not allowed' })
-    if (file.size <= 0 || file.size > MAX_BYTES) return refused('VALIDATION', 'Files must be 10 MB or smaller.', { file: 'File is larger than 10 MB' })
+    if (p.status !== 'draft') return refused('INVALID_STATE', 'Files can only be added to a draft.')
+    if (!ALLOWED_MIME.has(file.type)) return refused('VALIDATION', 'Use a PDF, DOCX, XLSX, PNG or JPG file.', { file: 'Unsupported file type' })
+    if (file.size <= 0 || file.size > MAX_BYTES) return refused('VALIDATION', 'Files must be 10 MB or smaller.', { file: 'Files must be 10 MB or smaller' })
     if (p.files.length >= MAX_FILES) return refused('VALIDATION', 'You can attach up to 10 files.', { file: 'Too many files' })
     const form = formFor(p.challengeId) as ChallengeForm
     if (docKey && !form.required_docs.some((d) => d.key === docKey))
-      return refused('VALIDATION', 'Upload the file again.', { file: 'Unknown document' })
+      return refused('VALIDATION', 'Choose which document this is.', { doc_key: 'Unknown document type' })
 
     const info: AttachmentInfo = { id: newRequestId(), filename: file.name, size_bytes: file.size, mime: file.type, doc_key: docKey ?? null }
     p.files.push(info)
@@ -165,7 +165,7 @@ export const mockSubmission: SubmissionPort = {
     const userId = await currentApplicantId()
     const p = userId ? [...state.proposals.values()].find((x) => x.ownerId === userId && x.files.some((f) => f.id === attachmentId)) : undefined
     if (!p) return refused('FORBIDDEN', "You don't have access to this.")
-    if (p.status !== 'draft') return refused('INVALID_STATE', 'Files can only be changed while the idea is a draft.')
+    if (p.status !== 'draft') return refused('INVALID_STATE', 'Submitted files cannot be removed.')
     p.files = p.files.filter((f) => f.id !== attachmentId)
     return ok({ id: attachmentId, removed: true as const })
   },
@@ -187,9 +187,10 @@ export const mockSubmission: SubmissionPort = {
     const p = ownProposal(proposalId, userId)
     if (!p) return refused('FORBIDDEN', "You don't have access to this.")
     if (p.status !== 'draft') return refused('INVALID_STATE', 'This idea has already been submitted.')
-    // The demo applicant's email is verified and consent is recorded (seed), so those checks pass here.
+    // The demo applicant's email is verified and consent is recorded (seed), so those checks pass here. An
+    // unverified email would be VALIDATION with fields.email = 'Verify your email address' (migration 011).
     const form = formFor(p.challengeId) as ChallengeForm
-    if (form.status !== 'published') return refused('CHALLENGE_CLOSED', 'This challenge is not accepting ideas. Your draft is saved.')
+    if (!isChallengeOpen(form)) return refused('CHALLENGE_CLOSED', 'This challenge is no longer accepting submissions. Your draft is saved.')
     if (declarationVersion !== MOCK_DECLARATION.version)
       return refused('VALIDATION', 'Accept the declaration to submit. Your draft is saved.', { declaration: 'Accept the current declaration' })
     const attached = new Set(p.files.map((f) => f.doc_key).filter((k): k is string => k !== null))
@@ -231,7 +232,7 @@ export const mockSubmission: SubmissionPort = {
       'proposalId' in query
         ? ownProposal(query.proposalId, userId)
         : [...state.proposals.values()].find((x) => x.ownerId === userId && x.clientRequestId === query.clientRequestId)
-    if (!p?.receipt) return { found: false }
+    if (!p?.receipt || (query.versionNo !== undefined && query.versionNo !== p.receipt.version_no)) return { found: false }
     return { ...p.receipt, replayed: undefined, found: true }
   },
 }

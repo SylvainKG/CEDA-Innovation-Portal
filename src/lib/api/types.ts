@@ -51,8 +51,10 @@ export type ApiErrorCode =
   | 'VALIDATION'
   | 'CASE_NOT_APPROVED'
   | 'CHALLENGE_CLOSED'
-  /** BCR-001 B2 (signed off by Obvious, pending blueprint v0.4): same request key, different content. */
+  /** BCR-001 B2: the request key was already used for a different case (contract §4.1). */
   | 'REQUEST_CONFLICT'
+  /** Append-only record (contract §1.1). Should never reach the UI; if it does, it is a definite refusal. */
+  | 'IMMUTABLE'
 
 /**
  * Outcome of a command as the client can observe it (evidence skill, principles 2 and 7).
@@ -101,12 +103,17 @@ export interface RequiredDoc {
   required: boolean
 }
 
-/** A published challenge with its current form (read from `challenges` + `challenge_versions`; RLS: published only). */
+/**
+ * A challenge with its current form (read from `challenges` + `challenge_versions`). RLS: published and closed
+ * challenges for everyone; an applicant also reads the challenge their own case belongs to, even unpublished
+ * (migration 011). Whether it accepts ideas depends on status AND dates: use `isChallengeOpen`.
+ */
 export interface ChallengeForm {
   challenge_id: string
   challenge_version_id: string
   title: string
-  status: 'published' | 'closed'
+  status: 'published' | 'closed' | 'unpublished'
+  opens_at: string
   closes_at: string
   form_version: number
   form_schema: FormSchema

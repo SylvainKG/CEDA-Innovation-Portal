@@ -14,6 +14,7 @@ export const MOCK_CHALLENGE_FORMS: ChallengeForm[] = [
     challenge_version_id: '21000000-0000-4000-8000-000000000001',
     title: 'Water-Smart Agriculture Challenge 2026',
     status: 'published',
+    opens_at: '2026-09-30T22:00:00Z',
     closes_at: '2026-12-31T14:00:00Z',
     form_version: 1,
     form_schema: {
@@ -72,6 +73,7 @@ export const MOCK_CHALLENGE_FORMS: ChallengeForm[] = [
     challenge_version_id: '21000000-0000-4000-8000-000000000002',
     title: 'Youth Digital Services Challenge 2026',
     status: 'closed',
+    opens_at: '2026-05-31T22:00:00Z',
     closes_at: '2026-09-30T14:00:00Z',
     form_version: 1,
     form_schema: {
