@@ -11,7 +11,7 @@
 | Repo rules agreed (`docs/process/repository-rules.md`) | Sylvain | Not run | |
 | `main` protected and review rules applied, **or** "by agreement" recorded (plan limitation) | Sylvain | Not run | |
 | CI running: lint, type-check, Vitest, pgTAP, secret scan, `npm audit` | Sylvain | Not run | CI run link |
-| Supabase staging project, Amplify staging (`hosting-aws-amplify.md`), `.env.example`, health check | Stacey + Sylvain | Not run | |
+| Supabase staging project, Amplify staging (`hosting-aws-amplify.md`), `.env.example`, health check | Stacey + Sylvain | Supabase part Passed: hosted project `hncwpxyuolfxafbemapb` (EU Central) migrated and seeded, `health()` ok, 457/457 pgTAP on the hosted database; Amplify part: Sylvain | Contract §9 on PR #29 (commits `4799517`, `a893898`) |
 | Amplify inventory and access recorded (account alias, region, branches, env var names, second AWS user, MFA, budget alert) | Sylvain | Not run | |
 | Migration 001: core tables, RLS default-deny, audit/immutability triggers, `has_permission()` | Stacey | Passed (Supabase local stack in CI; not yet on the hosted project) | Workflow `Database`, run 43907353789, commit `cc7c6bb` on `db/security-checks`, 16 Nov 2026 16:25 UTC: `supabase start` applied migrations 001–010 and the seed; `supabase test db` passed every pgTAP file (incl. `001_foundation`, `010_security_privileges`). Branch not merged yet |
 | Seed script (fictional, `DEMO_PASSWORD` from env), one user per role | Stacey | Passed (Supabase local stack in CI) | Same run. `supabase/seed.sql` + `scripts/set-demo-passwords.mjs` (passwords set from `DEMO_PASSWORD`; the script itself not yet run against a project) |
@@ -19,7 +19,7 @@
 | Figma MCP verified; inventory, T01–T15 mapping, gap list, backlog | Sandra | Not run | |
 | `figma-handoff/` first snapshot | Sandra | Not run | |
 | Tokens → Tailwind theme; shell + navigation skeleton; state kit | Obvious | Not run | |
-| Region latency measured (D-14) | Stacey + Sylvain | Not run | `region-latency.md` |
+| Region latency measured (D-14) | Stacey + Sylvain | Partly run: EU Central (hosted project) p50 263 ms, p95 315 ms; Mumbai comparison Not run | `region-latency.md` |
 | Every member runs the same commit locally | All | Not run | Table below |
 
 ## Same commit on every machine
