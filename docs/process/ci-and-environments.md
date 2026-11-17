@@ -20,13 +20,14 @@ This is a plan. Nothing here is set up yet; every item is **Not run** until it h
 
 ## 2. CI pipeline (D-42)
 
-One workflow file, `.github/workflows/ci.yml`, added in Phase 0 by Sylvain. Node version pinned in `.nvmrc` (proposed: current Node LTS). Dependencies installed with `npm ci` from the committed lockfile.
+One workflow file, `.github/workflows/ci.yml`, maintained by Sylvain. **Stage 1** (`secrets`) is live. **Stage 2** (`lint`, `typecheck`, `unit`, `build`, `audit`) arrives after the frontend scaffold. **Stage 3** (`db`) arrives with migration 001. Node version comes from `.nvmrc`; dependencies are installed with `npm ci` from the committed lockfile.
 
 | Job | Command (proposed) | Required for merge from | Notes |
 |---|---|---|---|
 | `lint` | `npm run lint` (ESLint) | Scaffold merge | Includes a rule forbidding `supabase-js` imports outside `src/lib/api/` (evidence skill, architecture mapping) |
 | `typecheck` | `npm run typecheck` (`tsc --noEmit`) | Scaffold merge | |
 | `unit` | `npm run test` (Vitest, run mode) | Scaffold merge | |
+| `build` | `npm run build` (type-check + Vite production build), with `VITE_API_MODE=mock` set explicitly | Scaffold merge | Catches build-only failures the other jobs miss |
 | `db` | `supabase start` → `supabase db reset` (migrations + seed) → `supabase test db` (pgTAP) | Migration 001 merge | Disposable database; needs no secrets. Seed reads `DEMO_PASSWORD` from a CI-only dummy value |
 | `secrets` | Secret scanner over the PR diff and full history (e.g. gitleaks) | **Immediately**, even before code exists | Covers R-10 |
 | `audit` | `npm audit --audit-level=high`, report saved as a job artifact | Scaffold merge | The report feeds SEC-02. A finding blocks merge unless recorded with a reason in the PR |
