@@ -10,10 +10,16 @@ Every step marked **Not run** has no run record yet. Results go to `artifacts/ph
 
 | Item | Choice | Status |
 |---|---|---|
-| Database, Auth, Storage, Realtime, Edge Functions | Supabase, project ref `hncwpxyuolfxafbemapb`, **Pro plan for judging** (daily backups) | Project created; schema not applied yet |
-| Region | Lowest measured p95 latency from Gaborone, EU vs Mumbai (D-14; method in `docs/process/ci-and-environments.md` §5) | **Not run** |
+| Database, Auth, Storage, Realtime, Edge Functions | Supabase, project ref `hncwpxyuolfxafbemapb`, region EU Central. **Free plan now**; Pro recommended from judging (see the free-plan limits below) | Migrations 001–010 and the seed applied 17 Nov 2026; pgTAP 457/457 Passed on the hosted database; Edge Functions deployed |
+| Region | Lowest measured p95 latency from Gaborone, EU vs Mumbai (D-14; method in `docs/process/ci-and-environments.md` §5) | EU Central measured from Gaborone on mobile data: p50 263 ms, p95 315 ms (`artifacts/phase-00/region-latency.md`). Mumbai **Not run** |
 | Frontend | Static build; AWS Amplify per the team's hosting guide (branch `docs/amplify-hosting`) | Sylvain |
-| Email | SMTP provider not chosen; until configured, alerts are queued but not sent and the admin outbox view shows **Simulated** | Open |
+| Email | No SMTP for the MVP (decided by Stacey, 17 Nov 2026). Alerts are queued and the relay runs, but nothing is sent; the relay answers "SMTP not configured" and the admin outbox view shows **Simulated** | Deferred |
+
+### Free-plan limits (Supabase pricing page; verify on the day of any plan decision)
+
+- **No backups you can restore from the dashboard.** The restore drill in §6 therefore uses a logical dump, and the fallback is a rebuild from the repository: `supabase db push --db-url "$SUPABASE_DB_URL" --include-seed` into a new project recreates the schema and the fictional demo data (proven on 17 Nov 2026, and in CI on every push). Anything entered after seeding is lost in that case.
+- **Projects pause after about a week without activity.** A paused project breaks OPS-03 (the portal must stay live until 3 Dec 2026). Mitigation: upgrade to Pro before judging starts; until then, someone signs in or calls `health()` at least every few days, and checks the dashboard shows the project as active.
+- **Leaked-password protection** (HaveIBeenPwned check) is a Pro feature. The security advisor still reports it disabled on 17 Nov 2026. Password length (10+) is enforced either way.
 
 ### Storage and cost assumptions (to verify against the providers' pricing pages on the day of the decision)
 
@@ -71,7 +77,7 @@ Run from a clean checkout of the release commit. Each step's output goes into th
 
 ## 6. Backup and restore (OPS-01)
 
-**Backups:** Supabase Pro takes daily backups of the database (retention per plan). Storage objects (attachments) are **not** part of database backups; for the demo they are fictional and re-creatable. For real use, schedule an object-storage copy.
+**Backups:** on the Free plan there are no dashboard backups; the logical dump in step 2 below is the backup. On Pro, Supabase takes daily backups (retention per plan). Storage objects (attachments) are **not** part of database backups; for the demo they are fictional and re-creatable. For real use, schedule an object-storage copy.
 
 **Restore drill (to run once before judging, then record):**
 
