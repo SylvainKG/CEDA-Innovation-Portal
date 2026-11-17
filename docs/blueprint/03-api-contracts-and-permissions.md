@@ -17,6 +17,7 @@
 | Slice 6a: `get_programme_report`, `report_case_rows`, `query_audit`, chat (`chat_status`, `start_chat`, `send_chat_message`, `accept_chat`, `close_chat`, `my_chat_inbox`, `chat_statistics`) | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
 | Slice 6b: content pages, chat hours and override, roles (ARC-01), rubric drafts and criteria, challenges and forms | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
 | `invite-staff` Edge Function | Implemented — not verified (not run anywhere yet) |
+| Scheduled maintenance: `run_maintenance`, `extend_feedback_deadline`, email-relay trigger, `pg_cron` schedules | Implemented — not verified on Supabase (schedules need pg_cron). Passed on the PGlite stand-in (§9) |
 | Generated TypeScript types | Not run: needs `supabase gen types` against a running stack. §8 gives hand-written types until then |
 
 ---
@@ -175,7 +176,7 @@ Roles and permissions are **data** (`roles`, `permissions`, `role_permissions`).
 - **Who sees verifications (BCR-001 B6):** reviewers and staff at once; the applicant only after the decision is published. Before that, `get_roadmap` returns `verifications: null` and `verified`/`not_verified: null` for the applicant.
 - **V1 scores are kept (APP-04):** scorecards are per version, so V1 scorecards stay under V1 and reviewers score V2 as new scorecards (D-10).
 - **Email (NTF-02, BCR-001 B4):** an outbox row is written in the same transaction as the event, only for users with `alerts_opt_in`. The `email-relay` Edge Function is the single sender: it claims due rows with a 10-minute lease, sends through SMTP with a 15-second timeout and records `accepted` (handed to the SMTP server, not "delivered"), `rejected`, `retryable` or `unknown_outcome`. Retries back off exponentially (2^attempts minutes ± 20%) up to `app_settings.email_max_attempts` (5), then the row is `rejected` with the reason. Delivery is at least once. **If SMTP is not configured, nothing is sent and the admin viewer must label email as Simulated.** Emails carry the reference and a link only, never proposal content.
-- **Not built:** automatic expiry of overdue requests (`status = 'expired'`) needs a scheduler; staff see the deadline instead.
+- **Expiry:** overdue requests are expired by the scheduled `run_maintenance` (§4.8); staff can extend the deadline.
 
 ### 4.5 Slice 5 RPCs (DEC-01, DEC-02, D-05)
 
@@ -233,6 +234,21 @@ All need `config.manage` (administrator) unless stated. Every change is audited.
 | `delete_challenge` | `p_challenge_id` | Only a never-published draft with no ideas (ADM-02); otherwise unpublish or close |
 
 **`invite-staff` Edge Function (IAM-01):** `POST /functions/v1/invite-staff` with `{ email, full_name, role_key }` and the admin's token. It checks `role.manage` as the caller, sends a Supabase Auth invitation (or finds the existing account), grants the role through `grant_role` **as the caller** (same rules and audit, so a self-grant is refused), and removes the default applicant role from a newly invited account. Returns `{ user_id, invited, role_key, already_had_role }`, or `403 FORBIDDEN`, `422 VALIDATION` (`fields`), `503 UNAVAILABLE`. Needs `PORTAL_URL` (invitation link) and `APP_ORIGINS`.
+
+### 4.8 Scheduled maintenance (REV-04, CHT-03, NTF-02)
+
+| Function | Who | What it does |
+|---|---|---|
+| `run_maintenance()` | **service role only** (the scheduler, or an operator) | Marks open feedback requests past `due_at` as `expired` (audited as a `system` action; the requester is notified), and sweeps waiting chats to `missed`. Returns `{ ran_at, expired_requests, missed_chats }`. Safe to run repeatedly |
+| `extend_feedback_deadline` | Staff who may request feedback on the case (D-09) | `p_feedback_request_id`, `p_due_at` (future). Reopens an `open` or `expired` request with a new deadline while the case is still `action_required`; the applicant is notified (+ email if opted in). Errors: `FORBIDDEN`, `VALIDATION`, `INVALID_STATE` (answered, or the case moved on) |
+| `private.trigger_email_relay()` | scheduler only | Calls the `email-relay` Edge Function through `pg_net` when outbox rows are due. Returns `requested`, `nothing_due`, `not_configured` (Vault secrets missing) or `not_available` (no Vault/pg_net) |
+
+- **After expiry** the applicant can no longer reply or submit a revision until staff extend the deadline or close the case. The case status does not change by itself.
+- **Schedules** (created by migration 009 only where `pg_cron` and `pg_net` exist): `ceda-maintenance` every 10 minutes, `ceda-email-relay` every 2 minutes.
+- **Relay configuration, once per environment** (SQL editor; values never committed):
+  `select vault.create_secret('https://<ref>.supabase.co/functions/v1/email-relay', 'email_relay_url');`
+  `select vault.create_secret('<RELAY_SECRET>', 'email_relay_secret');`
+  `select vault.create_secret('<anon key>', 'email_relay_anon_key');`
 
 **Reviewer picker (T10 assign dialog):** the admin reads `profiles` and `user_roles` directly (RLS allows `role.manage`); filter `user_roles.role_key = 'reviewer'` and `revoked_at is null`.
 
@@ -339,6 +355,9 @@ export interface RpcErrorBody { code: string; message: ApiErrorCode | 'IMMUTABLE
 | `008_slice6_admin_settings.test.sql`: admin-only access, FAQ draft/publish visibility, declaration version rule, hours/closures/override, new role granted and withdrawn (ARC-01), built-in roles protected, rubric v2 with a new criterion and the 100% rule (ARC-01), form-schema validation, challenge publish, new form version while an idea keeps version 1 (ADM-02), unpublish, delete rules, audit | PGlite stand-in | Passed, 52/52 |
 | Mutation checks (Slice 6b): built-in roles editable; declaration wording changed without a new version | Same | Each caught (1 and 6 failures) |
 | `invite-staff` against Supabase Auth | Staging | **Not run** |
+| `009_scheduled_jobs.test.sql`: maintenance service-role only, expiry once with notice and system audit, case unchanged, replies refused after expiry, who may extend, extension and late reply, answered requests locked, relay trigger without Vault, schedules registered where pg_cron exists | PGlite stand-in | Passed, 20/20 |
+| Mutation checks (scheduled jobs): maintenance callable from browsers; expiry ignoring the deadline | Same | Each caught (3 and 3 failures) |
+| `pg_cron` schedules and the `pg_net` relay call | Supabase | **Not run** |
 | Mutation checks: open `can_read_case`, skip MFA, open peer view, drop version trigger | Same | Each caught (12, 1, 2 and 3 failures) |
 | Same suites on the Supabase stack (`supabase db reset && supabase test db`) | Local Docker / CI stage 3 | **Not run.** No Docker on Stacey's machine; CI stage 3 not added yet |
 | Storage upload policy with real `storage-api`; `attachment-url` Edge Function; 60 s expiry | Supabase local or staging | **Not run** |
