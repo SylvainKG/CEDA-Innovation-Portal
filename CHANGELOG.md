@@ -4,6 +4,17 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `feature` **T04 proposal form and T05 receipt**, built from the written spec (BCR-003, D-45 proposed; design review by Sandra pending). Routes `/ideas/new?challenge=`, `/ideas/:id/edit`, `/ideas/:id/receipt?v=`:
+  - sections from the challenge's form schema, plus Attachments and Review & declare. Stepper on desktop, "Section n of m" on mobile; the step is in the URL hash, and focus moves to the step heading;
+  - autosave with the honest indicator; "restore unsaved changes from this device" prompt; offline banner. The first save moves the address to `/ideas/:id/edit` without remounting the form;
+  - attachments per required document with server-worded refusals and remove;
+  - review step: read-only summary with Edit links, the declaration, an error summary linked to each field, and submit with unknown-outcome recovery;
+  - receipt from the server's data only; "What happens next"; print stylesheet with a print-only DEMO line;
+  - closed challenge, someone else's draft or receipt (Not found), and error states;
+  - `TextField` and `Select` accept a caller `id`; `ReceiptCard` can render its heading as the page h1; `saveNow` reports whether the save was confirmed.
+
+  Evidence: 8 new screen tests through the real route table (101 in total), lint, type-check and build pass. Mock only.
+
 - `feature` Slice 1 behaviour hooks (APP-01, APP-03; no screens yet), in `src/features/submission/`:
   - `useSubmitIdea`: one request key per draft, reused on every retry; a lost reply is "Not confirmed yet" with a status check by key; opening the page with a pending key checks before allowing another submit;
   - `useAutosave`: debounced, one save at a time, every change also kept on the device; lost updates retried with back-off; the first (unkeyed) save and refusals are never retried blindly;

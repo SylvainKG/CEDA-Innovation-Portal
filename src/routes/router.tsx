@@ -9,6 +9,8 @@ import { STAFF_ROLES, type Role } from '@/lib/api/types'
 import { NotBuiltYet } from '@/pages/NotBuiltYet'
 import { SignInPlaceholder } from '@/pages/SignInPlaceholder'
 import { ComponentGalleryRoute } from '@/pages/ComponentGalleryRoute'
+import { ProposalFormPage } from '@/pages/applicant/ProposalForm'
+import { ReceiptPage } from '@/pages/applicant/ReceiptPage'
 import { apiMode } from '@/lib/api'
 import { RequireRole } from './guards'
 
@@ -48,11 +50,11 @@ export const routes: RouteObject[] = [
     element: <ApplicantShell />,
     children: [
       { path: '/ideas', element: guard(['applicant'], nb('T06', 'My ideas', 'Applicant')) },
-      { path: '/ideas/new', element: guard(['applicant'], nb('T04', 'New idea')) },
+      { path: '/ideas/new', element: guard(['applicant'], <ProposalFormPage />) },
       { path: '/ideas/:id', element: guard(['applicant'], nb('T08', 'Idea', 'Applicant case view')) },
-      { path: '/ideas/:id/edit', element: guard(['applicant'], nb('T04', 'Edit draft')) },
+      { path: '/ideas/:id/edit', element: guard(['applicant'], <ProposalFormPage />) },
       { path: '/ideas/:id/revise', element: guard(['applicant'], nb('T04', 'Revise your idea', 'V2 revise mode')) },
-      { path: '/ideas/:id/receipt', element: guard(['applicant'], nb('T05', 'Receipt')) },
+      { path: '/ideas/:id/receipt', element: guard(['applicant'], <ReceiptPage />) },
     ],
   },
   {

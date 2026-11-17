@@ -6,7 +6,8 @@ export const submissionKeys = {
   challengeForm: (challengeId: string) => ['challenge-form', challengeId] as const,
   declaration: ['declaration'] as const,
   draft: (proposalId: string) => ['draft', proposalId] as const,
-  receipt: (proposalId: string) => ['receipt', proposalId] as const,
+  /** Version 1 shares its key with the receipt that submit puts in the cache. */
+  receipt: (proposalId: string, versionNo = 1) => (versionNo === 1 ? (['receipt', proposalId] as const) : (['receipt', proposalId, versionNo] as const)),
 }
 
 export function useChallengeForm(challengeId: string | undefined) {
@@ -29,10 +30,10 @@ export function useDraft(proposalId: string | undefined) {
   })
 }
 
-export function useReceipt(proposalId: string | undefined) {
+export function useReceipt(proposalId: string | undefined, versionNo = 1) {
   return useQuery({
-    queryKey: submissionKeys.receipt(proposalId ?? ''),
-    queryFn: () => api.submission.getSubmissionReceipt({ proposalId: proposalId as string }),
+    queryKey: submissionKeys.receipt(proposalId ?? '', versionNo),
+    queryFn: () => api.submission.getSubmissionReceipt({ proposalId: proposalId as string, versionNo }),
     enabled: Boolean(proposalId),
   })
 }

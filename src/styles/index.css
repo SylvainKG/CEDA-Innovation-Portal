@@ -18,3 +18,16 @@
     @apply text-brand-text underline underline-offset-2;
   }
 }
+
+/* Print (spec T05 "Print receipt"): only the page content, no navigation, banners or development tools. */
+@media print {
+  header,
+  nav,
+  footer,
+  [data-print='hide'] {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+}
