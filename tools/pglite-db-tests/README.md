@@ -13,4 +13,14 @@ npm test -- 002     # only files whose name contains "002"
 
 **What it does not prove:** Auth, Storage, PostgREST, Realtime and Edge Functions are stubbed (`supabase-stub.sql`). Supabase runs Postgres 17. The authoritative run is `supabase db reset && supabase test db` on the real local stack (CI stage 3). Record results from this tool as "PGlite stand-in", never as a staging or CI run.
 
+## Running the same tests on the hosted project
+
+```bash
+# from the repo root; SUPABASE_DB_URL in .env is the session-pooler URL (never committed)
+node --env-file=.env tools/pglite-db-tests/run-hosted.mjs          # every file
+node --env-file=.env tools/pglite-db-tests/run-hosted.mjs 002      # only "002"
+```
+
+Each test file rolls itself back; the case-reference sequence is recorded and restored. Record the output as **hosted**, with the commit, the UTC time and the `TOTAL` line (for example `artifacts/phase-00/hosted-supabase.md`). Only run it against staging or judging when nobody is demonstrating: the tests briefly change rows inside their own transactions.
+
 **Mutation check:** `MUTATE="<sql>" npm test` applies extra SQL after the seed. For example, replacing `private.can_read_case` with `select true` should make the isolation tests fail.
