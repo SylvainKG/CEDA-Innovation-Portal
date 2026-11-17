@@ -73,19 +73,49 @@ Shells:
 5. Staff shell (all other roles) keeps the existing left sidebar (240px) and top bar. The top bar search placeholder becomes "Search by reference (CEDA-2026-…)". Sidebar collapses into a drawer below 768px.
 6. Every icon-only button gets an accessible name (menu, close, bell, "•••" → "More actions").
 
-State kit — build these as reusable components and add a hidden "States" page reachable from the account menu ("View design states") so reviewers can see each one:
-- Loading: skeleton of the page layout, text "Loading {page}" for screen readers. No spinners.
-- Empty: icon, one-line message, one action.
-- Error: message, "Try again" button, support link. Form input is kept.
-- Forbidden (403): "You don't have access to this page. If you think this is wrong, contact the portal administrator." with "Go to my home". Shell stays visible. It must never confirm that a record exists.
-- Not found (404): same layout and wording style as Forbidden.
-- Offline banner (forms only): "You're offline. Changes are saved on this device and will sync when you reconnect."
-- Unknown outcome (submit/publish/award): "Not confirmed yet — checking…" with the action disabled and a "Check status" link.
-- Session expiry warning: dialog "Your session ends in 2 minutes" with "Stay signed in".
-- Success toast: auto-dismiss after 6 seconds, never the only confirmation for a workflow action.
+State kit — build these as reusable components and add a hidden "States" page reachable from the account menu ("View design states") so reviewers can see each one.
+
+How to read this list: text in quotes is the ONLY text that appears on screen. Lines starting "Design rule:" are instructions for you; never display them. On the States page, give each example a small grey caption with just its name (for example "Forbidden (403)") and show the state exactly as a user would see it.
+
+- Loading
+  On screen: a skeleton of the page layout. Screen-reader-only text: "Loading {page name}".
+  Design rule: no spinners.
+- Empty
+  On screen: an icon, "You have no ideas yet", button "Browse challenges".
+  Design rule: one message and one action.
+- Error
+  On screen: heading "Something went wrong", text "We couldn't load this page. Your answers are still here.", button "Try again", link "Contact support".
+  Design rule: on forms, everything the person typed stays in the fields.
+- Forbidden (403)
+  On screen: heading "You don't have access to this page", text "If you think this is wrong, contact the portal administrator.", button "Go to my home".
+  Design rule: keep the top bar and navigation visible. Never name the case, idea or reference on this screen.
+- Not found (404)
+  On screen: heading "We can't find this page", text "Check the address, or go back to your home page.", button "Go to my home".
+  Design rule: same layout as Forbidden.
+- Offline banner (forms only)
+  On screen: "You're offline. Changes are saved on this device and will sync when you reconnect."
+- Unknown outcome (after Submit, Publish or Award)
+  On screen: "Not confirmed yet — checking…", the action button disabled, link "Check status".
+- Session expiry warning
+  On screen: dialog title "Your session ends in 2 minutes", button "Stay signed in".
+- Success toast
+  On screen: "Idea saved".
+  Design rule: disappears after 6 seconds; a workflow action also shows a confirmation on the page, never only the toast.
 ```
 
 **Check:** applicant at 360 px has bottom nav; staff at 360 px has a drawer; every state is visible on the States page.
+
+**If you already ran the earlier version of Prompt 2** and the States page shows instruction text (for example "Shell stays visible" or "It must never confirm that a record exists"), paste this correction:
+
+```text
+On the States page, some examples show my instructions as on-screen text. Remove every sentence that describes a rule (for example "Shell stays visible", "It must never confirm that a record exists", "Form input is kept", "same layout and wording style as Forbidden", "No spinners", "auto-dismiss after 6 seconds"). Each state should show only what a real user sees:
+- Error: heading "Something went wrong", text "We couldn't load this page. Your answers are still here.", button "Try again", link "Contact support".
+- Forbidden (403): heading "You don't have access to this page", text "If you think this is wrong, contact the portal administrator.", button "Go to my home". Keep the top bar and navigation visible.
+- Not found (404): heading "We can't find this page", text "Check the address, or go back to your home page.", button "Go to my home". Same layout as Forbidden.
+Label each example with a small grey caption naming the state, and nothing else. Do not change any other screen.
+```
+
+Then check: no sentence on the States page reads like an instruction.
 
 ---
 

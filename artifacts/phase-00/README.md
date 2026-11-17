@@ -11,7 +11,8 @@
 | Repo rules agreed (`docs/process/repository-rules.md`) | Sylvain | Not run | |
 | `main` protected and review rules applied, **or** "by agreement" recorded (plan limitation) | Sylvain | Not run | |
 | CI running: lint, type-check, Vitest, pgTAP, secret scan, `npm audit` | Sylvain | Not run | CI run link |
-| Supabase staging project, Vercel staging, `.env.example`, health check | Stacey + Sylvain | Not run | |
+| Supabase staging project, Amplify staging (`hosting-aws-amplify.md`), `.env.example`, health check | Stacey + Sylvain | Not run | |
+| Amplify inventory and access recorded (account alias, region, branches, env var names, second AWS user, MFA, budget alert) | Sylvain | Not run | |
 | Migration 001: core tables, RLS default-deny, audit/immutability triggers, `has_permission()` | Stacey | Not run | |
 | Seed script (fictional, `DEMO_PASSWORD` from env), one user per role | Stacey | Not run | |
 | API contract doc + generated TS types | Stacey (author), Obvious (review) | Not run | |
