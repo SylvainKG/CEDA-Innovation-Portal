@@ -15,6 +15,7 @@ These rules apply to everyone, human or assisted. They protect each other's work
 | `test/<topic>` | Playwright, pgTAP, evidence, e.g. `test/negative-n1-n2-n9` | Sylvain, or agreed |
 | `docs/<topic>` | Blueprint, process, manuals, e.g. `docs/blueprint-v0.4` | Any member |
 | `design/<topic>` | Figma handoff exports, e.g. `design/slice-1` | Sandra (Obvious as backup) |
+| `ops/<topic>` | Hosting and deployment configuration, e.g. `ops/amplify-build` | Sylvain (release) |
 
 - **One branch per task.** Short-lived: merge within a day or two, then delete the branch.
 - Before you start: `git fetch origin` and branch from the latest `main`.
