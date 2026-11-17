@@ -1,6 +1,6 @@
 # Runbook
 
-**Owner:** Stacey (backend sections) · Sylvain (release, frontend hosting, monitoring) · **Status:** Draft · 22 Nov 2026
+**Owner:** Stacey (backend sections) · Sylvain (release, frontend hosting, monitoring) · **Status:** Draft · 17 Nov 2026
 **Answers:** backlog OPS-01 (provider, region, storage cost assumptions, monitoring, 24/7 plan, backup and restore, recovery check), OPS-03, REL-01
 Every step marked **Not run** has no run record yet. Results go to `artifacts/phase-07/` with the commit, environment, command, date (UTC and CAT) and the quoted output.
 
@@ -10,16 +10,16 @@ Every step marked **Not run** has no run record yet. Results go to `artifacts/ph
 
 | Item | Choice | Status |
 |---|---|---|
-| Database, Auth, Storage, Realtime, Edge Functions | Supabase, project ref `hncwpxyuolfxafbemapb`, region EU Central. **Free plan now**; Pro recommended from judging (see the free-plan limits below) | Migrations 001–010 and the seed applied 17 Nov 2026; pgTAP 457/457 Passed on the hosted database; Edge Functions deployed |
+| Database, Auth, Storage, Realtime, Edge Functions | Supabase, project ref `hncwpxyuolfxafbemapb`, region EU Central. **Free plan now**; Pro recommended from judging (see the free-plan limits below) | Migrations 001–012 and the seed applied 17 Nov 2026; every pgTAP suite **Passed** on the hosted database (460/460 from `main`, 463/463 with #35); Edge Functions deployed. Run record: `artifacts/phase-00/hosted-supabase.md` (run record, branch `test/hosted-pgtap-run`) |
 | Region | Lowest measured p95 latency from Gaborone, EU vs Mumbai (D-14; method in `docs/process/ci-and-environments.md` §5) | EU Central measured from Gaborone on mobile data: p50 263 ms, p95 315 ms (`artifacts/phase-00/region-latency.md`). Mumbai **Not run** |
-| Frontend | Static build; AWS Amplify per the team's hosting guide (branch `docs/amplify-hosting`) | Sylvain |
+| Frontend | Static build on AWS Amplify (`docs/process/hosting-aws-amplify.md`). Staging: `https://main.d270qrk6a7zs47.amplifyapp.com` | Sylvain |
 | Email | No SMTP for the MVP (decided by Stacey, 17 Nov 2026). Alerts are queued and the relay runs, but nothing is sent; the relay answers "SMTP not configured" and the admin outbox view shows **Simulated** | Deferred |
 
 ### Free-plan limits (Supabase pricing page; verify on the day of any plan decision)
 
 - **No backups you can restore from the dashboard.** The restore drill in §6 therefore uses a logical dump, and the fallback is a rebuild from the repository: `supabase db push --db-url "$SUPABASE_DB_URL" --include-seed` into a new project recreates the schema and the fictional demo data (proven on 17 Nov 2026, and in CI on every push). Anything entered after seeding is lost in that case.
-- **Projects pause after about a week without activity.** A paused project breaks OPS-03 (the portal must stay live until 3 Dec 2026). Mitigation: upgrade to Pro before judging starts; until then, someone signs in or calls `health()` at least every few days, and checks the dashboard shows the project as active.
-- **Leaked-password protection** (HaveIBeenPwned check) is a Pro feature. The security advisor still reports it disabled on 17 Nov 2026. Password length (10+) is enforced either way.
+- **Projects pause after about a week without activity.** A paused project breaks OPS-03 (the portal must stay live until 3 Dec 2026). Mitigation (staying on Free, 17 Nov 2026): Sylvain's uptime monitor (§4) calls `POST /rest/v1/rpc/health` every few minutes, which also keeps the project active; the scheduled keep-alive workflow (PR #37, every second day) is a fallback that fails visibly if the project stops answering. Still check the dashboard before judging. Moving to Pro remains a cost decision for the project owner.
+- **Leaked-password protection** (HaveIBeenPwned check) is a Pro feature. The security advisor still reports it disabled on 17 Nov 2026. The minimum password length is set in Auth settings: **6 on hosted on 17 Nov, to be raised to 10** (the documented rule) together with the Auth URLs below.
 
 ### Storage and cost assumptions (to verify against the providers' pricing pages on the day of the decision)
 
@@ -37,7 +37,8 @@ No figure here is a measured cost. The submitted proposal quotes prices only wit
 | Where | Names |
 |---|---|
 | Local `.env` (scripts) | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `DEMO_PASSWORD` |
-| Edge Function secrets | `APP_ORIGINS`, `PORTAL_URL`, `RELAY_SECRET`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` (Supabase injects `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`) |
+| Edge Function secrets | `APP_ORIGINS`, `PORTAL_URL`, `RELAY_SECRET`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` (Supabase injects `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`). **Staging, set 17 Nov 2026:** `APP_ORIGINS` = the Amplify staging URL + `http://localhost:5173`; `PORTAL_URL` = the Amplify staging URL; `RELAY_SECRET` set; no `SMTP_*` (email Simulated) |
+| Auth URL configuration (`hosting-aws-amplify.md` §4) | Site URL = the Amplify staging URL; Redirect URLs = the Amplify staging URL + `http://localhost:5173`, no wildcards. **Not done yet** (on 17 Nov the Site URL was still `http://localhost:3000`) |
 | Supabase Vault (SQL editor) | `email_relay_url`, `email_relay_secret`, `email_relay_anon_key` (contract §4.8) |
 | App settings (table `app_settings`, admin RPCs) | `demo_mfa_exempt`, `chat_demo_override`, `review_quorum`, `email_max_attempts` |
 

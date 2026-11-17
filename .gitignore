@@ -8,3 +8,5 @@ coverage/
 .DS_Store
 *.log
 .vite/
+# Logical dumps from the restore drill (runbook §6); they contain seeded accounts
+backup-*.sql

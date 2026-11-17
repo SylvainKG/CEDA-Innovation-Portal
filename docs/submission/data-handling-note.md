@@ -1,6 +1,6 @@
 # Data-handling note
 
-**Owner:** Stacey (backend) with Sylvain (submission) · **Status:** Draft for team review · 22 Nov 2026
+**Owner:** Stacey (backend) with Sylvain (submission) · **Status:** Draft for team review · 17 Nov 2026
 **Answers:** backlog SEC-02 ("Document data purpose, access and proposed retention against the Data Protection Act, 2024"), blueprint D-15, D-18, D-25
 **Implementation:** `supabase/migrations/001`–`010`, API contract `docs/blueprint/03-api-contracts-and-permissions.md`
 
@@ -34,9 +34,9 @@ This portal is a **demonstration prototype that uses fictional data only**. It i
 - **Server-side, not just hidden in the UI.** Row-level security is enabled on every table and denies by default. Browsers can only read; every change goes through a database function that checks the permission and the case state and writes the audit entry in the same transaction (D-02).
 - **Roles and least privilege.** Nine roles with explicit permissions (contract §2). Nobody can grant a role to themselves; the attempt is refused and audited (N8). The external committee sees reference and stage only (D-08).
 - **Staff MFA.** Staff permissions require a second factor (aal2). Seeded demo staff accounts are exempt behind a flag so judges can sign in (D-07); this exemption must be switched off for any real use.
-- **Passwords** are handled by Supabase Auth (hashed; minimum length 10; email confirmation required; neutral "if an account exists" recovery message). Auth rate limits apply to sign-in and recovery.
+- **Passwords** are handled by Supabase Auth (hashed; minimum length 10, **to be set on hosted, where it is still 6**; email confirmation required; neutral "if an account exists" recovery message). Auth rate limits apply to sign-in and recovery.
 - **Transport.** The hosted site and Supabase endpoints are HTTPS only.
-- **Evidence.** 463 pgTAP assertions, including negative tests N1–N11 and a privilege regression suite, **pass on the hosted project** (17 Nov 2026, migrations 001–012), on the Supabase local stack in CI and on the PGlite stand-in (contract §9). Browser-level checks (Playwright) are not run yet. The claim register states which claims are verified.
+- **Evidence.** 463 pgTAP assertions, including negative tests N1–N11 and a privilege regression suite, **pass on the hosted project** (17 Nov 2026, migrations 001–012; run record `artifacts/phase-00/hosted-supabase.md`), on the Supabase local stack in CI and on the PGlite stand-in (contract §9). Browser-level checks (Playwright) are not run yet. The claim register states which claims are verified.
 
 ## 3. Proposed retention (D-15)
 
@@ -60,7 +60,7 @@ Not automated in the MVP. Proposed process: the request goes to the portal admin
 | Processor | Role | Location |
 |---|---|---|
 | Supabase (Postgres, Auth, Storage, Realtime, Edge Functions) | Database, authentication, files | **EU Central (Frankfurt)**. Measured from Gaborone on mobile data: p50 263 ms, p95 315 ms (`artifacts/phase-00/region-latency.md`, D-14); the Mumbai comparison is not run. Free plan now; Pro recommended from judging (runbook §1) |
-| Web hosting (team decision: AWS Amplify, `docs/process/hosting-aws-amplify.md` when merged) | Serves the static frontend; holds no proposal data | To be recorded |
+| Web hosting: AWS Amplify (`docs/process/hosting-aws-amplify.md`); staging `https://main.d270qrk6a7zs47.amplifyapp.com` | Serves the static frontend; holds no proposal data | AWS region to be recorded |
 | SMTP provider | **None for the MVP** (deferred, 17 Nov 2026). Opt-in alerts are queued but not sent; the admin outbox view shows **Simulated** | — |
 
 Data leaves Botswana because no African Supabase region exists. This is recorded as a known limitation for any real deployment.
