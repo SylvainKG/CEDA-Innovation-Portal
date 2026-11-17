@@ -1,6 +1,6 @@
 # Region latency (D-14)
 
-**Recorded by:** Stacey · **Date:** 17 Nov 2026 · **Status:** Partly run (one region measured)
+**Recorded by:** Stacey · **Date:** 17 Nov 2026 · **Status:** Partly run (one region measured; location and network confirmed)
 
 ## Method used
 
@@ -8,7 +8,7 @@ Per `docs/process/ci-and-environments.md` §5, adapted: the hosted project alrea
 
 - Target: `POST https://hncwpxyuolfxafbemapb.supabase.co/rest/v1/rpc/health` with the publishable key (no data).
 - 31 sequential requests from Node 25 `fetch`; the first warms the connection and is discarded; 30 are measured end to end (request sent to body read).
-- From: Stacey's machine (Windows 11) on her home network. **Location and network type to be confirmed by Stacey** (the method asks for both).
+- From: Stacey's machine (Windows 11) in **Gaborone**, on a **mobile-data hotspot (BeMobile)**. Mobile data is a realistic network for applicants; a fixed line may be faster.
 
 ## Result
 
