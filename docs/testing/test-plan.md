@@ -23,7 +23,7 @@ Every check starts as **Not run**. A check becomes Passed or Failed only with a 
 
 ## 2. Negative suite (blueprint §3.3), required on video and automated
 
-Status 16 Nov 2026: every N-test passes at the database layer (pgTAP on the Supabase local stack in CI, files `supabase/tests/database/0NN_*.test.sql` on the `db/*` branches). Browser (Playwright) and hosted-build runs are still Not run.
+Status 17 Nov 2026: every N-test passes at the database layer: pgTAP on the Supabase local stack in CI, and **on the hosted project** (all suites, 463/463, migrations 001–012; API contract §9). The files are `supabase/tests/database/0NN_*.test.sql` on `main` (migration 012 is in PR #35). Browser (Playwright) and hosted-build runs through the UI are still Not run.
 
 Each case is tested at **every entry route** that applies: the page, the PostgREST table/view, the RPC, Storage and Realtime.
 
