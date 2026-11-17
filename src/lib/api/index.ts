@@ -1,5 +1,7 @@
 import type { SessionPort } from './session'
+import type { SubmissionPort } from './submission'
 import { mockSession } from './mock/session'
+import { mockSubmission } from './mock/submission'
 
 /**
  * API composition root. The adapter is chosen once from configuration (VITE_API_MODE).
@@ -28,8 +30,11 @@ export function resolveApiMode(raw: string | undefined, isDev: boolean): ApiMode
 
 export const apiMode: ApiMode = resolveApiMode(import.meta.env.VITE_API_MODE as string | undefined, import.meta.env.DEV)
 
-export const api: { session: SessionPort } = {
+export const api: { session: SessionPort; submission: SubmissionPort } = {
   session: mockSession,
+  submission: mockSubmission,
 }
 
 export * from './types'
+export { ApiError } from './errors'
+export { clearSubmitKey, pendingSubmitKey, submitKeyFor } from './request-key'

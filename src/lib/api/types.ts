@@ -6,9 +6,9 @@
  *   - internal case statuses and public stages (blueprint §4.3 state machine)
  *   - error codes (blueprint §4.4), plus REQUEST_CONFLICT (BCR-001 B2, signed off, pending v0.4)
  *
- * Workflow operations (save_draft, submit_proposal, record_screening, …) are deliberately NOT declared yet:
- * their signatures belong to Stacey's API contract (docs/blueprint/03-api-contracts-and-permissions.md),
- * which does not exist yet. Add them here from that contract, never from guesses.
+ * Workflow types come only from Stacey's API contract (docs/blueprint/03-api-contracts-and-permissions.md,
+ * Draft for review, 16 Nov 2026, branch db/phase-0-foundation). Slice 1 is declared at the end of this file.
+ * Later slices are added from the contract when their RPCs are implemented, never from guesses.
  */
 
 export const ROLES = [
@@ -69,4 +69,103 @@ export interface SessionUser {
   displayName: string
   roles: Role[]
   isDemo: boolean
+}
+
+// ---------------------------------------------------------------------------------------------------
+// Slice 1: draft, attachments, submit, receipt (contract §4, §4.1, §4.2, §5, §8).
+// Field names stay snake_case, exactly as the RPCs return them, so the Supabase adapter needs no mapping.
+// ---------------------------------------------------------------------------------------------------
+
+/** Contract §4.2: `challenge_versions.form_schema`. */
+export interface FormField {
+  key: string
+  label: string
+  type: 'text' | 'textarea' | 'select' | 'email'
+  required: boolean
+  max_length?: number
+  help?: string
+  options?: string[]
+}
+export interface FormSection {
+  key: string
+  title: string
+  fields: FormField[]
+}
+export interface FormSchema {
+  sections: FormSection[]
+}
+/** Contract §4.2: `challenge_versions.required_docs`. */
+export interface RequiredDoc {
+  key: string
+  label: string
+  required: boolean
+}
+
+/** A published challenge with its current form (read from `challenges` + `challenge_versions`; RLS: published only). */
+export interface ChallengeForm {
+  challenge_id: string
+  challenge_version_id: string
+  title: string
+  status: 'published' | 'closed'
+  closes_at: string
+  form_version: number
+  form_schema: FormSchema
+  required_docs: RequiredDoc[]
+}
+
+/** Form answers. `save_draft` keeps only keys the schema defines and refuses non-string values. */
+export type DraftData = Record<string, string>
+
+/** Contract §8. */
+export interface SaveDraftResult {
+  proposal_id: string
+  saved_at: string
+  title: string
+}
+
+/** Attachment row as returned by `register_attachment` (never includes `storage_path`). */
+export interface AttachmentInfo {
+  id: string
+  filename: string
+  size_bytes: number
+  mime: string
+  doc_key: string | null
+}
+
+/** The applicant's own working draft (read from `proposal_drafts` + `attachments`; RLS: own only). */
+export interface DraftView {
+  proposal_id: string
+  challenge_id: string
+  title: string
+  data: DraftData
+  files: AttachmentInfo[]
+  saved_at: string
+}
+
+/** Contract §4.1 and §8. */
+export interface SubmissionReceipt {
+  proposal_id: string
+  reference: string
+  status: CaseStatus
+  version_no: number
+  submitted_at: string
+  submitted_at_display: string
+  timezone: 'Africa/Gaborone'
+  challenge: { id: string; title: string }
+  form_version: number
+  declaration_version: string
+  declaration_accepted_at: string
+  files: AttachmentInfo[]
+  replayed?: boolean
+}
+
+/** `get_submission_receipt`: a receipt, or `{ found: false }` (also for a case you may not see). */
+export type ReceiptLookup = (SubmissionReceipt & { found: true }) | { found: false }
+
+/** Current declaration text and version (read from `content_pages`, kind `declaration`). */
+export interface DeclarationText {
+  version: string
+  title: string
+  body_md: string
+  is_sample: boolean
 }
