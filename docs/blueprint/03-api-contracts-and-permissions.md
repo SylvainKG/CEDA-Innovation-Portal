@@ -6,18 +6,18 @@
 
 | Part | Status |
 |---|---|
-| Phase 0: schema, RLS, triggers, `has_permission()`, `health()`, `my_access()`, seed | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
-| Slice 1: `save_draft`, `submit_proposal`, `get_submission_receipt`, attachments, `record_consent` | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
-| `attachment-url` Edge Function | Implemented — not verified (not run anywhere yet) |
-| Slice 2: `record_screening`, `assign_reviewers`, `revoke_assignment`, `grant_role`, `revoke_role`, `add_internal_note`, `list_case_status`, `case_stage_counts` | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
-| Slice 3: `declare_assignment`, `save_scorecard`, `submit_scorecard`, `get_score_panel`, `my_review_queue`, `mark_notifications_read`, quorum, Realtime, rubric locks | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
-| Slice 4: `request_feedback`, `respond_clarification`, `submit_revision`, `verify_feedback_task`, `get_roadmap`, outbox claim/record, `list_email_outbox` | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
-| `email-relay` Edge Function | Implemented — not verified (not run anywhere yet) |
-| Slice 5: `record_decision`, `publish_decision`, `record_award`, `close_case` | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
-| Slice 6a: `get_programme_report`, `report_case_rows`, `query_audit`, chat (`chat_status`, `start_chat`, `send_chat_message`, `accept_chat`, `close_chat`, `my_chat_inbox`, `chat_statistics`) | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
-| Slice 6b: content pages, chat hours and override, roles (ARC-01), rubric drafts and criteria, challenges and forms | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
-| `invite-staff` Edge Function | Implemented — not verified (not run anywhere yet) |
-| Scheduled maintenance: `run_maintenance`, `extend_feedback_deadline`, email-relay trigger, `pg_cron` schedules | Implemented — not verified on Supabase (schedules need pg_cron). Passed on the PGlite stand-in (§9) |
+| Phase 0: schema, RLS, triggers, `has_permission()`, `health()`, `my_access()`, seed | **Passed** on the Supabase local stack in CI and on the PGlite stand-in (§9). Not yet on the hosted project |
+| Slice 1: `save_draft`, `submit_proposal`, `get_submission_receipt`, attachments, `record_consent` | **Passed** on the Supabase local stack in CI and on the PGlite stand-in (§9). Not yet on the hosted project |
+| `attachment-url` Edge Function | Implemented — not verified. Type-checks (`deno check`, CI); not yet deployed or run |
+| Slice 2: `record_screening`, `assign_reviewers`, `revoke_assignment`, `grant_role`, `revoke_role`, `add_internal_note`, `list_case_status`, `case_stage_counts` | **Passed** on the Supabase local stack in CI and on the PGlite stand-in (§9). Not yet on the hosted project |
+| Slice 3: `declare_assignment`, `save_scorecard`, `submit_scorecard`, `get_score_panel`, `my_review_queue`, `mark_notifications_read`, quorum, Realtime, rubric locks | **Passed** on the Supabase local stack in CI and on the PGlite stand-in (§9). Not yet on the hosted project |
+| Slice 4: `request_feedback`, `respond_clarification`, `submit_revision`, `verify_feedback_task`, `get_roadmap`, outbox claim/record, `list_email_outbox` | **Passed** on the Supabase local stack in CI and on the PGlite stand-in (§9). Not yet on the hosted project |
+| `email-relay` Edge Function | Implemented — not verified. Type-checks (`deno check`, CI); not yet deployed or run |
+| Slice 5: `record_decision`, `publish_decision`, `record_award`, `close_case` | **Passed** on the Supabase local stack in CI and on the PGlite stand-in (§9). Not yet on the hosted project |
+| Slice 6a: `get_programme_report`, `report_case_rows`, `query_audit`, chat (`chat_status`, `start_chat`, `send_chat_message`, `accept_chat`, `close_chat`, `my_chat_inbox`, `chat_statistics`) | **Passed** on the Supabase local stack in CI and on the PGlite stand-in (§9). Not yet on the hosted project |
+| Slice 6b: content pages, chat hours and override, roles (ARC-01), rubric drafts and criteria, challenges and forms | **Passed** on the Supabase local stack in CI and on the PGlite stand-in (§9). Not yet on the hosted project |
+| `invite-staff` Edge Function | Implemented — not verified. Type-checks (`deno check`, CI); not yet deployed or run |
+| Scheduled maintenance: `run_maintenance`, `extend_feedback_deadline`, email-relay trigger, `pg_cron` schedules | **Passed** on the Supabase local stack in CI, schedules registered with pg_cron (§9). Relay call not yet run against a deployed function |
 | Generated TypeScript types | Not run: needs `supabase gen types` against a running stack. §8 gives hand-written types until then |
 
 ---
@@ -358,8 +358,19 @@ export interface RpcErrorBody { code: string; message: ApiErrorCode | 'IMMUTABLE
 | `009_scheduled_jobs.test.sql`: maintenance service-role only, expiry once with notice and system audit, case unchanged, replies refused after expiry, who may extend, extension and late reply, answered requests locked, relay trigger without Vault, schedules registered where pg_cron exists | PGlite stand-in | Passed, 20/20 |
 | Mutation checks (scheduled jobs): maintenance callable from browsers; expiry ignoring the deadline | Same | Each caught (3 and 3 failures) |
 | `pg_cron` schedules and the `pg_net` relay call | Supabase | **Not run** |
+| `010_security_privileges.test.sql`: exact allow-lists of functions callable signed out (2) and signed in (60), service-role-only relay and maintenance, private helpers limited to those policies use, every `SECURITY DEFINER` pins `search_path`, new functions start closed, no views in `public`, no table writes for browsers, private proposal bucket with no direct read/update/delete | PGlite stand-in | Passed, 11/11 |
+| Mutation checks (security): a new RPC granted to signed-out users; a `SECURITY DEFINER` function without `search_path` | Same | Each caught (1 and 1 failures) |
 | Mutation checks: open `can_read_case`, skip MFA, open peer view, drop version trigger | Same | Each caught (12, 1, 2 and 3 failures) |
-| Same suites on the Supabase stack (`supabase db reset && supabase test db`) | Local Docker / CI stage 3 | **Not run.** No Docker on Stacey's machine; CI stage 3 not added yet |
+| Same suites on the Supabase stack: `supabase start` (migrations 001–010 + seed) then `supabase test db` | Supabase local stack (Postgres 17.6.1.139, Auth, Storage, pg_cron) in GitHub Actions, workflow `Database`, run 43907353789, commit `cc7c6bb` (branch `db/security-checks`), 16 Nov 2026 16:25–16:27 UTC | **Passed.** Every pgTAP file; also green on `test/ci-db-stage-3` (`6e5e8c5`, run 43905831617) and `db/scheduled-jobs` (`21715bc`, run 43907257484) |
+| Edge Functions type-check (`deno check`, attachment-url, email-relay, invite-staff) | Same run | **Passed** |
+| **Hosted project** `hncwpxyuolfxafbemapb` (EU Central): migrations 001–010 + seed applied with `supabase db push --include-seed` (001 had been applied earlier by name; its history entry was repaired to `20261116100000` first) | Hosted Supabase, 17 Nov 2026 | **Passed:** 10 migrations recorded; `health()` ok; 13 demo accounts and profiles; 8 cases, reference sequence at 8 (next is CEDA-2026-0009); 2 challenges; 16 published pages; 6 chat sessions; 2 buckets; 64 public functions; pg_cron jobs `ceda-maintenance` and `ceda-email-relay` registered |
+| Supabase advisors on the hosted project | Same | Security: 61 signed-in and 2 signed-out SECURITY DEFINER RPCs (**by design**, D-02; pinned by `010_security_privileges`); `app_settings`/`email_outbox` have no policies (**intentional**, no client access); **leaked-password protection disabled (to enable in Auth settings)**. Performance (INFO): 34 unindexed foreign keys, 15 unused indexes on a fresh database, one table with two permissive SELECT policies: recorded as debt (§11) |
+| Every pgTAP suite **on the hosted project** (each file in its own rolled-back transaction; the reference sequence recorded and restored to 8) | Hosted, 17 Nov 2026 10:15 UTC, from `db/security-checks` | **Passed, 457/457.** Afterwards: 13 users, 8 cases, settings unchanged, no test objects left |
+| Demo passwords set on the 13 `@demo.ceda-portal.test` accounts (bcrypt; value only in the local `.env`) and sign-in through the Auth API | Hosted | **Passed:** applicant.a (applicant, 2 permissions) and admin (admin + auditor, 9 permissions) sign in; a wrong password is refused with `invalid_credentials` |
+| Latency to the hosted REST API (`rpc/health`, 30 sequential requests from Stacey's machine) | Hosted, 17 Nov 2026 10:16 UTC | p50 263 ms, p95 315 ms (record: `artifacts/phase-00/region-latency.md`) |
+| Edge Functions `attachment-url`, `email-relay`, `invite-staff` deployed (`supabase functions deploy --use-api`); secrets `PORTAL_URL`, `APP_ORIGINS` (Amplify staging + localhost), `RELAY_SECRET`; Vault entries `email_relay_url`, `email_relay_secret`, `email_relay_anon_key` | Hosted, 17 Nov 2026 | **Passed (refusal paths):** no sign-in → 401; malformed id → 422 `VALIDATION`; applicant asking for an unknown file → 403 `FORBIDDEN`; applicant calling `invite-staff` → 403 `FORBIDDEN`; relay with a wrong secret → 403; relay with the right secret → 200 `skipped: SMTP not configured` (email **Simulated**); `private.trigger_email_relay()` returns `nothing_due` |
+| Successful download link, successful staff invitation, real email delivery | Hosted | **Not run** (needs an uploaded file from the frontend, an approved test invitation, and SMTP) |
+| First Supabase-stack runs found two seed problems the stand-in accepted (temporary-schema helpers; top-level calls prepared before the functions existed) | Runs 43899239039, 43902689794 | **Fixed** in `095f2ad` and `6e5e8c5` |
 | Storage upload policy with real `storage-api`; `attachment-url` Edge Function; 60 s expiry | Supabase local or staging | **Not run** |
 | Seeded accounts sign in after `scripts/set-demo-passwords.mjs` | Supabase local or staging | **Not run** |
 
@@ -387,6 +398,8 @@ export interface RpcErrorBody { code: string; message: ApiErrorCode | 'IMMUTABLE
 | `get_roadmap`, `list_email_outbox`, `claim_outbox_batch`, `record_outbox_result` added | T08 Feedback tab, T09 roadmap summary, NTF-02 relay and Simulated viewer |
 | Revision files carry forward as new attachment rows on the new version (same storage object) | Each version lists exactly its own files; earlier versions stay intact |
 | Admin settings are RPCs over the existing tables; no separate settings tables | T12 editors; every change audited |
+| Migration 010 hardens function privileges: global default (new functions start closed), `my_access` signed-in only, `private` helpers granted only where policies need them | Privilege review (SEC-02): schema-level default privileges cannot revoke PostgreSQL's built-in PUBLIC execute |
+| **Adding an RPC now requires** an explicit `grant execute … to authenticated` **and** adding it to the allow-list in `010_security_privileges.test.sql` | A function cannot become callable by accident |
 
 ## 11. Known gaps (debt)
 
@@ -394,4 +407,5 @@ export interface RpcErrorBody { code: string; message: ApiErrorCode | 'IMMUTABLE
 |---|---|---|---|
 | File type is checked from the declared content type, not the file's bytes | A renamed file passes the type check | Download only, no inline preview; malware scan already deferred | Before real use |
 | Removing a draft file soft-deletes the row; the Storage object stays | Orphan objects in the private bucket | Unreadable by anyone; cleanup job later | Storage size matters |
+| Foreign keys without covering indexes (34, mostly actor/`*_by` columns) and one table with two permissive policies | Slower joins and policy checks at real volumes; negligible with demo data | Add indexes on the hot paths (`proposals.challenge_version_id`, `scorecards.version_id`, `notifications.proposal_id`) when real data arrives | Load beyond the demo |
 | `save_draft` autosave is last-write-wins across tabs | Two tabs can overwrite each other | BCR-001 B5 (deferred) | Co-submitters |
