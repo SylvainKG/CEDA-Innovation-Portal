@@ -1,6 +1,6 @@
 # API contracts and permission matrix
 
-**Owner:** Stacey (author) · **Reviewer:** Obvious · **Status:** Draft for review · 16 Nov 2026 · **Updated:** 18 Nov 2026 (Slice 3)
+**Owner:** Stacey (author) · **Reviewer:** Obvious · **Status:** Draft for review · 16 Nov 2026 · **Updated:** 19 Nov 2026 (Slice 4)
 **Implements:** blueprint v0.3 §4 (data model, state machine, RPC summary), D-02, D-07, D-12, D-17; BCR-001 B2, B4, B9, B10 (applied as recommended, pending sign-off)
 **Code:** `supabase/migrations/`, `supabase/functions/`, `supabase/seed.sql`, tests in `supabase/tests/database/`
 
@@ -11,7 +11,9 @@
 | `attachment-url` Edge Function | Implemented — not verified (not run anywhere yet) |
 | Slice 2: `record_screening`, `assign_reviewers`, `revoke_assignment`, `grant_role`, `revoke_role`, `add_internal_note`, `list_case_status`, `case_stage_counts` | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
 | Slice 3: `declare_assignment`, `save_scorecard`, `submit_scorecard`, `get_score_panel`, `my_review_queue`, `mark_notifications_read`, quorum, Realtime, rubric locks | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
-| Slices 4–6 | Proposed signatures only (§7) |
+| Slice 4: `request_feedback`, `respond_clarification`, `submit_revision`, `verify_feedback_task`, `get_roadmap`, outbox claim/record, `list_email_outbox` | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
+| `email-relay` Edge Function | Implemented — not verified (not run anywhere yet) |
+| Slices 5–6 | Proposed signatures only (§7) |
 | Generated TypeScript types | Not run: needs `supabase gen types` against a running stack. §8 gives hand-written types until then |
 
 ---
@@ -153,6 +155,25 @@ Roles and permissions are **data** (`roles`, `permissions`, `role_permissions`).
 - **Realtime (NTF-01):** subscribe to `postgres_changes` on `notifications` (filter `user_id=eq.<me>`) and `case_events` (filter `proposal_id=eq.<case>`). Supabase applies the same SELECT policies, so a subscriber only receives rows they may read. Neither table ever deletes rows.
 - **Rubrics and challenge forms (REV-02, ADM-02):** a published rubric version, its criteria and a published challenge version are locked. A rubric is created as a draft, given criteria, then published; publishing is refused unless weights total 100. Scorecards keep `rubric_version_id`.
 
+### 4.4 Slice 4 RPCs (REV-04, APP-04, INN-02, NTF-02)
+
+| RPC | Who | Arguments | Returns | Errors | Writes |
+|---|---|---|---|---|---|
+| `request_feedback` | `case.request_feedback` and either `case.read_all` (screening officer, adjudicator) or an assigned, declared reviewer (D-09) | `p_proposal_id`, `p_kind` (`clarification` or `revision`), `p_message` (1–4,000), `p_due_at?` (default now + 7 days, future), `p_tasks text[]?` (revision only, up to 10, each 1–1,000) | `{ feedback_request_id, kind, status: "action_required", return_stage, due_at, tasks }` | `FORBIDDEN`, `VALIDATION` (`fields.task:<n>`), `INVALID_STATE` (not `submitted`/`in_evaluation`/`in_adjudication`, e.g. a request is already open) | Case → `action_required` with `return_stage` = where it was; request + tasks (task text is immutable); audit; applicant notified (+ email if opted in) |
+| `respond_clarification` | The applicant | `p_feedback_request_id`, `p_text` (10–1,000) | `{ feedback_request_id, status: "answered", responded_at, case_status }` | `FORBIDDEN`, `VALIDATION`, `INVALID_STATE` (not an open clarification) | Reply stored on the request, **no new version** (D-21); case returns to `return_stage` (BCR-001 B1); requester notified |
+| `submit_revision` | The applicant | `p_proposal_id`, `p_client_request_id`, `p_change_note` (1–2,000), `p_task_responses [{task_id, status: addressed/not_addressed, explanation 1–500}]`, `p_declaration_version` | Receipt for the new version (`version_no` 2, 3 …) + `replayed` | `FORBIDDEN`, `VALIDATION` (`change_note`, `task:<n>`, `declaration`, form fields), `INVALID_STATE` (no open revision), `REQUEST_CONFLICT` | New immutable version with the same reference. Content = the revision working copy (`save_draft`), or the current version if unedited. Files carry forward unless a new upload replaces the same document type. Task answers locked on the new version. Case returns to `return_stage` (D-10); assigned reviewers and the requester notified. **Idempotent by `p_client_request_id`** (BCR-001 B9); `get_submission_receipt(p_client_request_id => …)` finds it |
+| `verify_feedback_task` | An assigned, declared reviewer, case `in_evaluation` | `p_task_id`, `p_assignment_id`, `p_result` (`verified`/`not_verified`), `p_note?` (required for `not_verified`, ≤ 1,000) | `{ task_id, result, verified_at }` | `FORBIDDEN`, `VALIDATION`, `INVALID_STATE` (task from an earlier version, scoring closed, or own scorecard already submitted) | One verification per task per reviewer, changeable until that reviewer submits their scorecard, then locked. Audited |
+| `get_roadmap` | Anyone who can read the case | `p_proposal_id` | `[{ feedback_request_id, kind, status, message, due_at, version_no, answered_version_no, response_text, tasks[{position, text, applicant_status, applicant_explanation, verifications[] or null}], summary{tasks, addressed, verified, not_verified} }]` | `FORBIDDEN` | — |
+| `list_email_outbox` | `config.manage` | `p_limit?` (≤ 200) | Rows `{ template, status, attempts, recipient, created_at, last_attempt_at, next_attempt_at, last_error }` | `FORBIDDEN` | — |
+| `claim_outbox_batch`, `record_outbox_result` | **service role only** (the `email-relay` function) | — | — | — | Lease-based claim; outcome recording with backoff |
+
+- **Revision mode:** while a revision request is open, `save_draft`, Storage uploads, `register_attachment` and `remove_attachment` work on the case exactly as for a draft (T04 V2 mode). During a clarification the form stays closed.
+- **`submit_scorecard` on a revised version (INN-02):** also refuses with `VALIDATION` (`fields.task:<n>`) until the reviewer has verified every task answered in that version.
+- **Who sees verifications (BCR-001 B6):** reviewers and staff at once; the applicant only after the decision is published. Before that, `get_roadmap` returns `verifications: null` and `verified`/`not_verified: null` for the applicant.
+- **V1 scores are kept (APP-04):** scorecards are per version, so V1 scorecards stay under V1 and reviewers score V2 as new scorecards (D-10).
+- **Email (NTF-02, BCR-001 B4):** an outbox row is written in the same transaction as the event, only for users with `alerts_opt_in`. The `email-relay` Edge Function is the single sender: it claims due rows with a 10-minute lease, sends through SMTP with a 15-second timeout and records `accepted` (handed to the SMTP server, not "delivered"), `rejected`, `retryable` or `unknown_outcome`. Retries back off exponentially (2^attempts minutes ± 20%) up to `app_settings.email_max_attempts` (5), then the row is `rejected` with the reason. Delivery is at least once. **If SMTP is not configured, nothing is sent and the admin viewer must label email as Simulated.** Emails carry the reference and a link only, never proposal content.
+- **Not built:** automatic expiry of overdue requests (`status = 'expired'`) needs a scheduler; staff see the deadline instead.
+
 **Reviewer picker (T10 assign dialog):** the admin reads `profiles` and `user_roles` directly (RLS allows `role.manage`); filter `user_roles.role_key = 'reviewer'` and `revoked_at is null`.
 
 ### 4.1 `submit_proposal` rules (APP-03)
@@ -206,10 +227,6 @@ Receipt:
 | Slice | RPC | Arguments | Notes |
 |---|---|---|---|
 | 2 (next) | `invite_staff` (Edge Function) | email, role | IAM-01 "admin invites by email": needs the Auth admin API, so it runs as an Edge Function. Not built yet |
-| 4 | `request_feedback` | `p_proposal_id`, `p_kind`, `p_message`, `p_due_at`, `p_tasks text[]?` | |
-| 4 | `respond_clarification` | `p_feedback_request_id`, `p_text` (10–1,000 chars) | |
-| 4 | `submit_revision` | `p_proposal_id`, `p_client_request_id`, `p_change_note`, `p_task_responses [{task_id, status, explanation}]`, `p_declaration_version` | Idempotent (BCR-001 B9) |
-| 4 | `verify_feedback_task` | `p_task_id`, `p_assignment_id`, `p_result`, `p_note` | |
 | 5 | `record_decision`, `publish_decision`, `record_award`, `close_case` | | See §6 |
 | 6 | report and audit query RPCs, chat RPCs, admin config RPCs | | |
 
@@ -253,6 +270,9 @@ export interface RpcErrorBody { code: string; message: ApiErrorCode | 'IMMUTABLE
 | `004_slice3_evaluate.test.sql`: declaration gate (N10), conflict (N11), draft and submit rules, retry, peer isolation, quorum → adjudication, panel arithmetic and spread flag, queue, notifications, rubric and form locks, Realtime publication | Same | Passed, 61/61 |
 | Mutation checks (Slice 3): quorum set out of reach; declaration no longer required to read the case | Same | Each caught (5 and 4 failures) |
 | Realtime delivery to a second browser (live-update leak test) | Staging, two browser contexts | **Not run** (Sylvain, Playwright) |
+| `005_slice4_revise.test.sql`: clarification loop (B1, D-21), revision with 3 tasks, revision-mode editing and upload, every `submit_revision` refusal, V2 + same reference + V1 kept, B9 retry and conflict, D-10 return, task and verification locks, verification gate on the V2 scorecard, B6 hiding, roadmap summary, quorum on V2, outbox claim/lease/settle/give-up | PGlite stand-in | Passed, 72/72 |
+| Mutation checks (Slice 4): drop the verification lock; keep the form editable after V2 | Same | Each caught (3 and 2 failures) |
+| `email-relay` against a real SMTP server | Staging | **Not run**: SMTP not configured; email is Simulated until it is |
 | Mutation checks: open `can_read_case`, skip MFA, open peer view, drop version trigger | Same | Each caught (12, 1, 2 and 3 failures) |
 | Same suites on the Supabase stack (`supabase db reset && supabase test db`) | Local Docker / CI stage 3 | **Not run.** No Docker on Stacey's machine; CI stage 3 not added yet |
 | Storage upload policy with real `storage-api`; `attachment-url` Edge Function; 60 s expiry | Supabase local or staging | **Not run** |
@@ -278,6 +298,9 @@ export interface RpcErrorBody { code: string; message: ApiErrorCode | 'IMMUTABLE
 | `scorecard_items.score` nullable and `reason` may be empty **in drafts**; completeness (all scored, reasons ≥ 20 characters, spec T09) is enforced on submit | Reviewers can save partial work without losing it |
 | Quorum check runs inside `submit_scorecard` rather than as a separate trigger | Same transaction and audit row as the submission; same effect as D-11 |
 | `get_score_panel`, `my_review_queue` added | T09 panel, T07 reviewer queue |
+| `request_revision` is `request_feedback(kind, …)` | BCR-001 A3 |
+| `get_roadmap`, `list_email_outbox`, `claim_outbox_batch`, `record_outbox_result` added | T08 Feedback tab, T09 roadmap summary, NTF-02 relay and Simulated viewer |
+| Revision files carry forward as new attachment rows on the new version (same storage object) | Each version lists exactly its own files; earlier versions stay intact |
 
 ## 11. Known gaps (debt)
 
