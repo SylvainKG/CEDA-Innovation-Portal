@@ -55,9 +55,10 @@ insert into public.rubrics (id, key, title) values
   ('10000000-0000-4000-8000-000000000001', 'water-smart-2026', 'Water-Smart Agriculture rubric'),
   ('10000000-0000-4000-8000-000000000002', 'youth-digital-2026', 'Youth Digital Services rubric');
 
-insert into public.rubric_versions (id, rubric_id, version_no, published_at) values
-  ('11000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', 1, '2026-09-20T08:00:00Z'),
-  ('11000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000002', 1, '2026-05-20T08:00:00Z');
+-- Created as drafts, filled, then published (published rubrics are locked; weights must total 100).
+insert into public.rubric_versions (id, rubric_id, version_no) values
+  ('11000000-0000-4000-8000-000000000001', '10000000-0000-4000-8000-000000000001', 1),
+  ('11000000-0000-4000-8000-000000000002', '10000000-0000-4000-8000-000000000002', 1);
 
 insert into public.rubric_criteria (id, rubric_version_id, key, label, weight, anchors, guidance, position) values
   ('12000000-0000-4000-8000-000000000001', '11000000-0000-4000-8000-000000000001', 'innovation', 'Innovation', 30,
@@ -74,6 +75,9 @@ insert into public.rubric_criteria (id, rubric_version_id, key, label, weight, a
    '{"1":"Not demonstrated","3":"Partly demonstrated","5":"Fully demonstrated with evidence"}', 'How many young people will use it?', 2),
   ('12000000-0000-4000-8000-000000000013', '11000000-0000-4000-8000-000000000002', 'team_capability', 'Team capability', 30,
    '{"1":"Not demonstrated","3":"Partly demonstrated","5":"Fully demonstrated with evidence"}', 'Skills and track record of the team.', 3);
+
+update public.rubric_versions set published_at = '2026-09-20T08:00:00Z' where id = '11000000-0000-4000-8000-000000000001';
+update public.rubric_versions set published_at = '2026-05-20T08:00:00Z' where id = '11000000-0000-4000-8000-000000000002';
 
 insert into public.challenges (id, slug, title, summary, status, opens_at, closes_at, audience) values
   ('20000000-0000-4000-8000-000000000001', 'water-smart-agriculture-2026', 'Water-Smart Agriculture Challenge 2026',

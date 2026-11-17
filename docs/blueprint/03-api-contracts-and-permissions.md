@@ -1,6 +1,6 @@
 # API contracts and permission matrix
 
-**Owner:** Stacey (author) · **Reviewer:** Obvious · **Status:** Draft for review · 16 Nov 2026 · **Updated:** 17 Nov 2026 (Slice 2)
+**Owner:** Stacey (author) · **Reviewer:** Obvious · **Status:** Draft for review · 16 Nov 2026 · **Updated:** 18 Nov 2026 (Slice 3)
 **Implements:** blueprint v0.3 §4 (data model, state machine, RPC summary), D-02, D-07, D-12, D-17; BCR-001 B2, B4, B9, B10 (applied as recommended, pending sign-off)
 **Code:** `supabase/migrations/`, `supabase/functions/`, `supabase/seed.sql`, tests in `supabase/tests/database/`
 
@@ -10,7 +10,8 @@
 | Slice 1: `save_draft`, `submit_proposal`, `get_submission_receipt`, attachments, `record_consent` | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
 | `attachment-url` Edge Function | Implemented — not verified (not run anywhere yet) |
 | Slice 2: `record_screening`, `assign_reviewers`, `revoke_assignment`, `grant_role`, `revoke_role`, `add_internal_note`, `list_case_status`, `case_stage_counts` | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
-| Slices 3–6 | Proposed signatures only (§7) |
+| Slice 3: `declare_assignment`, `save_scorecard`, `submit_scorecard`, `get_score_panel`, `my_review_queue`, `mark_notifications_read`, quorum, Realtime, rubric locks | Implemented — not verified on Supabase. Passed on the PGlite stand-in (§9) |
+| Slices 4–6 | Proposed signatures only (§7) |
 | Generated TypeScript types | Not run: needs `supabase gen types` against a running stack. §8 gives hand-written types until then |
 
 ---
@@ -135,6 +136,23 @@ Roles and permissions are **data** (`roles`, `permissions`, `role_permissions`).
 
 **D-08 (committee):** the committee member reads no case tables at all. `list_case_status` gives reference, challenge and applicant-facing stage only: no titles, text, scores, notes or unpublished outcomes. If CEDA confirms titles may be shown (spec Q4), add a column; no access rule changes.
 
+### 4.3 Slice 3 RPCs (REV-02, REV-03, NTF-01, D-11, D-19, D-20)
+
+| RPC | Who | Arguments | Returns | Errors | Writes |
+|---|---|---|---|---|---|
+| `declare_assignment` | The assigned reviewer | `p_assignment_id`, `p_has_conflict`, `p_confidentiality_accepted` (required when no conflict) | `{ assignment_id, has_conflict, revoked, replayed }` | `FORBIDDEN`, `VALIDATION`, `INVALID_STATE` (already recorded with a different answer, or case no longer under review) | No conflict: opens the case and its files to the reviewer (N10). Conflict: assignment revoked, admins notified to reassign, the reviewer can never be reassigned to that case (N11). Audited. The same answer twice is safe |
+| `save_scorecard` | Cleared reviewer, case `in_evaluation` | `p_assignment_id`, `p_items? [{criterion_id, score 1–5 or null, reason}]`, `p_overall_comment?` | `{ scorecard_id, status: "draft", saved_at, weighted_score (null until complete) }` | `FORBIDDEN` (not declared / not yours), `VALIDATION` (score outside 1–5 or not whole, criterion not in this rubric, duplicate), `INVALID_STATE` (already submitted, or scoring closed) | Draft for the case's **current version**; `p_items` replaces all items when given. Only the first save is audited |
+| `submit_scorecard` | Same | Same as `save_scorecard` (saves, then submits) | `{ scorecard_id, status: "submitted", submitted_at, weighted_score, submitted_count, quorum, quorum_reached, replayed }` | As above, plus `VALIDATION` when a criterion has no score or a reason under 20 characters (`fields` keyed by criterion key) | Locks the scorecard; audit. **D-11:** when submitted scorecards on the current version from active reviewers reach `app_settings.review_quorum` (2), the case moves `in_evaluation` → `in_adjudication` in the same transaction and adjudicators are notified. A retry returns the recorded result (`replayed: true`) and changes nothing |
+| `get_score_panel` | `scorecard.read_panel` (adjudicator, admin), or a cleared reviewer **after submitting their own** on that version | `p_proposal_id`, `p_version_id?` (default current) | `{ reference, version_no, criteria[], scorecards[{reviewer_name, weighted_score, overall_comment, items[]}], criteria_summary[{key, mean, min, max, spread, flagged}], aggregate{mean_weighted, min_weighted, max_weighted, spread, flagged}, submitted_count, quorum, spread_flag_threshold: 2 }` | `FORBIDDEN`, `VALIDATION` (version not on this case) | — |
+| `my_review_queue` | `scorecard.submit` | — | Rows `{ assignment_id, proposal_id, reference, title, challenge_title, applicant_organisation, version_no, due_at, case_status, my_status }`; `my_status` is `declaration_needed`, `not_started`, `in_progress` or `submitted` | `FORBIDDEN` | — |
+| `mark_notifications_read` | Signed in | `p_ids uuid[]?` (null = all) | `{ updated }` | — | Own rows only; other people's IDs are ignored |
+
+- **Weighted score** = Σ(score × weight) ÷ Σ weights, on the 1–5 scale, two decimals.
+- **Spread flag** (BCR-001 B7): a criterion is flagged when its scores differ by 2 or more; the aggregate is flagged when any criterion is flagged or the weighted scores differ by 2 or more.
+- **Before declaring**, `my_review_queue` shows reference, title, challenge and applicant organisation: what a reviewer needs to recognise a conflict. Proposal text and files stay closed until the declaration.
+- **Realtime (NTF-01):** subscribe to `postgres_changes` on `notifications` (filter `user_id=eq.<me>`) and `case_events` (filter `proposal_id=eq.<case>`). Supabase applies the same SELECT policies, so a subscriber only receives rows they may read. Neither table ever deletes rows.
+- **Rubrics and challenge forms (REV-02, ADM-02):** a published rubric version, its criteria and a published challenge version are locked. A rubric is created as a draft, given criteria, then published; publishing is refused unless weights total 100. Scorecards keep `rubric_version_id`.
+
 **Reviewer picker (T10 assign dialog):** the admin reads `profiles` and `user_roles` directly (RLS allows `role.manage`); filter `user_roles.role_key = 'reviewer'` and `revoked_at is null`.
 
 ### 4.1 `submit_proposal` rules (APP-03)
@@ -188,9 +206,6 @@ Receipt:
 | Slice | RPC | Arguments | Notes |
 |---|---|---|---|
 | 2 (next) | `invite_staff` (Edge Function) | email, role | IAM-01 "admin invites by email": needs the Auth admin API, so it runs as an Edge Function. Not built yet |
-| 3 | `declare_assignment` | `p_assignment_id`, `p_has_conflict`, `p_confidentiality_accepted` | Conflict revokes the assignment (N11) |
-| 3 | `save_scorecard` / `submit_scorecard` | `p_assignment_id`, `p_items [{criterion_id, score, reason}]`, `p_overall_comment` | Quorum → `in_adjudication` (D-11) |
-| 3 | `mark_notifications_read` | `p_ids uuid[]?` (null = all) | |
 | 4 | `request_feedback` | `p_proposal_id`, `p_kind`, `p_message`, `p_due_at`, `p_tasks text[]?` | |
 | 4 | `respond_clarification` | `p_feedback_request_id`, `p_text` (10–1,000 chars) | |
 | 4 | `submit_revision` | `p_proposal_id`, `p_client_request_id`, `p_change_note`, `p_task_responses [{task_id, status, explanation}]`, `p_declaration_version` | Idempotent (BCR-001 B9) |
@@ -235,6 +250,9 @@ export interface RpcErrorBody { code: string; message: ApiErrorCode | 'IMMUTABLE
 | `002_slice1_submit.test.sql`: draft, attachments, submit, idempotency, `REQUEST_CONFLICT`, receipt lookup, N1, N2, N3, N6, N7, N9, verification, consent, sign-up | Same | Passed, 56/56 |
 | `003_slice2_screen_assign.test.sql`: screening both ways, assignment rules and retries, revocation, roles incl. N8 refused + audited, notes hidden from applicants, committee view (D-08), N3, N7, N10 | Same | Passed, 56/56 |
 | Mutation checks (Slice 2): drop the self-grant constraint; let any signed-in user hold every permission | Same | Each caught (1 and 18 failures) |
+| `004_slice3_evaluate.test.sql`: declaration gate (N10), conflict (N11), draft and submit rules, retry, peer isolation, quorum → adjudication, panel arithmetic and spread flag, queue, notifications, rubric and form locks, Realtime publication | Same | Passed, 61/61 |
+| Mutation checks (Slice 3): quorum set out of reach; declaration no longer required to read the case | Same | Each caught (5 and 4 failures) |
+| Realtime delivery to a second browser (live-update leak test) | Staging, two browser contexts | **Not run** (Sylvain, Playwright) |
 | Mutation checks: open `can_read_case`, skip MFA, open peer view, drop version trigger | Same | Each caught (12, 1, 2 and 3 failures) |
 | Same suites on the Supabase stack (`supabase db reset && supabase test db`) | Local Docker / CI stage 3 | **Not run.** No Docker on Stacey's machine; CI stage 3 not added yet |
 | Storage upload policy with real `storage-api`; `attachment-url` Edge Function; 60 s expiry | Supabase local or staging | **Not run** |
@@ -257,6 +275,9 @@ export interface RpcErrorBody { code: string; message: ApiErrorCode | 'IMMUTABLE
 | Unpublished decision keeps status `in_adjudication` | §6 |
 | `user_roles` and `assignments` are revoke-only (update triggers); revoked rows never reactivate | IAM-01 audit trail stays truthful |
 | `revoke_assignment`, `add_internal_note`, `list_case_status`, `case_stage_counts` added | T10 reassign, T08 Notes tab, T06/T07 committee views (D-08) |
+| `scorecard_items.score` nullable and `reason` may be empty **in drafts**; completeness (all scored, reasons ≥ 20 characters, spec T09) is enforced on submit | Reviewers can save partial work without losing it |
+| Quorum check runs inside `submit_scorecard` rather than as a separate trigger | Same transaction and audit row as the submission; same effect as D-11 |
+| `get_score_panel`, `my_review_queue` added | T09 panel, T07 reviewer queue |
 
 ## 11. Known gaps (debt)
 
