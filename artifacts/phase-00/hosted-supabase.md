@@ -56,13 +56,12 @@ TOTAL 460 assertions, 0 failed (hosted, 9.3 s)
 | `email-relay`: wrong secret / right secret | **Passed:** 403 / 200 `skipped: SMTP not configured` (email **Simulated**) |
 | `private.trigger_email_relay()` from the database (Vault entries) | **Passed:** `nothing_due` |
 | Public `health()` with the publishable key, signed out (`POST /rest/v1/rpc/health`) | **Passed:** 200 `{"ok": true, …, "migration_version": "20261123100000"}` |
+| Auth URL configuration (`hosting-aws-amplify.md` §4) and minimum password length, set through the Management API (`PATCH /v1/projects/{ref}/config/auth`), 17 Nov 16:42 (18:42). Before: Site URL `http://localhost:3000`, no redirect URLs, minimum 6 | **Passed** (read back 16:43): Site URL `https://main.d270qrk6a7zs47.amplifyapp.com`; Redirect URLs `https://main.d270qrk6a7zs47.amplifyapp.com,http://localhost:5173` (no wildcards); `password_min_length` 10. Not yet observed: a verification or reset email arriving (SMTP deferred; Supabase's built-in sender is rate-limited) |
 
 ## 4. Not done or not run
 
 | Item | Status |
 |---|---|
-| Auth **Site URL** and **Redirect URLs** pointing at Amplify (`hosting-aws-amplify.md` §4) | **Not done.** On 17 Nov 16:2x the Site URL was still `http://localhost:3000` and the redirect list was empty, so verification and reset links would point at localhost |
-| Auth minimum password length | **6 on hosted**; the documents say 10. To be set to 10 together with the URLs |
 | Leaked-password protection | Disabled (Pro feature; Free plan) |
 | Successful download link (60-second expiry), staff invitation, real email, Realtime delivery | **Not run** (needs the frontend, an approved test invitation, and SMTP, which is deferred) |
 | Restore drill (OPS-01) | **Not run** |
