@@ -1,0 +1,47 @@
+# Browser tests with Playwright (docs/testing/test-plan.md §1 and §5; QA-01, SEC-02).
+# Separate from ci.yml so the two files never conflict. Not a required check yet:
+# it becomes one when the negative suite (N1–N11) runs against the real backend.
+name: E2E
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'Run against a deployed site instead of a local build (e.g. the Amplify staging URL)'
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: e2e (Chromium, 360 + 1280 px)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+      - name: Run browser tests
+        run: npm run test:e2e -- --trace off
+        env:
+          E2E_BASE_URL: ${{ inputs.base_url }}
+      - name: Keep the report when a test fails
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
