@@ -3,7 +3,7 @@
 -- Every refusal is checked to leave state unchanged.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(56);
+select plan(59);
 
 create temp table ids (k text primary key, v text);
 grant all on ids to authenticated, anon;
@@ -197,6 +197,20 @@ select throws_ok(
 select is((select data ->> 'title' from public.proposal_drafts where proposal_id = (select v::uuid from ids where k = 'p2')),
   'Second idea', 'N9: the draft is preserved');
 reset role;
+
+-- ADM-02: an unpublished challenge stays readable to the applicant with a case in it, not to the public.
+update public.challenges set status = 'unpublished' where id = '20000000-0000-4000-8000-000000000001';
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-0000000000a1","role":"authenticated"}', true);
+select is((select count(*)::int from public.challenges where id = '20000000-0000-4000-8000-000000000001'), 1,
+  'the applicant still reads the unpublished challenge their draft belongs to');
+reset role;
+set local role anon;
+select set_config('request.jwt.claims', '{"role":"anon"}', true);
+select is((select count(*)::int from public.challenges where id = '20000000-0000-4000-8000-000000000001'), 0,
+  'the public cannot read an unpublished challenge');
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-0000000000a1","role":"authenticated"}', true);
+reset role;
 update public.challenges set status = 'published' where id = '20000000-0000-4000-8000-000000000001';
 
 -- ============================================================ IAM-02: verification and consent
@@ -204,7 +218,17 @@ update auth.users set email_confirmed_at = null where id = '00000000-0000-4000-8
 set local role authenticated;
 select throws_ok(
   format($$select public.submit_proposal(%L, gen_random_uuid(), 'sample-2026-11-v1')$$, (select v from ids where k = 'p2')),
-  'PT403', 'FORBIDDEN', 'an unverified account cannot submit');
+  'PT422', 'VALIDATION', 'an unverified account cannot submit (VALIDATION, so the UI can say why)');
+do $$
+declare v_detail text;
+begin
+  perform public.submit_proposal((select v::uuid from ids where k = 'p2'), gen_random_uuid(), 'sample-2026-11-v1');
+exception when others then
+  get stacked diagnostics v_detail = pg_exception_detail;
+  insert into ids values ('unverified_detail', v_detail);
+end $$;
+select is((select v::jsonb from ids where k = 'unverified_detail'),
+  '{"fields": {"email": "Verify your email address"}}'::jsonb, 'the refusal names the email field');
 select throws_ok($$select public.record_consent('old-version')$$, 'PT422', 'VALIDATION',
   'consent to an out-of-date notice is refused');
 reset role;
