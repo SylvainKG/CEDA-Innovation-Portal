@@ -34,7 +34,7 @@ This portal is a **demonstration prototype that uses fictional data only**. It i
 - **Server-side, not just hidden in the UI.** Row-level security is enabled on every table and denies by default. Browsers can only read; every change goes through a database function that checks the permission and the case state and writes the audit entry in the same transaction (D-02).
 - **Roles and least privilege.** Nine roles with explicit permissions (contract §2). Nobody can grant a role to themselves; the attempt is refused and audited (N8). The external committee sees reference and stage only (D-08).
 - **Staff MFA.** Staff permissions require a second factor (aal2). Seeded demo staff accounts are exempt behind a flag so judges can sign in (D-07); this exemption must be switched off for any real use.
-- **Passwords** are handled by Supabase Auth (hashed; minimum length 10, **to be set on hosted, where it is still 6**; email confirmation required; neutral "if an account exists" recovery message). Auth rate limits apply to sign-in and recovery.
+- **Passwords** are handled by Supabase Auth (hashed; minimum length 10, set on hosted 17 Nov 2026; email confirmation required; neutral "if an account exists" recovery message). Auth rate limits apply to sign-in and recovery.
 - **Transport.** The hosted site and Supabase endpoints are HTTPS only.
 - **Evidence.** 463 pgTAP assertions, including negative tests N1–N11 and a privilege regression suite, **pass on the hosted project** (17 Nov 2026, migrations 001–012; run record `artifacts/phase-00/hosted-supabase.md`), on the Supabase local stack in CI and on the PGlite stand-in (contract §9). Browser-level checks (Playwright) are not run yet. The claim register states which claims are verified.
 

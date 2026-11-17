@@ -19,7 +19,7 @@ Every step marked **Not run** has no run record yet. Results go to `artifacts/ph
 
 - **No backups you can restore from the dashboard.** The restore drill in §6 therefore uses a logical dump, and the fallback is a rebuild from the repository: `supabase db push --db-url "$SUPABASE_DB_URL" --include-seed` into a new project recreates the schema and the fictional demo data (proven on 17 Nov 2026, and in CI on every push). Anything entered after seeding is lost in that case.
 - **Projects pause after about a week without activity.** A paused project breaks OPS-03 (the portal must stay live until 3 Dec 2026). Mitigation (staying on Free, 17 Nov 2026): Sylvain's uptime monitor (§4) calls `POST /rest/v1/rpc/health` every few minutes, which also keeps the project active; the scheduled keep-alive workflow (PR #37, every second day) is a fallback that fails visibly if the project stops answering. Still check the dashboard before judging. Moving to Pro remains a cost decision for the project owner.
-- **Leaked-password protection** (HaveIBeenPwned check) is a Pro feature. The security advisor still reports it disabled on 17 Nov 2026. The minimum password length is set in Auth settings: **6 on hosted on 17 Nov, to be raised to 10** (the documented rule) together with the Auth URLs below.
+- **Leaked-password protection** (HaveIBeenPwned check) is a Pro feature. The security advisor still reports it disabled on 17 Nov 2026. The minimum password length (Auth settings) is **10** on hosted, set on 17 Nov 2026 (it was 6).
 
 ### Storage and cost assumptions (to verify against the providers' pricing pages on the day of the decision)
 
@@ -38,7 +38,7 @@ No figure here is a measured cost. The submitted proposal quotes prices only wit
 |---|---|
 | Local `.env` (scripts) | `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `DEMO_PASSWORD` |
 | Edge Function secrets | `APP_ORIGINS`, `PORTAL_URL`, `RELAY_SECRET`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` (Supabase injects `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`). **Staging, set 17 Nov 2026:** `APP_ORIGINS` = the Amplify staging URL + `http://localhost:5173`; `PORTAL_URL` = the Amplify staging URL; `RELAY_SECRET` set; no `SMTP_*` (email Simulated) |
-| Auth URL configuration (`hosting-aws-amplify.md` §4) | Site URL = the Amplify staging URL; Redirect URLs = the Amplify staging URL + `http://localhost:5173`, no wildcards. **Not done yet** (on 17 Nov the Site URL was still `http://localhost:3000`) |
+| Auth URL configuration (`hosting-aws-amplify.md` §4) | Site URL = the Amplify staging URL; Redirect URLs = the Amplify staging URL + `http://localhost:5173`, no wildcards. **Set on 17 Nov 2026** and read back (run record §3); for judging, switch both to the `release` URL |
 | Supabase Vault (SQL editor) | `email_relay_url`, `email_relay_secret`, `email_relay_anon_key` (contract §4.8) |
 | App settings (table `app_settings`, admin RPCs) | `demo_mfa_exempt`, `chat_demo_override`, `review_quorum`, `email_max_attempts` |
 
