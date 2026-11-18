@@ -30,4 +30,12 @@ Each test file rolls itself back. The case-reference sequence is restored afterw
 - **Never against the judging project after code freeze (22 Nov 2026, 18:00 CAT).** For judging, use `health()` and read-only checks.
 - Apply only migrations that are already on `main` before running it, so the hosted project matches the repository.
 
+## Restore drill (OPS-01)
+
+```bash
+node --env-file=.env tools/pglite-db-tests/restore-drill.mjs <backup-dir-outside-the-repo>
+```
+
+It takes a read-only, consistent logical backup of the hosted data (TLS verified; no password hashes), rebuilds an empty Postgres from `supabase/migrations/`, loads the backup, and verifies it: every table row by row, every foreign key, `health()`, the sequence, then all pgTAP suites. It prints the recovery point and recovery time. `DRILL_SELFTEST=1` damages the restored copy on purpose, and the drill must then report FAILED. The record is in `artifacts/phase-07/restore-drill.md`. Delete the backup file afterwards; it holds account e-mails.
+
 **Mutation check:** `MUTATE="<sql>" npm test` applies extra SQL after the seed. For example, replacing `private.can_read_case` with `select true` should make the isolation tests fail.
