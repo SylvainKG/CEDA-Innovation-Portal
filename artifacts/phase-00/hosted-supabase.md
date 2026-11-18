@@ -11,10 +11,13 @@ The run records behind the hosted results in the runbook (§1), the data-handlin
 | 17 Nov, morning | `db/security-checks` (migrations 001–010, PR #29) | `supabase db push --db-url "$SUPABASE_DB_URL" --include-seed` (after `supabase migration repair` for 001) | **Passed:** 10 migrations, 13 demo users, 8 cases |
 | 17 Nov, ~12:50 (14:50) | `ebc076d` (migration 011, PR #34) | `supabase db push --db-url "$SUPABASE_DB_URL"`, after a `--dry-run` listing only 011 | **Passed:** 11 migrations; `health()` reported `20261123090000` |
 | 17 Nov, ~15:15 (17:15) | `5820cca` (migration 012, PR #35) | Same, after a dry run listing only 012 | **Passed:** 12 migrations; `health()` reported `20261123100000` |
+| 17 Nov, 17:36 (19:36) | `ae1aaa6` (migration 013, PR #40) | Same, from a temporary checkout of `main` + 012 + 013 (the branch alone lacked 012); dry run listed only 013 | **Passed:** 13 migrations; `health()` reported `20261123110000` |
 
 ## 2. pgTAP on the hosted database
 
-Each test file runs in its own transaction and rolls back. The case-reference sequence is recorded and restored, so the next demo reference stays `CEDA-2026-0009`.
+Each test file runs in its own transaction and rolls back. The case-reference sequence is restored afterwards, never below the highest existing reference, so the next demo reference stays `CEDA-2026-0009`.
+
+**Process note (Sylvain's review of #35):** migrations 012 and 013 were applied to hosted before their PRs were reviewed, so hosted is ahead of `main` until #35 and #40 merge. From now on, only migrations already on `main` are applied to hosted. The runner is for staging only, never for the judging project after code freeze (22 Nov, 18:00 CAT).
 
 | When | Test files from | Command | Summary line |
 |---|---|---|---|
@@ -22,6 +25,8 @@ Each test file runs in its own transaction and rolls back. The case-reference se
 | 17 Nov, ~12:55 (14:55) | `ebc076d` (after 011) | Same | `TOTAL 460 assertions, 0 failed` |
 | 17 Nov, ~15:15 (17:15) | `5820cca` (after 012) | Same | `TOTAL 463 assertions, 0 failed` |
 | **17 Nov, 16:30:35 (18:30:35)** | **`cf664d7` (`main`)**, against the database at migration 012 | `node --env-file=.env tools/pglite-db-tests/run-hosted.mjs` (this PR) | **`TOTAL 460 assertions, 0 failed (hosted, 9.3 s)`**; sequence `8 -> restored to 8` |
+| 17 Nov, 17:37 (19:37) | `main` + 012 + 013 tests (after 013) | Local `pg` runner | `TOTAL 468 assertions, 0 failed`; sequence restored to 8 |
+| 18 Nov, 04:22 (06:22) | this branch, `010` only | `run-hosted.mjs` with **TLS verified** against the Supabase Root 2021 CA | `TOTAL 11 assertions, 0 failed (hosted, 2.9 s)`; with a wrong CA the connection is refused (`self-signed certificate in certificate chain`) |
 
 Output of the last run (all files `ok`):
 

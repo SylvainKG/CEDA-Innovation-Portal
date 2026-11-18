@@ -21,6 +21,13 @@ node --env-file=.env tools/pglite-db-tests/run-hosted.mjs          # every file
 node --env-file=.env tools/pglite-db-tests/run-hosted.mjs 002      # only "002"
 ```
 
-Each test file rolls itself back; the case-reference sequence is recorded and restored. Record the output as **hosted**, with the commit, the UTC time and the `TOTAL` line (for example `artifacts/phase-00/hosted-supabase.md`). Only run it against staging or judging when nobody is demonstrating: the tests briefly change rows inside their own transactions.
+It needs two settings in `.env` (both outside git): `SUPABASE_DB_URL`, the session-pooler URL, and `SUPABASE_CA_CERT`, the path to the project's CA certificate (Dashboard → Database settings → SSL configuration). The server certificate is always verified; without the certificate the runner stops.
+
+Each test file rolls itself back. The case-reference sequence is restored afterwards, never below the highest reference that exists. Record the output as **hosted**, with the commit, the UTC time and the `TOTAL` line (for example `artifacts/phase-00/hosted-supabase.md`).
+
+**Rules:**
+- **Staging only, when nobody is using it.** The tests change rows inside their own transactions.
+- **Never against the judging project after code freeze (22 Nov 2026, 18:00 CAT).** For judging, use `health()` and read-only checks.
+- Apply only migrations that are already on `main` before running it, so the hosted project matches the repository.
 
 **Mutation check:** `MUTATE="<sql>" npm test` applies extra SQL after the seed. For example, replacing `private.can_read_case` with `select true` should make the isolation tests fail.
