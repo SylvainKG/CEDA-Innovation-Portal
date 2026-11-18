@@ -1,6 +1,6 @@
 import { Printer } from 'lucide-react'
-import { Link, useParams, useSearchParams } from 'react-router-dom'
-import { Button, ErrorState, LoadingState, NotFoundState, ReceiptCard } from '@/components'
+import { useParams, useSearchParams } from 'react-router-dom'
+import { Button, ErrorState, LoadingState, NotFoundState, ReceiptCard, ButtonLink } from '@/components'
 import { useReceipt } from '@/features/submission/queries'
 
 /**
@@ -53,9 +53,9 @@ export function ReceiptPage() {
         <p className="text-sm text-ink-muted">Keep your reference: {r.reference}. Only you and CEDA staff assigned to this case can see your idea.</p>
       </section>
       <div className="flex flex-wrap gap-3 print:hidden">
-        <Link to={`/ideas/${r.proposal_id}`} className="inline-flex min-h-touch items-center rounded-md bg-brand px-4 font-semibold text-brand-on no-underline">
+        <ButtonLink to={`/ideas/${r.proposal_id}`}>
           View my idea
-        </Link>
+        </ButtonLink>
         <Button variant="secondary" icon={Printer} onClick={() => window.print()}>
           Print receipt
         </Button>

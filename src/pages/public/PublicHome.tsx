@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { ButtonLink } from '@/components'
 import { PUBLIC_STAGES } from '@/lib/status'
 import { ChallengeList } from './ChallengeList'
 
@@ -26,12 +26,12 @@ export function PublicHome() {
           Answer an open challenge with your idea, follow its progress, and get CEDA’s feedback in one place.
         </p>
         <div className="flex flex-wrap gap-3">
-          <Link to="/auth/register" className="inline-flex min-h-touch items-center rounded-md bg-brand px-4 font-semibold text-brand-on no-underline">
+          <ButtonLink to="/auth/register">
             Register
-          </Link>
-          <Link to="/auth/sign-in" className="inline-flex min-h-touch items-center rounded-md border border-line px-4 font-semibold text-ink no-underline">
+          </ButtonLink>
+          <ButtonLink to="/auth/sign-in" variant="secondary">
             Sign in
-          </Link>
+          </ButtonLink>
         </div>
       </section>
 

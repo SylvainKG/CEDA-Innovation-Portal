@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter, useRoutes } from 'react-router-dom'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { PlainMarkdown } from '@/components'
 import { challengeTiming } from '@/lib/form-check'
 import { WATER_SMART_ID } from '@/lib/api/mock/fixtures'
@@ -22,6 +22,8 @@ function renderAt(path: string) {
     </QueryClientProvider>,
   )
 }
+
+afterEach(() => vi.restoreAllMocks())
 
 beforeEach(async () => {
   mockSubmissionControls.reset()
@@ -51,6 +53,13 @@ describe('PlainMarkdown', () => {
 })
 
 describe('T01 public home', () => {
+  it('closed cards keep full contrast and use the F4 Closed tone with an icon', async () => {
+    renderAt('/challenges')
+    const pill = await screen.findByText('Closed — not accepting submissions')
+    expect(pill.closest('[data-tone]')).toHaveAttribute('data-tone', 'closed')
+    expect(pill.closest('article')?.className).not.toMatch(/opacity/)
+  })
+
   it('has the intro, the challenges (open first, closed labelled) and the five steps', async () => {
     renderAt('/')
     const intro = (await screen.findByRole('heading', { level: 1, name: 'Submit your innovation to CEDA' })).closest('section') as HTMLElement
@@ -71,9 +80,16 @@ describe('T03 challenge brief', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'Water-Smart Agriculture Challenge 2026' })).toBeInTheDocument()
     expect(screen.getByText('30%')).toBeInTheDocument()
     expect(screen.queryByText(/Fully demonstrated with evidence/)).not.toBeInTheDocument()
-    expect(screen.getByText('Proposal template (sample).docx')).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Downloads' })).not.toBeInTheDocument() // no file store in the mock: hidden, not a dead link
     const starts = screen.getAllByRole('link', { name: 'Start an idea' })
     expect(starts[0]).toHaveAttribute('href', `/ideas/new?challenge=${WATER_SMART_ID}`)
+  })
+
+  it('lists templates as real downloads when the backend gives a URL', async () => {
+    vi.spyOn(mockSubmission, 'templateUrl').mockImplementation((path) => `https://files.example.test/${path}`)
+    renderAt('/challenges/water-smart-agriculture-2026')
+    const link = await screen.findByRole('link', { name: /Proposal template \(sample\)\.docx/ })
+    expect(link).toHaveAttribute('href', 'https://files.example.test/water-smart-agriculture-2026/proposal-template.docx')
   })
 
   it('offers "Continue your draft" to an applicant who already has one', async () => {

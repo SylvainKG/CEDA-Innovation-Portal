@@ -1,6 +1,6 @@
 import { Plus } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { Banner, EmptyState, ErrorState, IdeaCard, LoadingState } from '@/components'
+import { Banner, EmptyState, ErrorState, IdeaCard, LoadingState, ButtonLink } from '@/components'
 import { formatDateTimeCAT, relativeDays } from '@/lib/format'
 import { isChallengeOpen } from '@/lib/form-check'
 import { sortIdeas, toIdeaCard } from '@/features/ideas/idea-view'
@@ -22,10 +22,10 @@ export function MyIdeasPage() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-h1 font-bold">My ideas</h1>
-        <Link to={startLink} className="inline-flex min-h-touch items-center gap-2 rounded-md bg-brand px-4 font-semibold text-brand-on no-underline">
+        <ButtonLink to={startLink}>
           <Plus aria-hidden className="h-5 w-5" />
           Start a new idea
-        </Link>
+        </ButtonLink>
       </div>
 
       {ideas.isPending ? (
@@ -38,7 +38,7 @@ export function MyIdeasPage() {
         </EmptyState>
       ) : (
         <>
-          {ideas.data.some((i) => i.status === 'action_required') ? (
+          {ideas.data.some((i) => i.status === 'action_required' && i.open_feedback?.status !== 'expired') ? (
             <Banner kind="action" title="CEDA needs a response from you">
               One of your ideas is waiting for your answer. Respond before the deadline shown on the card.
             </Banner>

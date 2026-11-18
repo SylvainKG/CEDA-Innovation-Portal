@@ -28,7 +28,11 @@ export function stagesFor(idea: Pick<MyIdea, 'status' | 'stages'>): StageEntry[]
   })
 }
 
+export const EXPIRED_NOTICE = 'The response deadline has passed. CEDA will contact you.'
+
 export function primaryActionFor(idea: Pick<MyIdea, 'id' | 'status' | 'open_feedback'>): IdeaCardModel['primaryAction'] {
+  // Expired request (Stacey, #38): nothing to answer until staff extend the deadline, so no action button.
+  if (idea.status === 'action_required' && idea.open_feedback?.status === 'expired') return undefined
   if (idea.status === 'draft') return { label: 'Continue draft', to: `/ideas/${idea.id}/edit` }
   if (idea.status === 'action_required' && idea.open_feedback?.kind === 'revision') return { label: 'Revise your idea', to: `/ideas/${idea.id}/revise` }
   if (idea.status === 'action_required') return { label: 'Answer the question', to: `/ideas/${idea.id}#feedback` }
@@ -37,7 +41,7 @@ export function primaryActionFor(idea: Pick<MyIdea, 'id' | 'status' | 'open_feed
 
 export function toIdeaCard(idea: MyIdea): IdeaCardModel {
   const deadline =
-    idea.status === 'action_required' && idea.open_feedback
+    idea.status === 'action_required' && idea.open_feedback?.status === 'open'
       ? { deadline: idea.open_feedback.due_at }
       : idea.status === 'draft'
         ? { deadline: idea.challenge.closes_at, deadlineLabel: 'Submit by' }
@@ -52,6 +56,7 @@ export function toIdeaCard(idea: MyIdea): IdeaCardModel {
     updatedAt: idea.updated_at,
     stages: stagesFor(idea),
     primaryAction: primaryActionFor(idea),
+    notice: idea.status === 'action_required' && idea.open_feedback?.status === 'expired' ? EXPIRED_NOTICE : undefined,
     ...deadline,
   }
 }

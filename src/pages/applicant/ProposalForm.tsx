@@ -113,6 +113,7 @@ function ProposalForm({ form, draft, onCreated }: { form: ChallengeForm; draft?:
   const [accepted, setAccepted] = useState(false)
   const [showErrors, setShowErrors] = useState(false)
   const [unsaved, setUnsaved] = useState(false)
+  const [helpOpen, setHelpOpen] = useState(false)
   const [restorable, setRestorable] = useState<DraftData | null>(() => {
     const local = readLocalDraft(form.challenge_id, draft?.proposal_id)
     return local && JSON.stringify(local) !== JSON.stringify(draft?.data ?? {}) ? local : null
@@ -189,6 +190,26 @@ function ProposalForm({ form, draft, onCreated }: { form: ChallengeForm; draft?:
 
   const closesAt = `${formatDateTimeCAT(form.closes_at)} (${relativeDays(form.closes_at)})`
 
+  // Progress, deadline and help: the right-hand aside on desktop; behind a "Progress & help" button near the top
+  // on mobile (spec T04; Sandra's #38 review).
+  const progressAndHelp = (
+    <>
+          <CompletenessMeter
+            sections={steps
+              .filter((s) => s.key !== 'review')
+              .map((s) => ({ id: s.key, label: s.title, complete: stepComplete(s), href: `#step-${s.key}` }))}
+          />
+          <div className="rounded-md bg-surface-card p-4 text-sm shadow-1">
+            <p className="font-semibold">Deadline</p>
+            <p>{closesAt}</p>
+          </div>
+          <div className="rounded-md bg-surface-card p-4 text-sm shadow-1">
+            <p className="font-semibold">Need help?</p>
+            <Link to={FAQ_HREF}>Read the FAQs</Link>
+          </div>
+    </>
+  )
+
   return (
     <div className="flex flex-col gap-4">
       <OfflineBanner />
@@ -199,6 +220,17 @@ function ProposalForm({ form, draft, onCreated }: { form: ChallengeForm; draft?:
         </div>
         <AutosaveIndicator state={autosave.state} />
       </header>
+
+      <div className="lg:hidden">
+        <Button variant="secondary" aria-expanded={helpOpen} aria-controls="progress-help" onClick={() => setHelpOpen((v) => !v)}>
+          {helpOpen ? 'Hide progress & help' : 'Progress & help'}
+        </Button>
+        {helpOpen ? (
+          <div id="progress-help" className="mt-3 flex flex-col gap-4">
+            {progressAndHelp}
+          </div>
+        ) : null}
+      </div>
 
       {restorable ? (
         <Banner
@@ -328,21 +360,7 @@ function ProposalForm({ form, draft, onCreated }: { form: ChallengeForm; draft?:
           </div>
         </section>
 
-        <aside className="flex flex-col gap-4">
-          <CompletenessMeter
-            sections={steps
-              .filter((s) => s.key !== 'review')
-              .map((s) => ({ id: s.key, label: s.title, complete: stepComplete(s), href: `#step-${s.key}` }))}
-          />
-          <div className="rounded-md bg-surface-card p-4 text-sm shadow-1">
-            <p className="font-semibold">Deadline</p>
-            <p>{closesAt}</p>
-          </div>
-          <div className="rounded-md bg-surface-card p-4 text-sm shadow-1">
-            <p className="font-semibold">Need help?</p>
-            <Link to={FAQ_HREF}>Read the FAQs</Link>
-          </div>
-        </aside>
+        <aside className="hidden flex-col gap-4 lg:flex">{progressAndHelp}</aside>
       </div>
       <p className="text-sm text-ink-muted">Only you and CEDA staff assigned to this case can see your idea.</p>
     </div>
@@ -409,7 +427,7 @@ function Attachments({
 
   async function send(doc: RequiredDoc, file: File) {
     if (!proposalId) return
-    setUpload((u) => ({ ...u, [doc.key]: { kind: 'uploading', fileName: file.name, percent: 50 } }))
+    setUpload((u) => ({ ...u, [doc.key]: { kind: 'uploading', fileName: file.name } }))
     try {
       const outcome = await api.submission.uploadAttachment({ proposalId, file, docKey: doc.key })
       if (outcome.kind === 'ok') {

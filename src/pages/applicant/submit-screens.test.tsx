@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, useLocation, useRoutes } from 'react-router-dom'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { WATER_SMART_ID, YOUTH_DIGITAL_ID } from '@/lib/api/mock/fixtures'
 import { mockSession } from '@/lib/api/mock/session'
 import { mockSubmission, mockSubmissionControls } from '@/lib/api/mock/submission'
@@ -55,6 +55,8 @@ async function draft(data: DraftData, withPlan = true) {
   }
   return saved.data.proposal_id
 }
+
+afterEach(() => vi.restoreAllMocks())
 
 beforeEach(async () => {
   mockSubmissionControls.reset()
@@ -126,6 +128,44 @@ describe('T04 proposal form', () => {
     expect(await screen.findByText('We found unsaved changes from this device')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Restore them' }))
     expect(screen.getByLabelText(/Idea title/)).toHaveValue('Typed offline')
+  })
+})
+
+describe('T04 review fixes (Sandra, Sylvain: #38)', () => {
+  it('mobile has a "Progress & help" button near the top that opens the meter, deadline and help', async () => {
+    const id = await draft({ title: 'An idea' }, false)
+    const user = renderAt(`/ideas/${id}/edit#step-overview`)
+    const toggle = await screen.findByRole('button', { name: 'Progress & help' })
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    await user.click(toggle)
+    expect(screen.getByRole('button', { name: 'Hide progress & help' })).toHaveAttribute('aria-expanded', 'true')
+    expect(within(document.getElementById('progress-help') as HTMLElement).getByText('Deadline')).toBeInTheDocument()
+  })
+
+  it('progress links are 44 px touch targets', async () => {
+    const id = await draft({ title: 'An idea' }, false)
+    renderAt(`/ideas/${id}/edit#step-overview`)
+    const links = await screen.findAllByRole('link', { name: /About you: needs attention/ })
+    expect(links[0]?.className).toMatch(/min-h-touch/)
+  })
+
+  it('an upload in progress says "Uploading…" with no made-up percentage', async () => {
+    const id = await draft({ title: 'An idea' }, false)
+    let release: () => void = () => undefined
+    const real = mockSubmission.uploadAttachment.bind(mockSubmission)
+    vi.spyOn(mockSubmission, 'uploadAttachment').mockImplementationOnce(async (input) => {
+      await new Promise<void>((r) => {
+        release = r
+      })
+      return real(input)
+    })
+    const user = renderAt(`/ideas/${id}/edit#step-attachments`)
+    const input = (await screen.findAllByLabelText(/Business plan/))[0] as HTMLInputElement
+    await user.upload(input, new File([new Uint8Array(10)], 'plan.pdf', { type: 'application/pdf' }))
+    const bar = await screen.findByRole('progressbar', { name: 'Uploading plan.pdf' })
+    expect(bar).not.toHaveAttribute('aria-valuenow')
+    expect(screen.getByText('Uploading…')).toBeInTheDocument()
+    release()
   })
 })
 

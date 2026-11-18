@@ -27,7 +27,7 @@
   --text-primary: #333333; /* [make] 12.63:1 */
   --text-secondary: #727272; /* [make] 4.81:1; F3: the only grey used for text */
   --border-default: #e6e3df; /* [make] */
-  --border-input: #8a8580; /* [spec] input borders need ≥ 3:1 against white (Make #DCD9D5 is 1.4:1); proposed */
+  --border-input: #8a8580; /* [F4 decided 18 Nov, Sandra] 3.65:1 on white, 3.47:1 on #FAF9F7 (Make #DCD9D5 was 1.41:1) */
   --focus-ring: #1a73e8; /* [placeholder] F6 */
 
   /* Feedback */
@@ -43,20 +43,22 @@
 
   /* Status tones (spec §6). Badge text always uses --text-primary so it passes contrast in every tone;
      the tone comes from background + icon colour (icon is UI: ≥ 3:1). F4 (separate tones) is pending. */
-  --status-draft-bg: #f3f2ef; /* [make] */
-  --status-draft-fg: #6e6e6e; /* [make] */
-  --status-submitted-bg: #fff3e9; /* [make] */
-  --status-submitted-fg: #b65c0e; /* [make] icon 4.25:1 */
-  --status-review-bg: #e8eafb; /* [placeholder] F4: Make reuses the Submitted tone */
-  --status-review-fg: #3538cd; /* [placeholder] */
-  --status-action-bg: #fff0ef; /* [make] F4 proposes amber */
-  --status-action-fg: #b42c28; /* [make] */
-  --status-approved-bg: #edf7f0; /* [make] */
-  --status-approved-fg: #3f7650; /* [make] */
-  --status-closed-bg: #f2f4f7; /* [placeholder] */
-  --status-closed-fg: #344054; /* [placeholder] */
-  --status-awarded-bg: #fff9dc; /* [make] */
-  --status-awarded-fg: #7e6500; /* [make] */
+  --status-draft-bg: #f3f2ef; /* [F4 18 Nov] Make value */
+  --status-draft-fg: #6e6e6e; /* [F4] icon 4.55:1 */
+  --status-submitted-bg: #fff3e9; /* [F4] Make value */
+  --status-submitted-fg: #b65c0e; /* [F4] icon 4.25:1 */
+  --status-review-bg: #faf9f7; /* [F4] replaces the indigo placeholder */
+  --status-review-fg: #b65c0e; /* [F4] icon 4.41:1 */
+  --status-review-border: #e6e3df; /* [F4] tells Under review apart from Submitted */
+  --status-action-bg: #fff9dc; /* [F4] amber: red stays for errors only */
+  --status-action-fg: #7e6500; /* [F4] icon 5.29:1 */
+  --status-approved-bg: #edf7f0; /* [F4] Make value */
+  --status-approved-fg: #3f7650; /* [F4] icon 4.89:1 */
+  --status-closed-bg: #ffffff; /* [F4] replaces the slate placeholder */
+  --status-closed-fg: #333333; /* [F4] icon 12.63:1 */
+  --status-closed-border: #8a8580; /* [F4] */
+  --status-awarded-bg: #f9c51c; /* [F4] solid gold, so it can't be confused with Action required */
+  --status-awarded-fg: #1f1f1f; /* [F4] text and icon 10.23:1 */
 
   /* Typography: Inter [make]; sizes follow the spec scale (F1) because Make's 7–10 px text fails the spec */
   --font-sans: 'Inter Variable', Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;

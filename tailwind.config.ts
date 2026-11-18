@@ -33,10 +33,10 @@ export default {
       status: {
         'draft-bg': v('status-draft-bg'), 'draft-fg': v('status-draft-fg'),
         'submitted-bg': v('status-submitted-bg'), 'submitted-fg': v('status-submitted-fg'),
-        'review-bg': v('status-review-bg'), 'review-fg': v('status-review-fg'),
+        'review-bg': v('status-review-bg'), 'review-fg': v('status-review-fg'), 'review-border': v('status-review-border'),
         'action-bg': v('status-action-bg'), 'action-fg': v('status-action-fg'),
         'approved-bg': v('status-approved-bg'), 'approved-fg': v('status-approved-fg'),
-        'closed-bg': v('status-closed-bg'), 'closed-fg': v('status-closed-fg'),
+        'closed-bg': v('status-closed-bg'), 'closed-fg': v('status-closed-fg'), 'closed-border': v('status-closed-border'),
         'awarded-bg': v('status-awarded-bg'), 'awarded-fg': v('status-awarded-fg'),
       },
     },

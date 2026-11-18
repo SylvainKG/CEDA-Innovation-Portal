@@ -25,7 +25,8 @@ import type {
  * | getChallengeForm      | read `challenges` + `challenge_versions` (§3, published rows)             |
  * | getDeclaration        | read `content_pages` kind `declaration` (§3)                              |
  * | getDraft              | read `proposal_drafts` + `attachments` (§3, own only)                     |
- * | listMyIdeas           | read `proposals` + `feedback_requests` + `case_events` (§3, own cases)    |
+ * | listMyIdeas           | RPC `list_my_ideas()` (migration 014: safe columns only, own cases)       |
+ * | templateUrl           | public URL in the `challenge-files` bucket (§5; no request, no secrets)   |
  * | saveDraft             | RPC `save_draft` (§4)                                                     |
  * | uploadAttachment      | Storage upload to `proposal-files`, then RPC `register_attachment` (§5)   |
  * | removeAttachment      | RPC `remove_attachment` (§4)                                              |
@@ -44,6 +45,8 @@ export interface SubmissionPort {
   getDeclaration(): Promise<DeclarationText>
   getDraft(proposalId: string): Promise<DraftView | null>
   listMyIdeas(): Promise<MyIdea[]>
+  /** Download URL of a challenge template, or `null` when downloads are not available (the section is hidden). */
+  templateUrl(path: string): string | null
 
   saveDraft(input: { data: DraftData; proposalId?: string; challengeId?: string }): Promise<CommandOutcome<SaveDraftResult>>
   uploadAttachment(input: { proposalId: string; file: File; docKey?: string }): Promise<CommandOutcome<AttachmentInfo>>

@@ -201,8 +201,12 @@ export interface MyIdea {
   status: CaseStatus
   challenge: { id: string; title: string; closes_at: string }
   updated_at: string
-  /** The open clarification or revision request, if the case is waiting on the applicant. */
-  open_feedback: { kind: FeedbackKind; due_at: string } | null
+  /**
+   * The latest clarification or revision request while the case is waiting on the applicant
+   * (`list_my_ideas()`, migration 014). `expired`: the deadline passed; the case stays `action_required` until
+   * staff extend the deadline or close the case, and the applicant has nothing to answer meanwhile.
+   */
+  open_feedback: { kind: FeedbackKind; due_at: string; status: 'open' | 'expired' } | null
   /** Public stages reached, oldest first, with the time of the first event in each (`case_events`). */
   stages: { stage: PublicStage; at: string }[]
 }

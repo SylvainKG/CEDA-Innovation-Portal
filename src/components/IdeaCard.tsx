@@ -1,7 +1,7 @@
 import { CalendarClock } from 'lucide-react'
-import { Link } from 'react-router-dom'
 import type { CaseStatus, FeedbackKind } from '@/lib/api/types'
 import { formatDateTimeCAT, relativeDays } from '@/lib/format'
+import { ButtonLink } from './ButtonLink'
 import { ReferencePill } from './ReferencePill'
 import { StageTimeline, type StageEntry } from './StageTimeline'
 import { StatusBadge } from './StatusBadge'
@@ -23,7 +23,10 @@ export interface IdeaCardModel {
   /** Words before the deadline: "Respond by" (feedback, default) or "Submit by" (a draft before the challenge closes). */
   deadlineLabel?: string
   stages: StageEntry[]
-  primaryAction: { label: string; to: string }
+  /** Omitted when there is nothing the applicant can do (then `notice` says why). */
+  primaryAction?: { label: string; to: string }
+  /** A sentence shown instead of an action, e.g. when a response deadline has passed. */
+  notice?: string
 }
 
 export function IdeaCard({ idea, now }: { idea: IdeaCardModel; now?: Date }) {
@@ -50,13 +53,13 @@ export function IdeaCard({ idea, now }: { idea: IdeaCardModel; now?: Date }) {
           </span>
         ) : null}
       </div>
-      <Link
-        to={idea.primaryAction.to}
-        className="inline-flex min-h-touch items-center justify-center rounded-md bg-brand px-4 font-semibold text-brand-on no-underline hover:bg-brand-hover"
-      >
-        {idea.primaryAction.label}
-        <span className="sr-only">: {idea.title}</span>
-      </Link>
+      {idea.notice ? <p className="rounded-md bg-surface-sunken p-3 text-sm">{idea.notice}</p> : null}
+      {idea.primaryAction ? (
+        <ButtonLink to={idea.primaryAction.to}>
+          {idea.primaryAction.label}
+          <span className="sr-only">: {idea.title}</span>
+        </ButtonLink>
+      ) : null}
     </article>
   )
 }

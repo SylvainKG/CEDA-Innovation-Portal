@@ -90,6 +90,11 @@ export const mockSubmission: SubmissionPort = {
     return MOCK_CHALLENGES.filter((c) => c.status !== 'unpublished')
   },
 
+  templateUrl() {
+    // The mock has no file store: the brief hides its Downloads section rather than show a dead link.
+    return null
+  },
+
   async getChallengeBrief(slug) {
     await wait()
     const challenge = MOCK_CHALLENGES.find((c) => c.slug === slug && c.status !== 'unpublished')

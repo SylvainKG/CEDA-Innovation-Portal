@@ -28,6 +28,18 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
   Evidence: 7 new tests, 115 in total; lint, type-check and build pass.
 
+- `repair` #38 review fixes:
+  - **F4 status colours** (decided 18 Nov, Sandra) in `tokens.css`: indigo and slate placeholders retired, Action required amber, Awarded solid gold, review and closed with borders; `PencilLine` for Draft. `TonePill` shares the tones, so challenge pills follow F4 (Open = Approved, Closing soon = Action required, Opening soon = Under review, Closed = Closed);
+  - closed challenge cards keep full contrast (no reduced opacity);
+  - upload shows "Uploading…" with an indeterminate bar, never a made-up percentage;
+  - T04 on mobile: a "Progress & help" button near the top; progress links are 44 px targets;
+  - `ButtonLink` replaces seven copies of link-as-button styling;
+  - expired feedback requests: a notice, no action (`open_feedback.status`);
+  - template downloads use the backend's public URL (`templateUrl`), hidden when none;
+  - the T03 mobile action bar is sticky, so it never covers the footer.
+
+  Evidence: 6 new tests, 121 in total.
+
 - `feature` Slice 1 behaviour hooks (APP-01, APP-03; no screens yet), in `src/features/submission/`:
   - `useSubmitIdea`: one request key per draft, reused on every retry; a lost reply is "Not confirmed yet" with a status check by key; opening the page with a pending key checks before allowing another submit;
   - `useAutosave`: debounced, one save at a time, every change also kept on the device; lost updates retried with back-off; the first (unkeyed) save and refusals are never retried blindly;

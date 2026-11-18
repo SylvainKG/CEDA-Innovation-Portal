@@ -19,7 +19,7 @@ describe('idea view rules (spec T06, §6)', () => {
       idea({ id: 'old', status: 'in_evaluation', updated_at: '2026-11-01T00:00:00Z' }),
       idea({ id: 'new', status: 'in_evaluation', updated_at: '2026-11-10T00:00:00Z' }),
       idea({ id: 'draft', status: 'draft', reference: null, updated_at: '2026-10-01T00:00:00Z' }),
-      idea({ id: 'act', status: 'action_required', open_feedback: { kind: 'clarification', due_at: '2026-11-21T14:00:00Z' } }),
+      idea({ id: 'act', status: 'action_required', open_feedback: { kind: 'clarification', due_at: '2026-11-21T14:00:00Z', status: 'open' } }),
     ])
     expect(sorted.map((i) => i.id)).toEqual(['act', 'draft', 'new', 'old'])
   })
@@ -33,14 +33,21 @@ describe('idea view rules (spec T06, §6)', () => {
 
   it('gives one primary action that matches what the applicant has to do', () => {
     expect(primaryActionFor({ id: 'x', status: 'draft', open_feedback: null })).toEqual({ label: 'Continue draft', to: '/ideas/x/edit' })
-    expect(primaryActionFor({ id: 'x', status: 'action_required', open_feedback: { kind: 'revision', due_at: '' } }).label).toBe('Revise your idea')
-    expect(primaryActionFor({ id: 'x', status: 'action_required', open_feedback: { kind: 'clarification', due_at: '' } }).label).toBe('Answer the question')
-    expect(primaryActionFor({ id: 'x', status: 'awarded', open_feedback: null }).label).toBe('View idea')
+    expect(primaryActionFor({ id: 'x', status: 'action_required', open_feedback: { kind: 'revision', due_at: '', status: 'open' } })?.label).toBe('Revise your idea')
+    expect(primaryActionFor({ id: 'x', status: 'action_required', open_feedback: { kind: 'clarification', due_at: '', status: 'open' } })?.label).toBe('Answer the question')
+    expect(primaryActionFor({ id: 'x', status: 'awarded', open_feedback: null })?.label).toBe('View idea')
+  })
+
+  it('an expired request shows a notice and no action (Stacey, #38)', () => {
+    const card = toIdeaCard(idea({ status: 'action_required', open_feedback: { kind: 'clarification', due_at: '2026-11-15T14:00:00Z', status: 'expired' } }))
+    expect(card.primaryAction).toBeUndefined()
+    expect(card.notice).toBe('The response deadline has passed. CEDA will contact you.')
+    expect(card.deadline).toBeUndefined()
   })
 
   it('a draft shows the challenge closing date as "Submit by"; a request shows its due date', () => {
     expect(toIdeaCard(idea({ status: 'draft', reference: null }))).toMatchObject({ deadlineLabel: 'Submit by', deadline: MOCK_SEEDED_IDEA.challenge.closes_at })
-    expect(toIdeaCard(idea({ status: 'action_required', open_feedback: { kind: 'clarification', due_at: '2026-11-21T14:00:00Z' } }))).toMatchObject({
+    expect(toIdeaCard(idea({ status: 'action_required', open_feedback: { kind: 'clarification', due_at: '2026-11-21T14:00:00Z', status: 'open' } }))).toMatchObject({
       deadline: '2026-11-21T14:00:00Z',
       feedbackKind: 'clarification',
     })
@@ -96,7 +103,7 @@ describe('T06 My ideas page', () => {
 
   it('shows the action banner when an idea waits on the applicant', async () => {
     vi.spyOn(mockSubmission, 'listMyIdeas').mockResolvedValue([
-      idea({ status: 'action_required', open_feedback: { kind: 'revision', due_at: '2026-11-21T14:00:00Z' } }),
+      idea({ status: 'action_required', open_feedback: { kind: 'revision', due_at: '2026-11-21T14:00:00Z', status: 'open' } }),
     ])
     renderIdeas()
     expect(await screen.findByText('CEDA needs a response from you')).toBeInTheDocument()

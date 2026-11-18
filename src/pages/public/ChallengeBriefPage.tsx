@@ -1,6 +1,7 @@
 import { FileText } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
-import { Button, ErrorState, LoadingState, NotFoundState, PlainMarkdown, SampleLabel } from '@/components'
+import { Button, ButtonLink, ErrorState, LoadingState, NotFoundState, PlainMarkdown } from '@/components'
+import { api } from '@/lib/api'
 import { formatDateTimeCAT, relativeDays } from '@/lib/format'
 import { challengeTiming } from '@/lib/form-check'
 import { useSession } from '@/lib/session'
@@ -25,22 +26,24 @@ export function ChallengeBriefPage() {
   const timing = challengeTiming(challenge)
   const open = timing === 'open' || timing === 'closing_soon'
   const draft = ideas.data?.find((i) => i.status === 'draft' && i.challenge.id === challenge.id)
+  // Only templates with a real download URL are listed; with none, the section is hidden (Sandra, #38 item 7).
+  const downloads = templates.flatMap((t) => {
+    const url = api.submission.templateUrl(t.path)
+    return url ? [{ ...t, url }] : []
+  })
 
   const action = !open ? (
     <Button disabled disabledReason={timing === 'upcoming' ? `Opens ${formatDateTimeCAT(challenge.opens_at)}.` : 'This challenge is closed and not accepting submissions.'}>
       Start an idea
     </Button>
   ) : (
-    <Link
-      to={draft ? `/ideas/${draft.id}/edit` : `/ideas/new?challenge=${challenge.id}`}
-      className="inline-flex min-h-touch w-full items-center justify-center rounded-md bg-brand px-4 font-semibold text-brand-on no-underline"
-    >
+    <ButtonLink to={draft ? `/ideas/${draft.id}/edit` : `/ideas/new?challenge=${challenge.id}`} className="w-full">
       {draft ? 'Continue your draft' : 'Start an idea'}
-    </Link>
+    </ButtonLink>
   )
 
   return (
-    <div className="grid gap-6 pb-24 lg:grid-cols-[minmax(0,1fr),300px] lg:pb-0">
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr),300px]">
       <div className="flex flex-col gap-6">
         <header className="flex flex-col gap-2">
           <h1 className="text-h1 font-bold">{challenge.title}</h1>
@@ -88,39 +91,36 @@ export function ChallengeBriefPage() {
           </ul>
         </section>
 
-        <section aria-labelledby="downloads-heading" className="flex flex-col gap-2">
-          <h2 id="downloads-heading" className="text-h2 font-semibold">
-            Downloads
-          </h2>
-          {templates.length === 0 ? (
-            <p className="text-ink-muted">This challenge has no templates.</p>
-          ) : (
-            <ul className="flex flex-col gap-2">
-              {templates.map((t) => (
-                <li key={t.path} className="flex flex-wrap items-center gap-2">
-                  <FileText aria-hidden className="h-5 w-5" />
-                  <span>{t.name}</span>
-                  <span className="text-sm text-ink-muted">({t.name.split('.').pop()?.toUpperCase()})</span>
-                  <SampleLabel />
-                  <span className="text-sm text-ink-muted">Download link coming soon.</span>
+        {downloads.length > 0 ? (
+          <section aria-labelledby="downloads-heading" className="flex flex-col gap-2">
+            <h2 id="downloads-heading" className="text-h2 font-semibold">
+              Downloads
+            </h2>
+            <ul className="flex flex-col gap-1">
+              {downloads.map((t) => (
+                <li key={t.path}>
+                  <a href={t.url} download className="inline-flex min-h-touch items-center gap-2">
+                    <FileText aria-hidden className="h-5 w-5" />
+                    {t.name}
+                    <span className="text-sm text-ink-muted">({t.name.split('.').pop()?.toUpperCase()})</span>
+                  </a>
                 </li>
               ))}
             </ul>
-          )}
-        </section>
+          </section>
+        ) : null}
 
         <p>
           Questions? <Link to="/help/faqs">Read the FAQs</Link>.
         </p>
+        {/* Mobile: sticky to the bottom of the content, so it never covers the footer or another bottom bar. */}
+        <div className="sticky bottom-0 z-10 -mx-4 border-t border-line bg-surface-card p-3 lg:hidden">{action}</div>
       </div>
 
       {/* Primary action: sticky aside on desktop, bottom bar on mobile (spec T03). */}
       <aside className="hidden lg:block">
         <div className="sticky top-4 flex flex-col gap-3 rounded-md bg-surface-card p-4 shadow-1">{action}</div>
       </aside>
-      <div className="fixed inset-x-0 bottom-0 z-10 border-t border-line bg-surface-card p-3 lg:hidden">
-        {action}
-      </div>
     </div>
   )
 }
