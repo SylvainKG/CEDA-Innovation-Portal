@@ -1,5 +1,6 @@
 import { Bell } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
+import cedaLogo from '@/assets/ceda-logo.png'
 import { DemoBadge } from '@/components/DemoBadge'
 import { apiMode } from '@/lib/api'
 import { MOCK_ROLE_OPTIONS, mockRoleOf } from '@/lib/api/mock/session'
@@ -20,9 +21,10 @@ export function SkipLink() {
 
 export function Brand() {
   return (
-    <Link to="/" className="flex min-h-touch items-center gap-2 font-bold text-ink no-underline">
-      <span aria-hidden className="inline-block h-6 w-6 rounded-sm bg-brand" />
-      CEDA Innovation Portal
+    <Link to="/" className="flex min-h-touch items-center gap-3 font-bold text-ink no-underline">
+      {/* Official CEDA logo, upscaled from the supplied 447 px PNG; replace with CEDA's vector file when available. */}
+      <img src={cedaLogo} alt="CEDA" width={1432} height={900} className="h-10 w-auto" />
+      <span>Innovation Portal</span>
     </Link>
   )
 }
