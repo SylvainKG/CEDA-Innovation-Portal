@@ -28,6 +28,7 @@ Functionality follows the blueprint until the team decides. Source for every row
 
 | Date (CAT) | Screens | Snapshot files | What changed | Open questions | Author |
 |---|---|---|---|---|---|
+| 18 Nov 2026 | All (tokens) | — | **F4 status colours and input borders decided** (`design-tokens.md`). Existing colours only: indigo and slate placeholders retired; Action required is amber, Awarded solid gold; input border `#8A8580` (3.65:1). Code update for `src/styles/tokens.css` and `ChallengeCard` is for Obvious | — | Sandra (assisted) |
 | 16 Nov 2026 | Make prompt set for Slices 1–2 | — | Brand colours approved; contrast resolved with existing colours (F2); design location = Make; prompts added | — | Sandra (assisted) |
 | 16 Nov 2026 | Inventory only (all templates) | None yet — Make files can't be screenshotted through MCP | TASK-01 first pass: inventory, status, tokens, components, discrepancies 1–15 | #1–#5, #7, #10 need a team decision before slice 2–4 screens are drawn | Sandra (assisted) |
 
