@@ -3,7 +3,7 @@
 -- Every refusal is checked to leave state unchanged.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(59);
+select plan(62);
 
 create temp table ids (k text primary key, v text);
 grant all on ids to authenticated, anon;
@@ -245,6 +245,24 @@ set local role anon;
 select set_config('request.jwt.claims', '', true);
 select throws_ok($$select count(*) from public.proposals$$, '42501', null, 'anon has no access to cases at all');
 reset role;
+
+-- ============================================================ whitespace-only answers (migration 012)
+select is(private.validate_submission(
+    '{"sections":[{"key":"s","title":"S","fields":[{"key":"title","label":"Title","type":"text","required":true}]}]}'::jsonb,
+    '[]'::jsonb, jsonb_build_object('title', E'
+	 
+'), null) ->> 'title',
+  'Required', 'an answer of only newlines and tabs counts as empty');
+select is(private.validate_submission(
+    '{"sections":[{"key":"s","title":"S","fields":[{"key":"title","label":"Title","type":"text","required":true,"max_length":5}]}]}'::jsonb,
+    '[]'::jsonb, jsonb_build_object('title', E'
+  Hello 	'), null),
+  '{}'::jsonb, 'surrounding whitespace does not count toward the length limit');
+select is(private.validate_submission(
+    '{"sections":[{"key":"s","title":"S","fields":[{"key":"contact","label":"Email","type":"email","required":true}]}]}'::jsonb,
+    '[]'::jsonb, jsonb_build_object('contact', E'	me@example.test
+'), null),
+  '{}'::jsonb, 'a valid email with surrounding whitespace passes');
 
 select * from finish();
 rollback;
