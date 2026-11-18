@@ -61,6 +61,7 @@ TOTAL 460 assertions, 0 failed (hosted, 9.3 s)
 | `email-relay`: wrong secret / right secret | **Passed:** 403 / 200 `skipped: SMTP not configured` (email **Simulated**) |
 | `private.trigger_email_relay()` from the database (Vault entries) | **Passed:** `nothing_due` |
 | Public `health()` with the publishable key, signed out (`POST /rest/v1/rpc/health`) | **Passed:** 200 `{"ok": true, …, "migration_version": "20261123100000"}` |
+| Challenge template for the demo (T03): a fictional one-page DOCX marked DEMO, uploaded by `admin@demo.ceda-portal.test` (`config.manage`) to `challenge-files/water-smart-agriculture-2026/proposal-template.docx`, 18 Nov 04:3x UTC | **Passed:** upload 200; public URL 200 (DOCX, 1,329 bytes). Negative: Applicant A's upload to the same bucket refused (`new row violates row-level security policy`), and no object was created |
 | Auth URL configuration (`hosting-aws-amplify.md` §4) and minimum password length, set through the Management API (`PATCH /v1/projects/{ref}/config/auth`), 17 Nov 16:42 (18:42). Before: Site URL `http://localhost:3000`, no redirect URLs, minimum 6 | **Passed** (read back 16:43): Site URL `https://main.d270qrk6a7zs47.amplifyapp.com`; Redirect URLs `https://main.d270qrk6a7zs47.amplifyapp.com,http://localhost:5173` (no wildcards); `password_min_length` 10. Not yet observed: a verification or reset email arriving (SMTP deferred; Supabase's built-in sender is rate-limited) |
 
 ## 4. Not done or not run
