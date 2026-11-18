@@ -1,11 +1,11 @@
 import { Bell } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { DemoBadge } from '@/components/DemoBadge'
 import { apiMode } from '@/lib/api'
 import { MOCK_ROLE_OPTIONS, mockRoleOf } from '@/lib/api/mock/session'
 import type { Role } from '@/lib/api/types'
 import { roleLabel } from '@/navigation/role-labels'
-import { useSession, useSwitchDemoRole } from '@/lib/session'
+import { useSession, useSignOut, useSwitchDemoRole } from '@/lib/session'
 
 export function SkipLink() {
   return (
@@ -86,6 +86,28 @@ export function TopBarEnd() {
       <DemoBadge />
       {user ? <NotificationsLink /> : null}
       {user ? <span className="hidden text-sm text-ink-muted lg:inline">{user.displayName}</span> : null}
+      {user ? <SignOutButton /> : null}
     </div>
+  )
+}
+
+/** Ends the session and makes this device forget the person's drafts, pending keys and cached data. */
+function SignOutButton() {
+  const signOut = useSignOut()
+  const navigate = useNavigate()
+  return (
+    <button
+      type="button"
+      data-print="hide"
+      disabled={signOut.isPending}
+      onClick={() => {
+        // Leave the signed-in page first, so its guard does not bounce to sign-in when the session ends.
+        navigate('/')
+        signOut.mutate()
+      }}
+      className="inline-flex min-h-touch min-w-touch items-center justify-center rounded-md px-2 text-sm text-ink hover:bg-surface-sunken"
+    >
+      Sign out
+    </button>
   )
 }

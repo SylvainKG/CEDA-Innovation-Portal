@@ -7,7 +7,9 @@ import { StaffShell } from '@/layouts/StaffShell'
 import { NotFoundState } from '@/components/states/States'
 import { STAFF_ROLES, type Role } from '@/lib/api/types'
 import { NotBuiltYet } from '@/pages/NotBuiltYet'
-import { SignInPlaceholder } from '@/pages/SignInPlaceholder'
+import { SignInPage } from '@/pages/auth/SignInPage'
+import { RegisterPage } from '@/pages/auth/RegisterPage'
+import { ForgotPasswordPage, ResetPasswordPage, VerifyEmailPage } from '@/pages/auth/RecoveryPages'
 import { ComponentGalleryRoute } from '@/pages/ComponentGalleryRoute'
 import { ProposalFormPage } from '@/pages/applicant/ProposalForm'
 import { ReceiptPage } from '@/pages/applicant/ReceiptPage'
@@ -28,11 +30,11 @@ export const routes: RouteObject[] = [
       { path: '/', element: <PublicHome /> },
       { path: '/challenges', element: <ChallengesPage /> },
       { path: '/challenges/:slug', element: <ChallengeBriefPage /> },
-      { path: '/auth/sign-in', element: <SignInPlaceholder /> },
-      { path: '/auth/register', element: nb('T02', 'Register') },
-      { path: '/auth/verify', element: nb('T02', 'Verify your email') },
-      { path: '/auth/forgot', element: nb('T02', 'Forgot password') },
-      { path: '/auth/reset', element: nb('T02', 'Reset password') },
+      { path: '/auth/sign-in', element: <SignInPage /> },
+      { path: '/auth/register', element: <RegisterPage /> },
+      { path: '/auth/verify', element: <VerifyEmailPage /> },
+      { path: '/auth/forgot', element: <ForgotPasswordPage /> },
+      { path: '/auth/reset', element: <ResetPasswordPage /> },
       { path: '/auth/mfa', element: nb('T02', 'Two-step sign-in') },
       { path: '/help/faqs', element: nb('T03', 'FAQs') },
       { path: '/help/contacts', element: nb('T03', 'Regulatory contacts') },

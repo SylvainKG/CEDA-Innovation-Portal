@@ -4,6 +4,19 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `feature` **T02 sign in, register, verify, forgot and reset**, built from the written spec (BCR-003; design review by Sandra pending). MFA stays a placeholder until the staff slice (demo staff skip it, D-07).
+  - Centred card (max 440 px); error summary linking to each field; focus moves to the heading.
+  - Messages never say which of email or password was wrong, nor whether an account exists: an existing address on register, and an unknown one on reset or resend, look like success.
+  - Register shows the current privacy notice (with its Sample label) and a required consent box; its version goes with the sign-up, and the server keeps it only if current. Password rule shown in advance: at least 12 characters (spec). **The server's Auth minimum is 10 (`supabase/config.toml`); raised with Stacey.**
+  - Verify page: resend waits 60 s. The address travels in navigation state, never in the URL.
+  - Reset: needs the recovery session from the email link; afterwards the person is signed out and signs in again.
+  - **Sign out** in every shell's top bar. Signing out, or a different person signing in on this device, removes unsent drafts, pending submit keys and cached data; the same person keeps their unsent work.
+  - Sign-in and sign-out from another tab or an email link are followed (`useAuthSync`).
+  - `repair`: a session read started on page load could land after sign-in and overwrite the new session with "signed out"; in-flight session reads are now cancelled first.
+  - Session port gains `signIn`, `register`, `resendVerification`, `requestPasswordReset`, `updatePassword`, `signOut`, `getPrivacyNotice`, `onChange`. The mock signs the seed's demo emails in as their persona (not authentication; development only) and keeps the labelled role picker.
+
+  Evidence: 13 screen tests and 7 Supabase Auth adapter tests (163 in total); lint, type-check and build pass.
+
 - `feature` **Supabase adapters** (`src/lib/api/supabase/`, the only place that imports supabase-js). `VITE_API_MODE=supabase` now selects them; it fails at start-up without `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`, or with a non-https URL (http only for a local stack). The mock stays the default for development and the staging demo.
   - Session: Supabase Auth for identity, `my_access()` for roles (unknown role keys dropped), own `profiles.full_name` for the name.
   - Slice 1: challenge, brief, form and declaration reads; draft read (unsubmitted files only); `list_my_ideas()` (migration 014, PR #42); `save_draft`, `register_attachment` after a Storage upload to `proposal-files/<proposal>/<uuid>.<ext>` (the user's file name never goes into the path), `remove_attachment`, `submit_proposal` and `get_submission_receipt`; template downloads from the public `challenge-files` bucket.
