@@ -28,7 +28,7 @@ One workflow file, `.github/workflows/ci.yml`, maintained by Sylvain. **Stage 1*
 | `typecheck` | `npm run typecheck` (`tsc --noEmit`) | Scaffold merge | |
 | `unit` | `npm run test` (Vitest, run mode) | Scaffold merge | |
 | `build` | `npm run build` (type-check + Vite production build), with `VITE_API_MODE=mock` set explicitly | Scaffold merge | Catches build-only failures the other jobs miss |
-| `db` | `supabase start` → `supabase db reset` (migrations + seed) → `supabase test db` (pgTAP) | Migration 001 merge | Disposable database; needs no secrets. Seed reads `DEMO_PASSWORD` from a CI-only dummy value |
+| `db` (`.github/workflows/db.yml`: PGlite stand-in, Supabase local stack with `supabase test db`, `deno check`) | Migrations + seed + pgTAP; Edge Function type check | **Require only the `Database gate` check** in the `main` ruleset | Runs on every pull request. The gate passes at once when no file under `supabase/`, `tools/pglite-db-tests/` or `db.yml` changed, and otherwise only when all three database jobs pass, so a required database check never blocks other PRs (issue #14, item 1). Disposable database; needs no secrets. Seed reads `DEMO_PASSWORD` from a CI-only dummy value |
 | `secrets` | Secret scanner over the PR diff and full history (e.g. gitleaks) | **Immediately**, even before code exists | Covers R-10 |
 | `audit` | `npm audit --audit-level=high`, report saved as a job artifact | Scaffold merge | The report feeds SEC-02. A finding blocks merge unless recorded with a reason in the PR |
 | `e2e` | Playwright against staging, `--trace off` | **Not required** for merge; runs after deploy to staging and on demand | Chrome, Edge, Firefox + one mobile viewport (QA-01). Results go to `artifacts/phase-NN/` |
