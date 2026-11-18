@@ -18,7 +18,7 @@ Every step marked **Not run** has no run record yet. Results go to `artifacts/ph
 ### Free-plan limits (Supabase pricing page; verify on the day of any plan decision)
 
 - **No backups you can restore from the dashboard.** The restore drill in §6 therefore uses a logical dump, and the fallback is a rebuild from the repository: `supabase db push --db-url "$SUPABASE_DB_URL" --include-seed` into a new project recreates the schema and the fictional demo data (proven on 17 Nov 2026, and in CI on every push). Anything entered after seeding is lost in that case.
-- **Projects pause after about a week without activity.** A paused project breaks OPS-03 (the portal must stay live until 3 Dec 2026). Mitigation (staying on Free, 17 Nov 2026): Sylvain's uptime monitor (§4) calls `POST /rest/v1/rpc/health` every few minutes, which also keeps the project active; the scheduled keep-alive workflow (PR #37, every second day) is a fallback that fails visibly if the project stops answering. Still check the dashboard before judging. Moving to Pro remains a cost decision for the project owner.
+- **Projects pause after about a week without activity.** A paused project breaks OPS-03 (the portal must stay live until 3 Dec 2026). Mitigation (staying on Free, 17 Nov 2026): Sylvain's uptime monitor (§4) calls `POST /rest/v1/rpc/health` every few minutes, which also keeps the project active; the scheduled keep-alive workflow (PR #37, every second day) is a fallback that fails visibly if the project stops answering. **Who is alerted:** GitHub emails a failed scheduled run to the person who last changed its `cron` line, currently **Stacey**, who checks the dashboard and restores the project if it has paused; the uptime monitor alerts the named contact (DEF-01). Still check the dashboard before judging. Moving to Pro remains a cost decision for the project owner.
 - **Leaked-password protection** (HaveIBeenPwned check) is a Pro feature. The security advisor still reports it disabled on 17 Nov 2026. The minimum password length (Auth settings) is **10** on hosted, set on 17 Nov 2026 (it was 6).
 
 ### Storage and cost assumptions (to verify against the providers' pricing pages on the day of the decision)
@@ -46,6 +46,7 @@ No figure here is a measured cost. The submitted proposal quotes prices only wit
 
 Run from a clean checkout of the release commit. Each step's output goes into the run record.
 
+0. **Only migrations already merged to `main`** are applied to a hosted project, staging or judging (Sylvain's review of #35).
 1. `supabase link --project-ref <ref>` (or use the database connection string with `--db-url`).
 2. `supabase migration list` — **stop** if the remote shows migrations or tables that are not in `supabase/migrations/`; ask the backend lead.
 3. `supabase db push --include-seed` — applies migrations 001 onwards in order, then the fictional seed. Seed only a fresh project.
@@ -53,6 +54,8 @@ Run from a clean checkout of the release commit. Each step's output goes into th
 5. `supabase functions deploy attachment-url email-relay invite-staff` and set the Edge Function secrets above.
 6. Create the three Vault secrets (contract §4.8) once the email relay should run.
 7. Smoke test: `select public.health();` returns `ok: true` and the latest migration version; signing in as `applicant.a@demo.ceda-portal.test` shows two idea cards.
+8. **Judging project only, before code freeze (22 Nov 2026, 18:00 CAT):** the allowed origins and Auth URLs name the `release` URL **and nothing else**. Remove `http://localhost:5173` from `APP_ORIGINS` (set `PORTAL_URL` to the release URL) and from the Auth Redirect URLs, and set the Auth Site URL to the release URL. Read the settings back and record them in the run record.
+9. After code freeze, do not run the pgTAP runner (`tools/pglite-db-tests/run-hosted.mjs`) against the judging project; use `health()` and read-only checks.
 
 ## 4. Health checks and monitoring
 
