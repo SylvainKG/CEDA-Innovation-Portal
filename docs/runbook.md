@@ -92,7 +92,7 @@ Run from a clean checkout of the release commit. Each step's output goes into th
 5. Record the elapsed time (recovery time) and the age of the backup (recovery point) in `artifacts/phase-07/restore-drill.md`.
 6. For a dashboard restore (Pro): Database → Backups → Restore, into the same or a new project; then repeat step 4.
 
-**Status: Not run.** Needs the hosted project to be populated first.
+**Status (18 Nov 2026): Passed for the database data, by the Free-plan method.** With no dashboard backups and no Docker on hand, the drill ran as `node --env-file=.env tools/pglite-db-tests/restore-drill.mjs <dir outside the repo>`: a read-only logical backup (TLS verified, no password hashes), a rebuild of an empty Postgres from the migrations, the data load, then verification (every table row by row, foreign keys, `health()`, the sequence, all pgTAP suites). Result: 33 tables identical, 460/460 tests, **recovery time 5.2 s**; the recovery point is the time of the last backup. A self-test that damages the copy makes the drill fail. Record: `artifacts/phase-07/restore-drill.md`. Still **Not run**: Storage objects, and loading a backup into a real Supabase project. Take a fresh backup before judging and after any demo-data change.
 
 ## 7. Recovering from common failures
 
