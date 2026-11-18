@@ -23,14 +23,14 @@ Every check starts as **Not run**. A check becomes Passed or Failed only with a 
 
 ## 2. Negative suite (blueprint §3.3), required on video and automated
 
-Status 17 Nov 2026: every N-test passes at the database layer: pgTAP on the Supabase local stack in CI, and **on the hosted project** (all suites, 463/463, migrations 001–012; API contract §9). The files are `supabase/tests/database/0NN_*.test.sql` on `main` (migration 012 is in PR #35). Browser (Playwright) and hosted-build runs through the UI are still Not run.
+Status 17 Nov 2026: every N-test passes at the database layer: pgTAP on the Supabase local stack in CI, and **on the hosted project** (all suites, 468/468 with migrations 001–013 on 17 Nov; run record `artifacts/phase-00/hosted-supabase.md`, PR #39; 012 and 013 reach `main` with #35 and #40). The files are `supabase/tests/database/0NN_*.test.sql` on `main` (migration 012 is in PR #35). Browser (Playwright) and hosted-build runs through the UI are still Not run.
 
 Each case is tested at **every entry route** that applies: the page, the PostgREST table/view, the RPC, Storage and Realtime.
 
 | # | Attempt | Expected | Accounts | pgTAP | Playwright | Slice | Status |
 |---|---|---|---|---|---|---|---|
-| N1 | Applicant B opens A's case and calls the REST endpoint | 403 page / zero rows | applicant.b | ✓ | ✓ | S1 | pgTAP **Passed** (001, 002; [CI run 44067341804 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44067341804)); Playwright Not run |
-| N2 | Applicant B requests A's attachment URL; an expired 60 s link | Refused; expired link fails | applicant.b, applicant.a | ✓ | ✓ | S1 | pgTAP **Passed** (002; [CI run 44067341804 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44067341804)); Playwright Not run |
+| N1 | Applicant B opens A's case and calls the REST endpoint | 403 page / zero rows | applicant.b | ✓ | ✓ | S1 | pgTAP **Passed** (002; [CI run 44067341804 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44067341804)); Playwright Not run |
+| N2 | Applicant B requests A's attachment URL; an expired 60 s link | Refused; expired link fails | applicant.b, applicant.a | ✓ | ✓ | S1 | pgTAP: refusal **Passed**, 60-second expiry **Not run** (002; [CI run 44067341804 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44067341804)); Playwright Not run |
 | N3 | Unassigned Reviewer 3 opens the case | Zero rows, no file link | reviewer.3 | ✓ | ✓ | S2 | pgTAP **Passed** (001, 002, 003, 005; [CI run 44067341804 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44067341804)); Playwright Not run |
 | N4 | Applicant A queries the decision before publication | Nothing returned (not in payload) | applicant.a | ✓ | ✓ | S5 | pgTAP **Passed** (001, 006; [CI run 44067341804 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44067341804)); Playwright Not run |
 | N5 | Admin awards a case that is not approved | `CASE_NOT_APPROVED`; no rows change | admin | ✓ | ✓ | S5 | pgTAP **Passed** (001, 006; [CI run 44067341804 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44067341804)); Playwright Not run |
