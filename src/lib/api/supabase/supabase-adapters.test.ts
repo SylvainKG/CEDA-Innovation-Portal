@@ -278,9 +278,18 @@ describe('Supabase submission adapter: commands', () => {
     const f = fakeClient({ rpc: { register_attachment: refusal('INVALID_STATE', 'Files can only be added to a draft.') } })
     expect(await createSupabaseSubmission(f.client).uploadAttachment({ proposalId: 'p1', file: pdf() })).toMatchObject({ kind: 'refused', code: 'INVALID_STATE' })
     expect(f.rpcs).toHaveLength(1)
-    const denied = fakeClient({ upload: { data: null, error: { statusCode: '403', message: 'new row violates row-level security policy' } } })
+    // The body hosted Storage sends for a policy denial (HTTP 400), as observed by Stacey on 18 Nov.
+    const denied = fakeClient({
+      upload: { data: null, error: { statusCode: '403', error: 'Unauthorized', message: 'new row violates row-level security policy' } },
+    })
     expect(await createSupabaseSubmission(denied.client).uploadAttachment({ proposalId: 'p1', file: pdf() })).toMatchObject({ kind: 'refused', code: 'INVALID_STATE' })
     expect(denied.rpcs).toHaveLength(0)
+  })
+
+  it('treats any other storage 4xx as a plain upload failure, not "your own draft"', async () => {
+    const bad = fakeClient({ upload: { data: null, error: { statusCode: '400', error: 'Bad Request', message: 'Invalid key' } } })
+    await expect(createSupabaseSubmission(bad.client).uploadAttachment({ proposalId: 'p1', file: pdf() })).rejects.toThrow(/did not upload/)
+    expect(bad.rpcs).toHaveLength(0)
   })
 
   it('submits with the request key; a refusal is refused, a lost or odd reply is UNKNOWN with the same key', async () => {
