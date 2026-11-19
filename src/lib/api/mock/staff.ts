@@ -35,6 +35,9 @@ const PATHS: Partial<Record<CaseStatus, CaseStatus[]>> = {
 const DAY = 86_400_000
 const REVIEWER_1 = { id: '00000000-0000-4000-8000-0000000000c1', name: 'Demo Reviewer 1' }
 const REVIEWER_2 = { id: '00000000-0000-4000-8000-0000000000c2', name: 'Demo Reviewer 2' }
+const REVIEWER_3 = { id: '00000000-0000-4000-8000-0000000000c3', name: 'Demo Reviewer 3' }
+/** The seed's reviewer accounts (seed.sql demo_user). */
+const REVIEWERS = [REVIEWER_1, REVIEWER_2, REVIEWER_3]
 
 interface SeedCase {
   n: number
@@ -98,6 +101,7 @@ function seedCase(c: SeedCase): StaffCase {
     challenge: { id: WATER_FORM.challenge_id, title: WATER_FORM.title },
     submitted_at: c.submitted,
     updated_at: events[events.length - 1]!.at,
+    active_reviewers: assignments.length,
     version: {
       version_no: 1,
       submitted_at: c.submitted,
@@ -125,14 +129,18 @@ function seedCase(c: SeedCase): StaffCase {
 const state = {
   /** Seeded cases with any screening applied in this session. */
   seeded: new Map<string, StaffCase>(),
+  /** Assignments per case (seeded and session cases alike), including removed ones. */
+  assignments: new Map<string, CaseAssignment[]>(),
   latencyMs: import.meta.env.MODE === 'test' ? 0 : 200,
 }
 
 function resetSeeded() {
   state.seeded.clear()
+  state.assignments.clear()
   for (const c of SEED) {
     const built = seedCase(c)
     state.seeded.set(built.id, built)
+    state.assignments.set(built.id, built.assignments)
   }
 }
 resetSeeded()
@@ -169,13 +177,26 @@ function allCases(): StaffCase[] {
       files: s.files,
       events: s.events,
       assignments: [],
+      active_reviewers: 0,
     }
   })
-  return [...state.seeded.values(), ...submitted]
+  return [...state.seeded.values(), ...submitted].map((c) => {
+    const assignments = state.assignments.get(c.id) ?? []
+    return { ...c, assignments, active_reviewers: assignments.filter((a) => !a.revoked_at).length }
+  })
 }
 
 function toRow(c: StaffCase): StaffCaseRow {
-  return { id: c.id, reference: c.reference, title: c.title, status: c.status, challenge: c.challenge, submitted_at: c.submitted_at, updated_at: c.updated_at }
+  return {
+    id: c.id,
+    reference: c.reference,
+    title: c.title,
+    status: c.status,
+    challenge: c.challenge,
+    submitted_at: c.submitted_at,
+    updated_at: c.updated_at,
+    active_reviewers: c.active_reviewers,
+  }
 }
 
 export const mockStaff: StaffPort = {
@@ -220,5 +241,67 @@ export const mockStaff: StaffPort = {
       mockMoveCase(proposalId, event)
     }
     return { kind: 'ok', data: { proposal_id: proposalId, status: to, result } }
+  },
+
+  async listReviewers() {
+    await wait()
+    // Reading other people's roles and names needs role.manage (admins), as on the server.
+    if (!(await roles()).includes('admin')) return []
+    const active = [...state.assignments.values()].flat().filter((a) => !a.revoked_at)
+    return REVIEWERS.map((r) => ({ id: r.id, name: r.name, active_assignments: active.filter((a) => a.reviewer_id === r.id).length }))
+  },
+
+  async assignReviewers({ proposalId, reviewerIds, dueAt }) {
+    await wait()
+    // Contract §4.2 order: permission → count → due date → can read the case → in evaluation → each reviewer.
+    if (!(await roles()).includes('admin')) return refused('FORBIDDEN', "You don't have access to this action.")
+    const ids = [...new Set(reviewerIds)]
+    if (ids.length < 1 || ids.length > 10) return refused('VALIDATION', 'Choose between 1 and 10 reviewers.', { reviewers: 'Choose between 1 and 10 reviewers' })
+    const due = dueAt ?? new Date(Date.now() + 14 * DAY).toISOString()
+    if (Date.parse(due) <= Date.now()) return refused('VALIDATION', 'The due date must be in the future.', { due_at: 'Must be in the future' })
+    const c = allCases().find((x) => x.id === proposalId)
+    if (!c) return refused('FORBIDDEN', "You don't have access to this action.")
+    if (c.status !== 'in_evaluation') return refused('INVALID_STATE', 'Reviewers can be assigned once the case has passed screening.')
+    const list = state.assignments.get(proposalId) ?? []
+    for (const id of ids) {
+      if (!REVIEWERS.some((r) => r.id === id)) return refused('VALIDATION', 'Everyone you assign must hold the reviewer role.', { reviewers: 'Not a reviewer' })
+      if (list.some((a) => a.reviewer_id === id && a.has_conflict)) return refused('VALIDATION', 'This reviewer declared a conflict of interest on this case.', { reviewers: 'Declared a conflict' })
+    }
+    const now = new Date().toISOString()
+    const assigned: { assignment_id: string; reviewer_id: string }[] = []
+    const already: { assignment_id: string; reviewer_id: string }[] = []
+    for (const id of ids) {
+      const existing = list.find((a) => a.reviewer_id === id && !a.revoked_at)
+      if (existing) {
+        already.push({ assignment_id: existing.id, reviewer_id: id })
+        continue
+      }
+      const a: CaseAssignment = {
+        id: crypto.randomUUID(),
+        reviewer_id: id,
+        reviewer_name: REVIEWERS.find((r) => r.id === id)?.name ?? null,
+        assigned_at: now,
+        due_at: due,
+        declared_at: null,
+        has_conflict: null,
+        revoked_at: null,
+      }
+      list.push(a)
+      assigned.push({ assignment_id: a.id, reviewer_id: id })
+    }
+    state.assignments.set(proposalId, list)
+    return { kind: 'ok', data: { proposal_id: proposalId, assigned, already_assigned: already, active_reviewers: list.filter((a) => !a.revoked_at).length } }
+  },
+
+  async revokeAssignment({ assignmentId, reason }) {
+    await wait()
+    if (!(await roles()).includes('admin')) return refused('FORBIDDEN', "You don't have access to this action.")
+    const text = reason.trim()
+    if (text.length < 1 || [...text].length > 500) return refused('VALIDATION', 'Give a reason (up to 500 characters).', { reason: 'Required' })
+    const a = [...state.assignments.values()].flat().find((x) => x.id === assignmentId)
+    if (!a) return refused('FORBIDDEN', "You don't have access to this action.")
+    if (a.revoked_at) return refused('INVALID_STATE', 'This assignment was already removed.')
+    a.revoked_at = new Date().toISOString()
+    return { kind: 'ok', data: { assignment_id: assignmentId, revoked: true as const } }
   },
 }

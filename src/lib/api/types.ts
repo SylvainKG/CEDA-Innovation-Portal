@@ -294,6 +294,8 @@ export interface StaffCaseRow {
   challenge: { id: string; title: string }
   submitted_at: string
   updated_at: string
+  /** Active reviewer assignments on the case (0 when the reader may not see assignments). */
+  active_reviewers: number
 }
 
 /** A row of `case_events` (append-only). Staff see the reason; applicants only the public stage. */
@@ -335,4 +337,20 @@ export interface ScreeningOutcome {
   proposal_id: string
   status: CaseStatus
   result: ScreeningResult
+}
+
+/** A person who can be assigned to review (holds the reviewer role), with their current load (T10). */
+export interface ReviewerOption {
+  id: string
+  name: string
+  /** Active (not removed) assignments across all cases. */
+  active_assignments: number
+}
+
+/** `assign_reviewers` (contract §4.2). Already-active reviewers are skipped, so a retry is safe. */
+export interface AssignReviewersResult {
+  proposal_id: string
+  assigned: { assignment_id: string; reviewer_id: string }[]
+  already_assigned: { assignment_id: string; reviewer_id: string }[]
+  active_reviewers: number
 }

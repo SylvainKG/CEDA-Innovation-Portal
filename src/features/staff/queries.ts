@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '@/lib/api'
-import type { ApiErrorCode, CaseStatus, ScreeningResult } from '@/lib/api/types'
+import type { ApiErrorCode, CaseStatus, CommandOutcome, ScreeningResult, StaffCase } from '@/lib/api/types'
 import { submissionKeys } from '@/features/submission/queries'
 
 /** Read hooks for the staff screens (Slice 2). `null` means "not visible", which includes "does not exist". */
@@ -64,4 +64,51 @@ export function useRecordScreening(proposalId: string) {
 
   const reset = useCallback(() => setState({ kind: 'idle' }), [])
   return { state, record, reset }
+}
+
+export function useReviewers(enabled: boolean) {
+  return useQuery({ queryKey: [...staffKeys.all, 'reviewers'], queryFn: () => api.staff.listReviewers(), enabled })
+}
+
+/** State of a staff action that has no request key (assign, remove). */
+export type CaseCommandState =
+  | { kind: 'idle' }
+  | { kind: 'saving' }
+  | { kind: 'refused'; code: ApiErrorCode; message?: string; fields?: Record<string, string> }
+  | { kind: 'unconfirmed' }
+  | { kind: 'done' }
+
+/**
+ * Run a staff action on one case. After an unexpected error the hook re-reads the case and asks `landed` whether
+ * the change is there; only then does it report success. A refusal changed nothing.
+ */
+export function useCaseCommand<I>(
+  proposalId: string,
+  send: (input: I) => Promise<CommandOutcome<unknown>>,
+  landed: (fresh: StaffCase, input: I) => boolean,
+) {
+  const qc = useQueryClient()
+  const [state, setState] = useState<CaseCommandState>({ kind: 'idle' })
+
+  const run = useCallback(
+    async (input: I): Promise<CaseCommandState> => {
+      setState({ kind: 'saving' })
+      let next: CaseCommandState
+      try {
+        const outcome = await send(input)
+        if (outcome.kind === 'ok') next = { kind: 'done' }
+        else if (outcome.kind === 'refused') next = { kind: 'refused', code: outcome.code, message: outcome.message, fields: outcome.fields }
+        else next = { kind: 'unconfirmed' }
+      } catch {
+        const fresh = await api.staff.getCase(proposalId).catch(() => null)
+        next = fresh && landed(fresh, input) ? { kind: 'done' } : { kind: 'unconfirmed' }
+      }
+      setState(next)
+      if (next.kind === 'done' || (next.kind === 'refused' && next.code === 'INVALID_STATE')) await qc.invalidateQueries({ queryKey: staffKeys.all })
+      return next
+    },
+    [landed, proposalId, qc, send],
+  )
+  const reset = useCallback(() => setState({ kind: 'idle' }), [])
+  return { state, run, reset }
 }
