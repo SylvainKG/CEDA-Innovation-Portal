@@ -9,6 +9,7 @@ import { STAFF_ROLES, type Role } from '@/lib/api/types'
 import { NotBuiltYet } from '@/pages/NotBuiltYet'
 import { SignInPage } from '@/pages/auth/SignInPage'
 import { RegisterPage } from '@/pages/auth/RegisterPage'
+import { ContactsPage, FaqPage, PrivacyPage, SupportPage } from '@/pages/help/HelpPages'
 import { ForgotPasswordPage, ResetPasswordPage, VerifyEmailPage } from '@/pages/auth/RecoveryPages'
 import { ComponentGalleryRoute } from '@/pages/ComponentGalleryRoute'
 import { ProposalFormPage } from '@/pages/applicant/ProposalForm'
@@ -36,10 +37,10 @@ export const routes: RouteObject[] = [
       { path: '/auth/forgot', element: <ForgotPasswordPage /> },
       { path: '/auth/reset', element: <ResetPasswordPage /> },
       { path: '/auth/mfa', element: nb('T02', 'Two-step sign-in') },
-      { path: '/help/faqs', element: nb('T03', 'FAQs') },
-      { path: '/help/contacts', element: nb('T03', 'Regulatory contacts') },
-      { path: '/help/support', element: nb('T03', 'Fault support') },
-      { path: '/privacy', element: nb('T03', 'Privacy notice') },
+      { path: '/help/faqs', element: <FaqPage /> },
+      { path: '/help/contacts', element: <ContactsPage /> },
+      { path: '/help/support', element: <SupportPage /> },
+      { path: '/privacy', element: <PrivacyPage /> },
       // Development-only component gallery: only registered in mock mode, never with a real backend.
       ...(apiMode === 'mock'
         ? [

@@ -263,3 +263,19 @@ export interface PrivacyNotice {
 
 /** What changed in the auth session, so cached data for the previous person can be dropped. */
 export type AuthChange = 'signed_in' | 'signed_out' | 'user_updated' | 'password_recovery'
+
+// ---------------------------------------------------------------------------------------------------
+// Help and information pages (T03 content variants, HLP-01): read from `content_pages` (§3: published rows,
+// also `anon`). The privacy notice and declaration have their own reads (session and submission ports).
+// ---------------------------------------------------------------------------------------------------
+
+export type ContentKind = 'faq' | 'contact' | 'referral' | 'support'
+
+export interface ContentPage {
+  slug: string
+  kind: ContentKind
+  title: string
+  body_md: string
+  /** Sample wording awaiting CEDA's confirmation; the page labels it. */
+  is_sample: boolean
+}

@@ -1,8 +1,11 @@
+import type { ContentPort } from './content'
 import type { SessionPort } from './session'
 import type { SubmissionPort } from './submission'
+import { mockContent } from './mock/content'
 import { mockSession } from './mock/session'
 import { mockSubmission } from './mock/submission'
 import { createBrowserClient, readSupabaseConfig } from './supabase/client'
+import { createSupabaseContent } from './supabase/content'
 import { createSupabaseSession } from './supabase/session'
 import { createSupabaseSubmission } from './supabase/submission'
 
@@ -32,11 +35,15 @@ export function resolveApiMode(raw: string | undefined, isDev: boolean): ApiMode
 
 export const apiMode: ApiMode = resolveApiMode(import.meta.env.VITE_API_MODE as string | undefined, import.meta.env.DEV)
 
-function buildApi(mode: ApiMode): { session: SessionPort; submission: SubmissionPort } {
-  if (mode === 'mock') return { session: mockSession, submission: mockSubmission }
+function buildApi(mode: ApiMode): { session: SessionPort; submission: SubmissionPort; content: ContentPort } {
+  if (mode === 'mock') return { session: mockSession, submission: mockSubmission, content: mockContent }
   // Fails fast at start-up when the URL or key is missing, rather than on the first request.
   const client = createBrowserClient(readSupabaseConfig(import.meta.env))
-  return { session: createSupabaseSession(client), submission: createSupabaseSubmission(client) }
+  return {
+    session: createSupabaseSession(client),
+    submission: createSupabaseSubmission(client),
+    content: createSupabaseContent(client),
+  }
 }
 
 export const api = buildApi(apiMode)
