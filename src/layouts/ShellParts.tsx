@@ -84,7 +84,7 @@ export function MockRoleSwitcher({ compact = false }: { compact?: boolean }) {
 export function TopBarEnd() {
   const { data: user } = useSession()
   return (
-    <div className="flex shrink-0 items-center gap-1 sm:gap-2">
+    <div className="flex shrink-0 items-center gap-1 md:gap-2">
       <DemoBadge />
       {user ? <NotificationsLink /> : null}
       {user ? <span className="hidden text-sm text-ink-muted lg:inline">{user.displayName}</span> : null}

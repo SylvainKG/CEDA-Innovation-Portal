@@ -40,8 +40,8 @@ export function StaffShell() {
     <div className="flex min-h-screen flex-col">
       <SkipLink />
       <header className="border-b border-line bg-surface-card">
-        <div className="flex items-center justify-between gap-2 px-4 py-2 sm:gap-4">
-          <div className="flex min-w-0 items-center gap-1 sm:gap-2">
+        <div className="flex items-center justify-between gap-2 px-4 py-2 md:gap-4">
+          <div className="flex min-w-0 items-center gap-1 md:gap-2">
             <button
               type="button"
               className="inline-flex min-h-touch min-w-touch items-center justify-center rounded-md lg:hidden"
