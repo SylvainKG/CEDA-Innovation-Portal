@@ -4,6 +4,8 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `feature` **CEDA logo everywhere it belongs**: header of every shell (logo alone below 768 px), the T02 auth card above the title (spec T02), and the printed receipt (the header is not printed; the DEMO line stays). Browser tab and home-screen icons (`favicon.ico`, `favicon-32.png`, `apple-touch-icon.png`) made from the logo's arc, since the wordmark is unreadable at 16 px. Source: the supplied 447 px PNG, upscaled 4x; replace with CEDA's vector logo when available.
+
 - `feature` **T02 sign in, register, verify, forgot and reset**, built from the written spec (BCR-003; design review by Sandra pending). MFA stays a placeholder until the staff slice (demo staff skip it, D-07).
   - Centred card (max 440 px); error summary linking to each field; focus moves to the heading.
   - Messages never say which of email or password was wrong, nor whether an account exists: an existing address on register, and an unknown one on reset or resend, look like success.

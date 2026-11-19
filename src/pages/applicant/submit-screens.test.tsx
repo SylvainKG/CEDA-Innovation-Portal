@@ -103,6 +103,10 @@ describe('T04 proposal form', () => {
     expect(screen.getByTestId('location')).toHaveTextContent(`/ideas/${id}/receipt`)
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
+    // The printed receipt carries the CEDA logo and the DEMO line (the header is not printed).
+    const printLogo = screen.getAllByRole('img', { name: 'CEDA' }).find((img) => img.className.includes('print:block'))
+    expect(printLogo).toBeDefined()
+    expect(screen.getByText('DEMO — fictional data. This is not a real CEDA receipt.')).toBeInTheDocument()
   })
 
   it('a lost reply shows "Not confirmed yet"; checking finds the same receipt', async () => {
