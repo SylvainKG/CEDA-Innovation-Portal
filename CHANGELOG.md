@@ -7,10 +7,11 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 - `feature` **T02 sign in, register, verify, forgot and reset**, built from the written spec (BCR-003; design review by Sandra pending). MFA stays a placeholder until the staff slice (demo staff skip it, D-07).
   - Centred card (max 440 px); error summary linking to each field; focus moves to the heading.
   - Messages never say which of email or password was wrong, nor whether an account exists: an existing address on register, and an unknown one on reset or resend, look like success.
-  - Register shows the current privacy notice (with its Sample label) and a required consent box; its version goes with the sign-up, and the server keeps it only if current. Password rule shown in advance: at least 12 characters (spec). **The server's Auth minimum is 10 (`supabase/config.toml`); raised with Stacey.**
+  - Register shows the current privacy notice (with its Sample label) and a required consent box; its version goes with the sign-up, and the server keeps it only if current. Password rule shown in advance: at least 12 characters (spec). The server's Auth minimum is also 12 (hosted since 19 Nov; `config.toml` in #50); email links return to `/auth/sign-in?verified=1` and `/auth/reset`, which hosted Auth now allows.
   - Verify page: resend waits 60 s. The address travels in navigation state, never in the URL.
   - Reset: needs the recovery session from the email link; afterwards the person is signed out and signs in again.
   - **Sign out** in every shell's top bar. Signing out, or a different person signing in on this device, removes unsent drafts, pending submit keys and cached data; the same person keeps their unsent work.
+  - Sign out is an icon (with a screen-reader label) below 768 px, and the staff header's gaps tighten on phones, so the 360 px staff shells don't scroll sideways (e2e, Stacey's #47 review).
   - Sign-in and sign-out from another tab or an email link are followed (`useAuthSync`).
   - `repair`: a session read started on page load could land after sign-in and overwrite the new session with "signed out"; in-flight session reads are now cancelled first.
   - Session port gains `signIn`, `register`, `resendVerification`, `requestPasswordReset`, `updatePassword`, `signOut`, `getPrivacyNotice`, `onChange`. The mock signs the seed's demo emails in as their persona (not authentication; development only) and keeps the labelled role picker.
