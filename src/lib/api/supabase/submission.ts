@@ -256,9 +256,12 @@ export function createSupabaseSubmission(client: SupabaseClient): SubmissionPort
       const path = `${proposalId}/${newRequestId()}.${ext}`
       const upload = await client.storage.from('proposal-files').upload(path, file, { contentType: file.type, upsert: false })
       if (upload.error) {
-        const status = Number((upload.error as { statusCode?: string | number }).statusCode)
-        // The upload policy allows only the owner's own draft (can_upload_to).
-        if (status === 400 || status === 403) return refused('INVALID_STATE', 'Files can only be added to your own draft.')
+        // A storage-policy denial (can_upload_to: only the owner's own draft) arrives as HTTP 400 with a body
+        // whose statusCode is "403" and error "Unauthorized" (observed on hosted, Stacey's #46 review). Other
+        // 400s (bad request, invalid key) are plain upload failures, so the "own draft" message only shows when true.
+        const body = upload.error as { statusCode?: string | number; error?: string }
+        if (String(body.statusCode) === '403' || body.error === 'Unauthorized')
+          return refused('INVALID_STATE', 'Files can only be added to your own draft.')
         throw new ApiError('The file did not upload. Try again.', upload.error)
       }
 

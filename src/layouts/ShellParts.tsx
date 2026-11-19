@@ -1,4 +1,4 @@
-import { Bell } from 'lucide-react'
+import { Bell, LogOut } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import cedaLogo from '@/assets/ceda-logo.png'
 import { DemoBadge } from '@/components/DemoBadge'
@@ -84,7 +84,7 @@ export function MockRoleSwitcher({ compact = false }: { compact?: boolean }) {
 export function TopBarEnd() {
   const { data: user } = useSession()
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex shrink-0 items-center gap-1 sm:gap-2">
       <DemoBadge />
       {user ? <NotificationsLink /> : null}
       {user ? <span className="hidden text-sm text-ink-muted lg:inline">{user.displayName}</span> : null}
@@ -107,9 +107,11 @@ function SignOutButton() {
         navigate('/')
         signOut.mutate()
       }}
-      className="inline-flex min-h-touch min-w-touch items-center justify-center rounded-md px-2 text-sm text-ink hover:bg-surface-sunken"
+      className="inline-flex min-h-touch min-w-touch shrink-0 items-center justify-center gap-2 rounded-md px-2 text-ink hover:bg-surface-sunken"
     >
-      Sign out
+      {/* Icon only below md, like Notifications, so the 360 px staff header does not scroll sideways (#47 e2e). */}
+      <LogOut aria-hidden className="h-5 w-5" />
+      <span className="sr-only md:not-sr-only">Sign out</span>
     </button>
   )
 }

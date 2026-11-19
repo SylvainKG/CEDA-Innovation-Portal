@@ -7,10 +7,11 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 - `feature` **T02 sign in, register, verify, forgot and reset**, built from the written spec (BCR-003; design review by Sandra pending). MFA stays a placeholder until the staff slice (demo staff skip it, D-07).
   - Centred card (max 440 px); error summary linking to each field; focus moves to the heading.
   - Messages never say which of email or password was wrong, nor whether an account exists: an existing address on register, and an unknown one on reset or resend, look like success.
-  - Register shows the current privacy notice (with its Sample label) and a required consent box; its version goes with the sign-up, and the server keeps it only if current. Password rule shown in advance: at least 12 characters (spec). **The server's Auth minimum is 10 (`supabase/config.toml`); raised with Stacey.**
+  - Register shows the current privacy notice (with its Sample label) and a required consent box; its version goes with the sign-up, and the server keeps it only if current. Password rule shown in advance: at least 12 characters (spec). The server's Auth minimum is also 12 (hosted since 19 Nov; `config.toml` in #50); email links return to `/auth/sign-in?verified=1` and `/auth/reset`, which hosted Auth now allows.
   - Verify page: resend waits 60 s. The address travels in navigation state, never in the URL.
   - Reset: needs the recovery session from the email link; afterwards the person is signed out and signs in again.
   - **Sign out** in every shell's top bar. Signing out, or a different person signing in on this device, removes unsent drafts, pending submit keys and cached data; the same person keeps their unsent work.
+  - Sign out is an icon (with a screen-reader label) below 768 px, and the staff header's gaps tighten on phones, so the 360 px staff shells don't scroll sideways (e2e, Stacey's #47 review).
   - Sign-in and sign-out from another tab or an email link are followed (`useAuthSync`).
   - `repair`: a session read started on page load could land after sign-in and overwrite the new session with "signed out"; in-flight session reads are now cancelled first.
   - Session port gains `signIn`, `register`, `resendVerification`, `requestPasswordReset`, `updatePassword`, `signOut`, `getPrivacyNotice`, `onChange`. The mock signs the seed's demo emails in as their persona (not authentication; development only) and keeps the labelled role picker.
@@ -24,7 +25,7 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
   - Outcomes: a known code is a refusal; a lost or malformed submit reply is UNKNOWN with the same request key; registration is retried once after a lost reply (idempotent by path); a lost save reply throws, so autosave keeps the answers on the device.
   - `@supabase/supabase-js` pinned to 2.119.0 (released 4 Nov 2026). Production dependency audit: 0 vulnerabilities.
 
-  Evidence: 19 adapter tests against a recording fake client (142 in total); lint, type-check, and build in both modes pass. Not yet run against the hosted project: that needs the T02 sign-in screens and Stacey's go-ahead for the staging keys.
+  Evidence: 19 adapter tests against a recording fake client (142 in total); lint, type-check, and build in both modes pass. Not yet run against the hosted project. Before any build is switched to `supabase` mode, #42 (`list_my_ideas`, migration 014) must be merged and on hosted; the build uses the publishable key, and its URL must be on the Auth redirect allow-list (Stacey's #46 review). A Storage policy denial is recognised by its body (`statusCode` "403" / `Unauthorized`), not by the HTTP 400 it arrives with.
 
 - `feature` **T04 proposal form and T05 receipt**, built from the written spec (BCR-003, D-45 proposed; design review by Sandra pending). Routes `/ideas/new?challenge=`, `/ideas/:id/edit`, `/ideas/:id/receipt?v=`:
   - sections from the challenge's form schema, plus Attachments and Review & declare. Stepper on desktop, "Section n of m" on mobile; the step is in the URL hash, and focus moves to the step heading;

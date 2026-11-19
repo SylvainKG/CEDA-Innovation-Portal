@@ -1,6 +1,6 @@
 import type { AuthRefusal } from '@/lib/api/types'
 
-/** Spec T02 asks for at least 12 characters. The server's Auth setting is 10 (supabase/config.toml), raised with Stacey. */
+/** Spec T02: at least 12 characters. The server's Auth minimum is also 12 (hosted since 19 Nov; config.toml in #50). */
 export const PASSWORD_MIN = 12
 
 /** Spec T02: the resend link is rate-limited ("You can resend in 60 s"). */
