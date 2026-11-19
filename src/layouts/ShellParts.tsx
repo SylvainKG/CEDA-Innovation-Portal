@@ -24,7 +24,8 @@ export function Brand() {
     <Link to="/" className="flex min-h-touch items-center gap-3 font-bold text-ink no-underline">
       {/* Official CEDA logo, upscaled from the supplied 447 px PNG; replace with CEDA's vector file when available. */}
       <img src={cedaLogo} alt="CEDA" width={1432} height={900} className="h-10 w-auto" />
-      <span>Innovation Portal</span>
+      {/* Logo alone on phones so the text cannot collide with the DEMO badge; still read out as "CEDA Innovation Portal". */}
+      <span className="sr-only md:not-sr-only">Innovation Portal</span>
     </Link>
   )
 }
