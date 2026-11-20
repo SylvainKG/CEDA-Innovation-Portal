@@ -21,6 +21,7 @@ import { ReportsPage } from '@/pages/oversight/ReportsPage'
 import { ApplicantChatPage } from '@/pages/support/ApplicantChatPage'
 import { SupportInboxPage } from '@/pages/support/SupportInboxPage'
 import { ScreeningQueuePage } from '@/pages/staff/ScreeningQueuePage'
+import { StaffHomePage } from '@/pages/staff/StaffHomePage'
 import { StaffCasePage } from '@/pages/staff/StaffCasePage'
 import { ForgotPasswordPage, ResetPasswordPage, VerifyEmailPage } from '@/pages/auth/RecoveryPages'
 import { ComponentGalleryRoute } from '@/pages/ComponentGalleryRoute'
@@ -81,7 +82,7 @@ export const routes: RouteObject[] = [
   {
     element: <StaffShell />,
     children: [
-      { path: '/staff', element: guard(STAFF_ROLES, nb('T06', 'Home', 'Staff')) },
+      { path: '/staff', element: guard(STAFF_ROLES, <StaffHomePage />) },
       { path: '/staff/queue/screening', element: guard(['screening_officer', 'admin'], <ScreeningQueuePage />) },
       { path: '/staff/reviews', element: guard(['reviewer'], <MyReviewsPage />) },
       { path: '/staff/queue/decision', element: guard(['adjudicator', 'admin'], <DecisionQueuePage />) },
