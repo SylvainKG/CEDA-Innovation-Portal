@@ -16,7 +16,7 @@ Items marked **[confirm at release]** are filled in or checked on the release bu
 
 ### Demo accounts
 
-All addresses end in `@demo.ceda-portal.test`. Each account sees only what its role allows. **[confirm at release]** the "Start here" screens: some staff screens are still being built.
+All addresses end in `@demo.ceda-portal.test`. Each account sees only what its role allows. Staff accounts open on **Home**, which is still a placeholder in this version: use the menu to go to the "Start here" screen.
 
 | Account | Role | Start here | Look at |
 |---|---|---|---|
@@ -26,9 +26,9 @@ All addresses end in `@demo.ceda-portal.test`. Each account sees only what its r
 | `reviewer.1`, `reviewer.2` | Reviewers | My reviews | Declare no conflict, then score against the rubric |
 | `reviewer.3` | Reviewer, not assigned to the demo case | My reviews | Sees nothing of cases they aren't assigned to |
 | `adjudicator` | Adjudicator | Ready for decision | Compare scores, record and publish a decision |
-| `admin` | Administrator and auditor | All cases | Assign reviewers, record an award, read the audit log |
-| `consultant` | Support consultant and lead | Support inbox **[confirm at release]** | Answers questions; can't see proposals or scores |
-| `committee.ext` | External committee member | All cases | Reference and stage only (D-08) |
+| `admin` | Administrator and auditor | All cases | Assign reviewers, record an award, Reports (CSV export), Audit log. The admin settings screens are not built in this version |
+| `consultant` | Support consultant and lead | Support inbox | Take and answer chats; chat statistics under Reports. Can't see proposals or scores |
+| `committee.ext` | External committee member | All cases **[confirm at release]** | Reference and stage only (D-08); this view is still being built |
 | `applicant.c`, `.d`, `.e` | Applicants | My ideas | Owners of the background cases |
 
 **Staff two-step sign-in:** staff permissions normally require a second factor. The seeded demo staff accounts are exempt so that judges can sign in directly (D-07). The exemption is a setting, and it is switched off for any real use.
@@ -47,10 +47,12 @@ The demo data holds eight earlier cases (`CEDA-2026-0001` to `0008`), so **your 
 | 6 | `admin` | The case → **Record award** (for example BWP 250,000.50) | The applicant sees the award |
 | 7 | `applicant.a` | My ideas → the idea | The stage timeline, decision, award and next steps |
 
-**[confirm at release]** which of steps 2–7 run through the screens on the judging build. Steps whose screens are not released are shown in the demo video and were verified through the API (claim C-15).
+Every step above runs through the screens. Each step was also verified against the hosted backend through the API (claim C-15); the browser run against the hosted backend is **[confirm at release]**.
 
 Also worth trying:
-- **Revision and roadmap:** as `screening`, ask for a revision with tasks on a case. The applicant answers each task, and version 1's scores stay with version 1 (C-13). **[confirm at release]**
+- **Revision and roadmap:** as `screening`, ask for a revision with tasks on a case. The applicant answers each task in version 2, each reviewer verifies each task, and version 1's scores stay with version 1 (C-13).
+- **Reports and audit:** as `admin`, open **Reports** (participation, outcomes, time in stage; CSV export) and the **Audit log** (filter by case, action and date).
+- **Live chat:** as `applicant.a`, open **Chat** (09:00–16:00 CAT on working days; outside those hours it says it is closed); as `consultant`, answer it in the **Support inbox**.
 - **Clarification:** case `CEDA-2026-0003` has an open question for `applicant.e`. A reply returns the case to its stage without creating a new version.
 
 ## 3. Access control you can check yourself
@@ -64,7 +66,7 @@ These are refused **by the server**, not only hidden in the screens.
 | As `reviewer.3`, look for the demo case | Not listed; no proposal and no files (N3) |
 | As `reviewer.1`, open an assigned case **before** declaring | No proposal and no files until the declaration (N10) |
 | As `consultant`, look for proposals or scores | None (N7) |
-| As `admin`, try to give yourself another role (through the users screen **[confirm at release]**, or the API) | Refused, and the attempt is audited (N8) |
+| As `admin`, try to give yourself another role (the users screen is not built in this version; the refusal is proven at the database layer, N8) | Refused, and the attempt is audited |
 | As `applicant.a`, look for a decision before it is published | Nothing (N4) |
 
 Evidence for each: the negative suite in `docs/testing/test-plan.md` §2 and the run records in `artifacts/phase-00/hosted-supabase.md`.
