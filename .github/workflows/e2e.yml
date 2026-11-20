@@ -12,6 +12,11 @@ on:
       base_url:
         description: 'Run against a deployed site instead of a local build (e.g. the Amplify staging URL)'
         required: false
+      journey:
+        description: 'Also run the real-backend journey (tests/e2e/hosted-journey.spec.ts). CHANGES staging data: snapshot before, reset after. Never against judging.'
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -38,6 +43,9 @@ jobs:
         run: npm run test:e2e -- --trace off
         env:
           E2E_BASE_URL: ${{ inputs.base_url }}
+          # Only a manual run with "journey" ticked gets the demo password; pull requests never do.
+          E2E_JOURNEY: ${{ github.event_name == 'workflow_dispatch' && inputs.journey && '1' || '' }}
+          DEMO_PASSWORD: ${{ github.event_name == 'workflow_dispatch' && inputs.journey && secrets.DEMO_PASSWORD || '' }}
       - name: Keep the report when a test fails
         if: failure()
         uses: actions/upload-artifact@v4

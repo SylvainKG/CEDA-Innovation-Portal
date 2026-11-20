@@ -27,6 +27,7 @@ Every check starts as **Not run**. A check becomes Passed or Failed only with a 
 - **Projects:** Chromium at **360 px** and **1280 px** (spec §3.3). Edge and Firefox are added for QA-01 (§5).
 - **Specs:** `tests/e2e/`. `shell-smoke.spec.ts` covers what exists today: page heading and DEMO label, no horizontal scroll, skip link, signed-out redirect, Forbidden and Not-found states, 44 px targets.
 - **What it does not prove:** the route guard is a UI convenience. **Access control is evidenced only by the N-tests against the real backend** (pgTAP now, Playwright once screens call the RPCs).
+- **Real-backend journey** (`hosted-journey.spec.ts`, issue #61): every demo account signs in; a wrong password is refused; staff screens show Forbidden to the wrong roles; Applicant B gets Not found for A's idea and receipt (N-a); Applicant A submits an idea, and a lost reply on `submit_proposal` is recovered with one case only (N-k). Run it with *Run workflow* → `base_url` = a real-backend build, `journey` ticked; it reads `DEMO_PASSWORD` from the Actions secret. **It changes staging data**: snapshot before, exact reset after (#65). Never against judging. Locally against a mock build: `E2E_JOURNEY=1 E2E_JOURNEY_MOCK=1 E2E_BASE_URL=…`.
 - **CI:** `.github/workflows/e2e.yml`, separate from `ci.yml`. Not a required check until the N1–N11 suite runs against the backend.
 
 ## 2. Negative suite (blueprint §3.3), required on video and automated
