@@ -39,7 +39,7 @@ The full dated log is `docs/submission/research-log.md`. The main findings and w
 
 ## 4. Design
 
-**Users.** Nine roles, each with a home page that shows its work first: applicant, screening officer, reviewer, adjudicator, administrator, support consultant, support lead, external committee member (reference and stage only, D-08) and auditor.
+**Users.** Nine roles, each with navigation that leads straight to its own work: applicant, screening officer, reviewer, adjudicator, administrator, support consultant, support lead, external committee member (reference and stage only, D-08) and auditor.
 
 **Experience.**
 
@@ -49,7 +49,12 @@ The full dated log is `docs/submission/research-log.md`. The main findings and w
 - **Accessibility:** one main heading per page, a skip link, visible focus, labels on every field, 44 × 44 px touch targets, and contrast of at least 4.5:1. Each page is checked at 360 px and 1280 px.
 - **Brand:** CEDA's colours, fonts and logo from the team's Make file (D-04), with the orange used where it meets contrast rules.
 
-**Process.** Where a design frame existed, screens follow it; elsewhere they were built from the written specification and reviewed by the designer on staging (BCR-003). **[confirm at release]** the screens that ship and their review status.
+**Process.** Where a design frame existed, screens follow it; elsewhere they were built from the written specification and reviewed by the designer on staging (BCR-003). By 20 November every screen of the main journey was built, along with notifications, reports, the audit log and live chat. Not built in this version: the staff home page, the admin settings and users screens, staff two-step enrolment and the committee view; they show an honest "Not built yet" page. Design review status: **[confirm at release]**.
+
+<p><img src="img/proposal-form.png" alt="Proposal form with sections, autosave and progress" width="49%"> <img src="img/applicant-case.png" alt="Applicant case view with the stage timeline" width="49%"></p>
+<p><img src="img/reviewer-scorecard.png" alt="Reviewer scorecard with anchored 1-5 scores and hidden peer scores" width="49%"> <img src="img/reports.png" alt="Reports dashboard with CSV export" width="49%"></p>
+
+*Figure 1: the proposal form, the applicant's case view, a reviewer's scorecard (other reviewers' scores stay hidden until submission) and the reports dashboard. Demo build with fictional data.*
 
 ## 5. Architecture
 
@@ -91,15 +96,15 @@ The full dated log is `docs/submission/research-log.md`. The main findings and w
 | Brief function | How we meet it | Evidence (claim register) |
 |---|---|---|
 | **Secure submission** | Private file storage; paths never contain the user's file name; type and size checked by the server; 60-second download links after an access check. Submit is one transaction (case, locked V1, reference `CEDA-2026-NNNN`, audit, notification) and is idempotent: retrying can never create a second case | C-02 Passed on hosted (link refused after 62 s); C-11 Passed (same key → same receipt; two simultaneous submits → one case) |
-| **Team evaluation and adjudication** | Screening; at least two reviewers; a declaration before the proposal opens (a conflict removes the assignment); 1–5 anchored scores with a required reason; peer scores hidden until a reviewer submits; a panel with individual and weighted scores and spread; a decision recorded as a draft, then published; an award only after approval | C-03, C-10, C-12, C-05 Passed (database); C-15 partly passed (API level on the hosted project; screens **[confirm at release]**) |
+| **Team evaluation and adjudication** | Screening; at least two reviewers; a declaration before the proposal opens (a conflict removes the assignment); 1–5 anchored scores with a required reason; peer scores hidden until a reviewer submits; a panel with individual and weighted scores and spread; a decision recorded as a draft, then published; an award only after approval | C-03, C-10, C-12, C-05 Passed (database); C-15 partly passed (API level on the hosted project; the screens pass the same journey in a browser against the demo build; the hosted browser run is **[confirm at release]**) |
 | **Stage tracking** | Five public stages on a timeline; "Action required" with a deadline; every change in an immutable case history | C-13, C-14 |
 | **Role-based access** | Nine roles as data; RLS on every table, deny by default; no browser writes; nobody can grant themselves a role (refused and audited) | C-01, C-07, C-08 Passed; 11 negative tests (N1–N11) |
 | **Real-time updates** | Supabase Realtime on notifications and case history, filtered by the same access rules | C-16 Passed on hosted: another applicant received 0 events |
 | **Feedback** | Clarification (a reply, no new version) and revision (a new version with the Feedback Roadmap) | C-13 Passed (V1 scores kept after V2) |
-| **Reporting dashboards** | Participation, outcomes and time in stage, from the case history, with CSV export | Backend built and tested; **[confirm at release]** the screens |
+| **Reporting dashboards** | Participation, outcomes and time in stage, from the case history, with CSV export | Built and tested, screens included; the CSV export guards against spreadsheet formulas in applicant text |
 | **Scalability and flexibility** | New roles, permissions and rubric criteria are data, not code; challenges carry their own form and rubric versions; stateless frontend on a CDN; Postgres indexes on hot paths | Scaling note (section 10) |
 | **Data integrity** | Versions, audit entries and history are append-only: triggers refuse change or deletion by any portal user, including administrators. Every transition is checked against the case's current state | C-06 Passed (database layer) |
-| **Ease of use for every user type** | A role-specific home, plain language, autosave and device copy, honest "not confirmed" states, 360 px layouts | Browser checks at 360 and 1280 px; **[confirm at release]** keyboard and timed-task log |
+| **Ease of use for every user type** | Role-specific navigation, plain language, autosave and device copy, honest "not confirmed" states, 360 px layouts | Browser checks at 360 and 1280 px; **[confirm at release]** keyboard and timed-task log |
 
 ## 8. Innovation: the Constructive Feedback Roadmap
 
@@ -110,7 +115,7 @@ A typical challenge portal ends a weak application with a decision and a paragra
 3. Each assigned reviewer **verifies** each task on the V2 scorecard (Verified or Not verified, with a note). Version 1's scores stay with version 1, so progress is visible and fair.
 4. Reports can then show something most portals can't: how many ideas improved after feedback and reached a later stage.
 
-It is backed by a side-by-side comparison of V1 and V2 (INN-01) and a rule-based completeness helper on the form (INN-03). **No proposal data goes to any external AI service (D-25).** **[confirm at release]** which of the roadmap screens ship; the database rules for all four steps are built and tested (C-13).
+It is backed by a side-by-side comparison of V1 and V2 (INN-01) and a rule-based completeness helper on the form (INN-03). **No proposal data goes to any external AI service (D-25).** All four steps are built in the screens, and the database enforces them (C-13).
 
 ## 9. Security and privacy
 
@@ -169,4 +174,5 @@ Every claim is in `docs/testing/claim-register.md`, with its evidence and what i
 | Retention and data-subject requests | Proposed in the data-handling note; manual, not automated |
 | Region comparison with Mumbai | **Not run** |
 | Restore into a full Supabase project, and file storage backup | **Not run** |
-| Screens that ship, browser journey result, plan and contact details | **[confirm at release]** |
+| Staff home, admin settings and users screens, staff two-step enrolment, committee view | **Not built** in this version |
+| Hosted browser journey result, design review, plan and contact details | **[confirm at release]** |
