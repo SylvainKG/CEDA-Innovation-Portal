@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { Banner, Button, NotificationItem } from '@/components'
 import { EmptyState, ErrorState, LoadingState } from '@/components/states/States'
 import { useMarkRead, useNotifications } from '@/features/oversight/queries'
-import { api, apiMode } from '@/lib/api'
+import { api } from '@/lib/api'
 import type { AppNotification, CommandOutcome } from '@/lib/api/types'
 import { formatDateCAT } from '@/lib/format'
 import { useSession } from '@/lib/session'
@@ -133,7 +133,8 @@ function AlertToggle({ applicant }: { applicant: boolean }) {
         </div>
       )}
       <div aria-live="polite">{note ? <Banner kind={note.kind === 'ok' ? 'success' : note.kind}>{note.text}</Banner> : null}</div>
-      {apiMode === 'mock' ? <Banner kind="demo">Email delivery is simulated in this demo.</Banner> : null}
+      {/* No SMTP is connected for the demo in either mode (claim C-22: Simulated); remove only when one is. */}
+      <Banner kind="demo">Email delivery is simulated in this demo.</Banner>
     </section>
   )
 }
