@@ -64,7 +64,7 @@ src/
   routes/           route table and route guards (UI convenience; the server enforces access)
   lib/api/          typed API ports and adapters (the only place allowed to talk to Supabase)
   lib/              status wording, CAT date formatting, helpers
-  pages/            screens (unbuilt routes show an honest "Not built yet" placeholder)
+  pages/            screens, one folder per area (public, auth, applicant, staff, review, admin, support, oversight, help)
   styles/           design tokens (tokens.css) and base styles
 ```
 
