@@ -38,8 +38,11 @@
   --feedback-success-subtle: #edf7f0; /* [make] */
   --feedback-warning: #b54708; /* [placeholder] */
   --feedback-warning-subtle: #fef0c7; /* [placeholder] */
-  --demo: #6941c6; /* [placeholder] DEMO badge, Sample labels */
-  --demo-subtle: #f4f0ff; /* [placeholder] */
+  /* DEMO badge and Sample labels (Sandra, #47 review, 20 Nov: existing brand neutrals only, no purple). */
+  --demo: #333333; /* [decided] DEMO pill background; Sample label text (11.4:1 on --demo-subtle) */
+  --demo-on: #ffffff; /* [decided] text on --demo (12.63:1) */
+  --demo-subtle: #f3f2ef; /* [decided] Sample label and demo banner background */
+  --demo-border: #8a8580; /* [decided] Sample label dashed border */
 
   /* Status tones (spec §6). Badge text always uses --text-primary so it passes contrast in every tone;
      the tone comes from background + icon colour (icon is UI: ≥ 3:1). F4 (separate tones) is pending. */
