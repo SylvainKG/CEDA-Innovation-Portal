@@ -5,8 +5,10 @@ import { expect, test, type Browser, type Page } from '@playwright/test'
  * Stacey's #65 proved each step through the REST API; this suite proves the screens do the same.
  *
  * Runs only when asked:
- * - hosted:  E2E_JOURNEY=1, E2E_BASE_URL=<real-backend build>, DEMO_PASSWORD=<from the GitHub Actions secret>
- *            (the E2E workflow's "journey" input sets these; the password never appears in the repo or the logs);
+ * - real backend: E2E_JOURNEY=1 and DEMO_PASSWORD=<from the GitHub Actions secret>, against either a deployed
+ *            real-backend build (E2E_BASE_URL) or a local build of this checkout in Supabase mode (E2E_LOCAL_SUPABASE=1);
+ *            the E2E workflow's "journey" input sets these; the password never appears in the repo or the logs;
+ * - writes:  the submit test (one new case) runs only with E2E_JOURNEY_WRITE=1, after a snapshot (#65, #68);
  * - mock:    E2E_JOURNEY=1 E2E_JOURNEY_MOCK=1 against a mock-mode build, to check the selectors locally.
  *
  * It CHANGES DATA on hosted (one new case, CEDA-2026-0009 on fresh demo data). Ask the backend lead for a
@@ -17,7 +19,9 @@ import { expect, test, type Browser, type Page } from '@playwright/test'
 const journey = process.env.E2E_JOURNEY === '1'
 const mock = process.env.E2E_JOURNEY_MOCK === '1'
 const password = process.env.DEMO_PASSWORD ?? ''
-const hosted = journey && !mock && !!process.env.E2E_BASE_URL && password.length >= 12
+const realBackend = !!process.env.E2E_BASE_URL || process.env.E2E_LOCAL_SUPABASE === '1'
+const hosted = journey && !mock && realBackend && password.length >= 12
+const writes = mock || process.env.E2E_JOURNEY_WRITE === '1'
 
 const DOMAIN = '@demo.ceda-portal.test'
 type Account = { email: string; role: string }
@@ -35,7 +39,7 @@ const NOT_FOUND = "We can't find this page"
 const REFERENCE = /CEDA-\d{4}-\d{4}/
 
 test.describe.configure({ mode: 'serial' })
-test.skip(!journey || (!mock && !hosted), 'Journey suite: set E2E_JOURNEY=1 with a real-backend E2E_BASE_URL and DEMO_PASSWORD, or E2E_JOURNEY_MOCK=1')
+test.skip(!journey || (!mock && !hosted), 'Journey suite: set E2E_JOURNEY=1 with DEMO_PASSWORD (12+) and a real backend (E2E_BASE_URL or E2E_LOCAL_SUPABASE=1), or E2E_JOURNEY_MOCK=1')
 test.beforeEach(() => {
   test.skip(test.info().project.name !== 'desktop-1280', 'The journey runs once, on desktop')
 })
@@ -144,6 +148,7 @@ test("N-a: Applicant B cannot open Applicant A's idea or receipt (Not found, no 
 })
 
 test('Applicant A submits an idea; a lost reply is recovered without a second case (N-k)', async ({ browser }) => {
+  test.skip(!writes, 'Writes one case: run with E2E_JOURNEY_WRITE=1 after a snapshot of staging (#65, #68)')
   test.setTimeout(180_000)
   const page = await asAccount(browser, ACCOUNTS.applicantA)
   await page.goto('/ideas')

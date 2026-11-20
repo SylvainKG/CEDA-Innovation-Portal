@@ -13,7 +13,12 @@ on:
         description: 'Run against a deployed site instead of a local build (e.g. the Amplify staging URL)'
         required: false
       journey:
-        description: 'Also run the real-backend journey (tests/e2e/hosted-journey.spec.ts). CHANGES staging data: snapshot before, reset after. Never against judging.'
+        description: 'Run the real-backend journey (tests/e2e/hosted-journey.spec.ts) instead of the smoke tests. Read-only unless "journey_write" is ticked. Never against judging.'
+        type: boolean
+        required: false
+        default: false
+      journey_write:
+        description: 'Also run the submit test, which CREATES one case on staging. Only after a snapshot (#65, #68); reset afterwards.'
         type: boolean
         required: false
         default: false
@@ -40,12 +45,39 @@ jobs:
       - name: Install Chromium for Playwright
         run: npx playwright install --with-deps chromium
       - name: Run browser tests
+        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.journey) }}
         run: npm run test:e2e -- --trace off
         env:
           E2E_BASE_URL: ${{ inputs.base_url }}
-          # Only a manual run with "journey" ticked gets the demo password; pull requests never do.
-          E2E_JOURNEY: ${{ github.event_name == 'workflow_dispatch' && inputs.journey && '1' || '' }}
-          DEMO_PASSWORD: ${{ github.event_name == 'workflow_dispatch' && inputs.journey && secrets.DEMO_PASSWORD || '' }}
+      # Real-backend journey (issue #61): only a manual run with "journey" ticked gets these values; pull requests never do.
+      # Without base_url it builds this checkout in Supabase mode (public URL + publishable key) and serves it on 5173.
+      - name: Check the journey settings (names only, never values)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.journey }}
+        env:
+          HAS_URL: ${{ vars.SUPABASE_URL != '' }}
+          HAS_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY != '' }}
+          HAS_PASSWORD: ${{ secrets.DEMO_PASSWORD != '' }}
+          BASE_URL: ${{ inputs.base_url }}
+        run: |
+          echo "variable SUPABASE_URL set: $HAS_URL | secret SUPABASE_PUBLISHABLE_KEY set: $HAS_KEY | secret DEMO_PASSWORD set: $HAS_PASSWORD"
+          missing=""
+          [ "$HAS_PASSWORD" = "true" ] || missing="$missing DEMO_PASSWORD(secret)"
+          if [ -z "$BASE_URL" ]; then
+            [ "$HAS_URL" = "true" ] || missing="$missing SUPABASE_URL(variable)"
+            [ "$HAS_KEY" = "true" ] || missing="$missing SUPABASE_PUBLISHABLE_KEY(secret)"
+          fi
+          if [ -n "$missing" ]; then echo "::error::Missing repository settings:$missing (Settings > Secrets and variables > Actions)"; exit 1; fi
+      - name: Real-backend journey
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.journey }}
+        run: npm run test:e2e -- tests/e2e/hosted-journey.spec.ts --project=desktop-1280 --trace off
+        env:
+          E2E_BASE_URL: ${{ inputs.base_url }}
+          E2E_LOCAL_SUPABASE: ${{ inputs.base_url == '' && '1' || '' }}
+          VITE_SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+          E2E_JOURNEY: '1'
+          E2E_JOURNEY_WRITE: ${{ inputs.journey_write && '1' || '' }}
+          DEMO_PASSWORD: ${{ secrets.DEMO_PASSWORD }}
       - name: Keep the report when a test fails
         if: failure()
         uses: actions/upload-artifact@v4
