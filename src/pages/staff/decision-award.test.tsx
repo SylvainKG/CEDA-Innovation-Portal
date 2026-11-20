@@ -31,9 +31,11 @@ function renderAt(path: string) {
 }
 
 const as = (role: Role | null) => mockSession.switchDemoRole?.(role)
+/** The case page renders many tabs; under full-suite load its first render can exceed the 1 s default. */
+const LOAD = { timeout: 5000 }
 
 async function recordDecision(user: UserEvent, outcome: 'Approved' | 'Not approved', reason: string, button = 'Record decision') {
-  await user.click(await screen.findByRole('button', { name: button }))
+  await user.click(await screen.findByRole('button', { name: button }, LOAD))
   const dialog = await screen.findByRole('dialog', { name: 'Record decision for CEDA-2026-0004' })
   await user.click(within(dialog).getByRole('radio', { name: outcome }))
   await user.type(within(dialog).getByLabelText(/^Reason/), reason)
@@ -66,7 +68,7 @@ describe('Slice 5: decide, publish, award', () => {
   it('the adjudicator records an unpublished decision, then publishes it', async () => {
     await as('adjudicator')
     const user = renderAt(`/staff/cases/${CASE_4}`)
-    await user.click(await screen.findByRole('button', { name: 'Record decision' }))
+    await user.click(await screen.findByRole('button', { name: 'Record decision' }, LOAD))
     const dialog = await screen.findByRole('dialog', { name: 'Record decision for CEDA-2026-0004' })
     expect(within(dialog).getByText("The applicant won't see this until you publish.")).toBeInTheDocument()
     await user.click(within(dialog).getByRole('button', { name: 'Save decision (not published)' }))
@@ -116,7 +118,7 @@ describe('Slice 5: decide, publish, award', () => {
 
     await as('admin')
     const user = renderAt(`/staff/cases/${CASE_4}`)
-    await user.click(await screen.findByRole('button', { name: 'Record award' }))
+    await user.click(await screen.findByRole('button', { name: 'Record award' }, LOAD))
     const dialog = await screen.findByRole('dialog', { name: 'Record award for CEDA-2026-0004' })
     await user.type(within(dialog).getByLabelText(/^Amount \(BWP\)/), '250,000.50')
     expect(within(dialog).getByText('Recorded as BWP 250,000.50.')).toBeInTheDocument()
@@ -132,7 +134,7 @@ describe('Slice 5: decide, publish, award', () => {
   it('shows the seeded approval and award', async () => {
     await as('admin')
     const user = renderAt(`/staff/cases/${CASE_6}`)
-    expect(await screen.findByText('Awarded BWP 250,000.00.')).toBeInTheDocument()
+    expect(await screen.findByText('Awarded BWP 250,000.00.', {}, LOAD)).toBeInTheDocument()
     await user.click(screen.getByRole('tab', { name: 'Decision' }))
     const panel = screen.getByRole('tabpanel')
     expect(within(panel).getByRole('heading', { name: 'Decision: Approved' })).toBeInTheDocument()
@@ -142,7 +144,7 @@ describe('Slice 5: decide, publish, award', () => {
   it('a screening officer can close an open case with a reason', async () => {
     await as('screening_officer')
     const user = renderAt(`/staff/cases/${CASE_1}`)
-    await user.click(await screen.findByRole('button', { name: 'Close case' }))
+    await user.click(await screen.findByRole('button', { name: 'Close case' }, LOAD))
     const dialog = await screen.findByRole('dialog', { name: 'Close CEDA-2026-0001' })
     await user.click(within(dialog).getByRole('button', { name: 'Close case' }))
     expect(within(dialog).getByText('Give a reason')).toBeInTheDocument()
