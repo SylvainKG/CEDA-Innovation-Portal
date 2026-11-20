@@ -1,13 +1,16 @@
 import type { ContentPort } from './content'
+import type { ReviewPort } from './review'
 import type { SessionPort } from './session'
 import type { StaffPort } from './staff'
 import type { SubmissionPort } from './submission'
 import { mockContent } from './mock/content'
+import { mockReview } from './mock/review'
 import { mockSession } from './mock/session'
 import { mockStaff } from './mock/staff'
 import { mockSubmission } from './mock/submission'
 import { createBrowserClient, readSupabaseConfig } from './supabase/client'
 import { createSupabaseContent } from './supabase/content'
+import { createSupabaseReview } from './supabase/review'
 import { createSupabaseSession } from './supabase/session'
 import { createSupabaseStaff } from './supabase/staff'
 import { createSupabaseSubmission } from './supabase/submission'
@@ -38,8 +41,8 @@ export function resolveApiMode(raw: string | undefined, isDev: boolean): ApiMode
 
 export const apiMode: ApiMode = resolveApiMode(import.meta.env.VITE_API_MODE as string | undefined, import.meta.env.DEV)
 
-function buildApi(mode: ApiMode): { session: SessionPort; submission: SubmissionPort; content: ContentPort; staff: StaffPort } {
-  if (mode === 'mock') return { session: mockSession, submission: mockSubmission, content: mockContent, staff: mockStaff }
+function buildApi(mode: ApiMode): { session: SessionPort; submission: SubmissionPort; content: ContentPort; staff: StaffPort; review: ReviewPort } {
+  if (mode === 'mock') return { session: mockSession, submission: mockSubmission, content: mockContent, staff: mockStaff, review: mockReview }
   // Fails fast at start-up when the URL or key is missing, rather than on the first request.
   const client = createBrowserClient(readSupabaseConfig(import.meta.env))
   return {
@@ -47,6 +50,7 @@ function buildApi(mode: ApiMode): { session: SessionPort; submission: Submission
     submission: createSupabaseSubmission(client),
     content: createSupabaseContent(client),
     staff: createSupabaseStaff(client),
+    review: createSupabaseReview(client),
   }
 }
 

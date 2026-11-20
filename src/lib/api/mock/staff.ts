@@ -191,6 +191,34 @@ function allCases(): StaffCase[] {
   })
 }
 
+/** Move a case on (seeded here, or submitted in this session in the submission mock). */
+function moveCase(proposalId: string, event: CaseEvent) {
+  const seeded = state.seeded.get(proposalId)
+  if (seeded) {
+    seeded.status = event.to_status
+    seeded.events = [...seeded.events, event]
+    seeded.updated_at = event.at
+  } else {
+    mockMoveCase(proposalId, event)
+  }
+}
+
+/** The mock persona id for the seed's Demo Reviewer 1 (mock/session.ts), and the seed accounts it stands for. */
+const PERSONA_TO_SEED: Record<string, string> = { 'demo-reviewer-1': REVIEWER_1.id }
+
+/**
+ * Mock-only bridge for the mock reviewer adapter, which shares this in-memory state (so an admin's assignment
+ * shows in the reviewer's queue, and a submitted scorecard can move the case on). Not part of any port.
+ */
+export const mockStaffInternals = {
+  cases: () => allCases(),
+  assignments: () => state.assignments,
+  moveCase,
+  /** The seed reviewer account a mock persona acts as, if any. */
+  seedReviewerId: (personaId: string | undefined) => (personaId ? PERSONA_TO_SEED[personaId] : undefined),
+  publicStage: (status: CaseStatus) => PUBLIC_STAGE[status] ?? null,
+}
+
 function toRow(c: StaffCase): StaffCaseRow {
   return {
     id: c.id,
@@ -237,14 +265,7 @@ export const mockStaff: StaffPort = {
 
     const to: CaseStatus = result === 'eligible' ? 'in_evaluation' : 'closed'
     const event: CaseEvent = { from_status: 'submitted', to_status: to, public_stage: PUBLIC_STAGE[to] ?? null, reason: text, at: new Date().toISOString() }
-    const seeded = state.seeded.get(proposalId)
-    if (seeded) {
-      seeded.status = to
-      seeded.events = [...seeded.events, event]
-      seeded.updated_at = event.at
-    } else {
-      mockMoveCase(proposalId, event)
-    }
+    moveCase(proposalId, event)
     return { kind: 'ok', data: { proposal_id: proposalId, status: to, result } }
   },
 
