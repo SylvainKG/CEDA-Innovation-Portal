@@ -4,6 +4,10 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `feature` **Committee view, status only** (D-08), Provisional UI built from the written spec. Committee members get a **Programme overview** home with counts by stage, and an **All cases** list with reference, challenge, stage and last update. There is no proposal text, no scores, no notes and no link into a case. D-08 is still OPEN in the decision register; this uses the least-privilege option, which is what the server already enforces (`list_case_status`, `case_stage_counts`), so it shows no more than either option would allow. New `CommitteePort`.
+
+  Evidence: 3 new tests (counts reconcile with the seed; titles never shown; reviewer and applicant refused) and 1 updated; 293 in total; lint, type-check and build pass.
+
 - `feature` **Notification bell with the unread count** (NTF-01, spec T11). The bell in every signed-in header shows how many notifications are unread (a badge, "9+" above nine), and its accessible name says it: "Notifications, 3 unread". The count refreshes every 30 seconds and when you return to the tab, and drops as soon as notifications are marked read. Not built: the popover with the 10 latest (the bell opens the full page), Realtime instead of polling, and the email alert opt-in (NTF-02): the database has `profiles.alerts_opt_in` but no way for a person to change their own setting yet, which needs a backend function and the backend owner's approval.
 
   Evidence: 2 new tests (applicant count drops after Mark all as read; staff see only their own count); 290 in total; lint, type-check and build pass.
