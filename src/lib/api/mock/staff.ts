@@ -198,7 +198,7 @@ function allCases(): StaffCase[] {
       challenge: { id: form.challenge_id, title: form.title },
       submitted_at: s.submittedAt,
       updated_at: s.updatedAt,
-      version: { version_no: 1, submitted_at: s.submittedAt, data: s.data, declaration_version: s.declarationVersion },
+      version: { version_no: s.versionNo, submitted_at: s.versionAt, data: s.data, declaration_version: s.declarationVersion },
       form_schema: form.form_schema,
       required_docs: form.required_docs,
       files: s.files,
@@ -247,6 +247,13 @@ export const mockStaffInternals = {
   /** The seed reviewer account a mock persona acts as, if any. */
   seedReviewerId: (personaId: string | undefined) => (personaId ? PERSONA_TO_SEED[personaId] : undefined),
   publicStage: (status: CaseStatus) => PUBLIC_STAGE[status] ?? null,
+  /** A new submitted version on a seeded case (V2 revision). Session cases keep theirs in the submission mock. */
+  setSeededVersion(caseId: string, version: NonNullable<StaffCase['version']>): boolean {
+    const c = state.seeded.get(caseId)
+    if (!c) return false
+    c.version = version
+    return true
+  },
 }
 
 function toRow(c: StaffCase): StaffCaseRow {

@@ -358,3 +358,28 @@ describe('Supabase submission adapter: the applicant’s own case', () => {
     for (const r of f.reads) expect(r.columns, r.table).not.toMatch(/\*/)
   })
 })
+
+describe('Supabase submission adapter: revision (V2)', () => {
+  const responses = [{ task_id: 't1', status: 'addressed' as const, explanation: 'Done.' }]
+  const base = { proposalId: 'p1', clientRequestId: 'k2', changeNote: 'Changed.', taskResponses: responses, declarationVersion: 'v1' }
+
+  it('saves the working copy only when edited, then submits with the contract arguments', async () => {
+    const f = fakeClient({ rpc: { save_draft: { data: { proposal_id: 'p1' }, error: null }, submit_revision: { data: { proposal_id: 'p1', version_no: 2 }, error: null } } })
+    const port = createSupabaseSubmission(f.client)
+    expect(await port.submitRevision({ ...base, data: { summary: 'New' } })).toMatchObject({ kind: 'ok', data: { version_no: 2 } })
+    expect(f.rpcs).toEqual([
+      { fn: 'save_draft', args: { p_data: { summary: 'New' }, p_proposal_id: 'p1', p_challenge_id: null } },
+      { fn: 'submit_revision', args: { p_proposal_id: 'p1', p_client_request_id: 'k2', p_change_note: 'Changed.', p_task_responses: responses, p_declaration_version: 'v1' } },
+    ])
+    const g = fakeClient({ rpc: { submit_revision: { data: { proposal_id: 'p1', version_no: 2 }, error: null } } })
+    await createSupabaseSubmission(g.client).submitRevision({ ...base, data: null })
+    expect(g.rpcs.map((r) => r.fn)).toEqual(['submit_revision'])
+  })
+
+  it('a refusal keeps its fields; a lost reply is UNKNOWN with the same key', async () => {
+    const refusedOnce = fakeClient({ rpc: { submit_revision: refusal('VALIDATION', 'Answer every task.', { 'task:1': 'Mark this task Addressed or Not addressed' }) } })
+    expect(await createSupabaseSubmission(refusedOnce.client).submitRevision({ ...base, data: null })).toMatchObject({ kind: 'refused', fields: { 'task:1': 'Mark this task Addressed or Not addressed' } })
+    const lost = fakeClient({ rpc: { submit_revision: networkError } })
+    expect(await createSupabaseSubmission(lost.client).submitRevision({ ...base, data: null })).toEqual({ kind: 'unknown', requestKey: 'k2' })
+  })
+})
