@@ -366,3 +366,76 @@ export interface InternalNote {
   body: string
   created_at: string
 }
+
+// ---------------------------------------------------------------------------------------------------
+// Slice 3 reviewer side (contract §4.3; REV-02, REV-03, D-11, D-19, D-20).
+// ---------------------------------------------------------------------------------------------------
+
+export type MyReviewStatus = 'declaration_needed' | 'not_started' | 'in_progress' | 'submitted'
+
+/** A row of `my_review_queue()`: enough to recognise a conflict before declaring, no proposal text. */
+export interface ReviewQueueRow {
+  assignment_id: string
+  proposal_id: string
+  reference: string
+  title: string
+  challenge_title: string
+  applicant_organisation: string | null
+  version_no: number | null
+  due_at: string | null
+  case_status: CaseStatus
+  my_status: MyReviewStatus
+}
+
+/** A published rubric criterion (D-20: scores 1–5; anchor text for some values). */
+export interface RubricCriterion {
+  id: string
+  key: string
+  label: string
+  weight: number
+  guidance: string
+  /** Anchor text by score, e.g. { "1": "Not demonstrated", "5": "Fully demonstrated with evidence" }. */
+  anchors: Record<string, string>
+}
+
+export interface ScoreItem {
+  criterion_id: string
+  score: number
+  reason: string
+}
+
+/** The reviewer's own scorecard on the case's current version. */
+export interface MyScorecard {
+  id: string
+  status: 'draft' | 'submitted'
+  overall_comment: string
+  submitted_at: string | null
+  items: ScoreItem[]
+}
+
+/** Everything the scoring screen needs. The proposal is present only once the reviewer has declared. */
+export interface ReviewWorkspace {
+  row: ReviewQueueRow
+  proposal: { version_no: number; data: DraftData; form_schema: FormSchema; files: AttachmentInfo[] } | null
+  criteria: RubricCriterion[]
+  scorecard: MyScorecard | null
+}
+
+export interface DeclareResult {
+  assignment_id: string
+  has_conflict: boolean
+  revoked: boolean
+  replayed: boolean
+}
+
+export interface ScorecardResult {
+  scorecard_id: string
+  status: 'draft' | 'submitted'
+  weighted_score: number | null
+  saved_at?: string
+  submitted_at?: string
+  submitted_count?: number
+  quorum?: number
+  quorum_reached?: boolean
+  replayed?: boolean
+}
