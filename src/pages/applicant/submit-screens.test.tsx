@@ -73,6 +73,18 @@ describe('T04 proposal form', () => {
     expect(await screen.findByText(/^Saved/)).toBeInTheDocument()
   })
 
+  it('keeps answers typed before the first save when Continue is clicked at once (no data loss)', async () => {
+    // Regression (#38 review, issue #61 journey): a hash-only navigation dropped `?challenge=`, which unmounted the
+    // form, and the draft created moments later opened empty.
+    const user = renderAt(`/ideas/new?challenge=${WATER_SMART_ID}`)
+    expect(await screen.findByRole('heading', { level: 1, name: 'New idea' })).toBeInTheDocument()
+    await user.type(screen.getByLabelText(/Your full name/), 'Demo Applicant A')
+    await user.click(screen.getByRole('button', { name: /^Continue: / }))
+    await waitFor(() => expect(screen.getByTestId('location').textContent).toMatch(/^\/ideas\/[0-9a-f-]+\/edit/), { timeout: 4000 })
+    await user.click(screen.getByRole('button', { name: /^Back: / }))
+    expect(await screen.findByLabelText(/Your full name/)).toHaveValue('Demo Applicant A')
+  })
+
   it('says a closed challenge is not accepting ideas, instead of showing the form', async () => {
     renderAt(`/ideas/new?challenge=${YOUTH_DIGITAL_ID}`)
     expect(await screen.findByText('This challenge is not accepting ideas')).toBeInTheDocument()
