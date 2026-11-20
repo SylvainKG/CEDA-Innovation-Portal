@@ -741,3 +741,46 @@ export interface CaseStatusRow {
   public_stage: string
   last_update: string
 }
+
+// ---------------------------------------------------------------------------------------------------
+// T12 challenges (ADM-01, ADM-02; contract migration 008): admin reads and the editor.
+// ---------------------------------------------------------------------------------------------------
+
+export type ChallengeStatus = 'draft' | 'published' | 'unpublished' | 'closed'
+
+export interface AdminChallenge {
+  id: string
+  slug: string
+  title: string
+  summary: string
+  status: ChallengeStatus
+  opens_at: string
+  closes_at: string
+  audience: string
+}
+
+/** A form version: published ones never change (ADM-02); at most one unpublished draft at a time. */
+export interface AdminChallengeVersion {
+  id: string
+  version_no: number
+  brief_md: string
+  form_schema: FormSchema
+  required_docs: RequiredDoc[]
+  rubric_version_id: string
+  published_at: string | null
+}
+
+export interface RubricVersionOption {
+  id: string
+  title: string
+  version_no: number
+  published: boolean
+}
+
+export interface ChallengeDetailsInput {
+  title: string
+  summary: string
+  opensAt: string
+  closesAt: string
+  audience: string
+}
