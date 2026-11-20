@@ -1,6 +1,7 @@
-import { useCallback, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { useCallback, useId, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Banner, Button, ButtonLink, Dialog, ReferencePill, StageTimeline, StatusBadge, TextField } from '@/components'
+import { Tabs } from '@/components/Tabs'
 import { ErrorState, LoadingState, NotFoundState } from '@/components/states/States'
 import { stagesFor } from '@/features/ideas/idea-view'
 import { activeDecision, eventLabel } from '@/features/staff/case-view'
@@ -289,54 +290,6 @@ function PrimaryAction({
     )
   }
   return null
-}
-
-/** Accessible tabs: arrow keys move between tabs, only the selected panel is shown (WAI-ARIA tabs pattern). */
-function Tabs({ label, tabs }: { label: string; tabs: { id: string; label: string; content: ReactNode }[] }) {
-  const [selected, setSelected] = useState(tabs[0]?.id)
-  const base = useId()
-  const refs = useRef<(HTMLButtonElement | null)[]>([])
-  function onKey(e: KeyboardEvent, index: number) {
-    const last = tabs.length - 1
-    const next = e.key === 'ArrowRight' ? (index === last ? 0 : index + 1) : e.key === 'ArrowLeft' ? (index === 0 ? last : index - 1) : e.key === 'Home' ? 0 : e.key === 'End' ? last : null
-    if (next === null) return
-    e.preventDefault()
-    setSelected(tabs[next]!.id)
-    refs.current[next]?.focus()
-  }
-  return (
-    <div className="flex flex-col gap-4">
-      <div role="tablist" aria-label={label} className="flex flex-wrap gap-x-1 border-b border-line">
-        {tabs.map((t, i) => (
-          <button
-            key={t.id}
-            ref={(el) => {
-              refs.current[i] = el
-            }}
-            type="button"
-            role="tab"
-            id={`${base}-tab-${t.id}`}
-            aria-controls={`${base}-panel-${t.id}`}
-            aria-selected={selected === t.id}
-            tabIndex={selected === t.id ? 0 : -1}
-            onClick={() => setSelected(t.id)}
-            onKeyDown={(e) => onKey(e, i)}
-            className={
-              'min-h-touch shrink-0 border-b-2 px-3 font-semibold ' +
-              (selected === t.id ? 'border-brand text-ink' : 'border-transparent text-ink-muted hover:text-ink')
-            }
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-      {tabs.map((t) => (
-        <div key={t.id} role="tabpanel" id={`${base}-panel-${t.id}`} aria-labelledby={`${base}-tab-${t.id}`} hidden={selected !== t.id} tabIndex={0}>
-          {selected === t.id ? t.content : null}
-        </div>
-      ))}
-    </div>
-  )
 }
 
 function ProposalTab({ c }: { c: StaffCase }) {

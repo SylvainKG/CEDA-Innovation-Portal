@@ -44,7 +44,7 @@ function fakeClient(script: {
           return Promise.resolve(take(script.tables?.[table])).then(resolve, reject)
         },
       }
-      for (const op of ['eq', 'in', 'is', 'not', 'order', 'limit', 'maybeSingle'])
+      for (const op of ['eq', 'neq', 'in', 'is', 'not', 'order', 'limit', 'maybeSingle'])
         builder[op] = (...args: unknown[]) => {
           read.filters.push([op, ...args])
           return builder
@@ -332,5 +332,29 @@ describe('Supabase submission adapter: commands', () => {
     const port = createSupabaseSubmission(f.client)
     expect(await port.removeAttachment('a1')).toEqual({ kind: 'ok', data: { id: 'a1', removed: true } })
     expect(await port.removeAttachment('a1')).toMatchObject({ kind: 'refused', code: 'INVALID_STATE' })
+  })
+})
+
+describe('Supabase submission adapter: the applicant’s own case', () => {
+  it('never asks the case history for reasons except the closure one, and reads only a published decision', async () => {
+    const f = fakeClient({
+      tables: {
+        proposals: { data: { id: 'p1', reference: 'CEDA-2026-0009', title: 'T', status: 'closed', submitted_at: 'a', current_version_id: 'v1', challenge_versions: { challenge_id: 'c1', form_schema: { sections: [] }, challenges: { id: 'c1', title: 'W' } } }, error: null },
+        proposal_versions: { data: { version_no: 1, data: { title: 'T' } }, error: null },
+        attachments: { data: [], error: null },
+        case_events: [{ data: [{ public_stage: 'submission', at: 'a' }], error: null }, { data: { reason: 'Outside the scope.', at: 'b' }, error: null }],
+        decisions: { data: null, error: null },
+        awards: { data: null, error: null },
+      },
+    })
+    const c = await createSupabaseSubmission(f.client).getMyCase('p1')
+    expect(c?.closed_reason).toBe('Outside the scope.')
+    const events = f.reads.filter((r) => r.table === 'case_events')
+    expect(events[0]?.columns).toBe('public_stage, at')
+    expect(events[1]?.filters).toContainEqual(['eq', 'to_status', 'closed'])
+    const decision = f.reads.find((r) => r.table === 'decisions')
+    expect(decision?.filters).toEqual(expect.arrayContaining([['not', 'published_at', 'is', null], ['is', 'superseded_at', null]]))
+    expect(f.reads.find((r) => r.table === 'proposals')?.filters).toContainEqual(['neq', 'status', 'draft'])
+    for (const r of f.reads) expect(r.columns, r.table).not.toMatch(/\*/)
   })
 })

@@ -494,3 +494,22 @@ export interface CaseAward {
   description: string
   recorded_at: string
 }
+
+/**
+ * The applicant's own submitted case (T08 applicant view). Only what the applicant may see: public stages,
+ * the closure reason (promised by the contract), and a decision only once published (N4).
+ */
+export interface MyCase {
+  id: string
+  reference: string
+  title: string
+  status: CaseStatus
+  challenge: { id: string; title: string }
+  submitted_at: string
+  version: { version_no: number; data: DraftData; form_schema: FormSchema; files: AttachmentInfo[] } | null
+  /** Public stages reached, oldest first, with the time of the first event in each. */
+  stages: { stage: PublicStage; at: string }[]
+  closed_reason: string | null
+  decision: { outcome: DecisionOutcome; reason: string; published_at: string } | null
+  award: { amount_minor: number; description: string; recorded_at: string } | null
+}

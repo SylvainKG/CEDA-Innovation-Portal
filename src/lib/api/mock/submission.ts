@@ -3,7 +3,7 @@ import { checkForm, isChallengeOpen, schemaKeys } from '@/lib/form-check'
 import { fromRpcError, rpcError } from '../errors'
 import { newRequestId } from '../request-key'
 import type { SubmissionPort } from '../submission'
-import type { AttachmentInfo, CaseEvent, CaseStatus, ChallengeForm, CommandOutcome, DraftData, MyIdea, SubmissionReceipt } from '../types'
+import type { AttachmentInfo, CaseEvent, CaseStatus, ChallengeForm, CommandOutcome, DraftData, MyCase, MyIdea, PublicStage, SubmissionReceipt } from '../types'
 import { mockSession } from './session'
 import { FIRST_DEMO_REFERENCE_NUMBER, MOCK_BRIEFS, MOCK_CHALLENGES, MOCK_CHALLENGE_FORMS, MOCK_DECLARATION, MOCK_SEEDED_IDEA } from './fixtures'
 
@@ -138,6 +138,26 @@ function ownProposal(id: string, userId: string): MockProposal | undefined {
 /** The seeded earlier idea belongs to Demo Applicant A only. */
 const SEEDED_OWNER = 'demo-applicant-a'
 
+/**
+ * The staff mock holds case state (screening, decisions, awards). It imports this module, so it is loaded lazily
+ * here, at call time, to keep module start-up free of a circular import.
+ */
+async function staffCases() {
+  const { mockStaffInternals } = await import('./staff')
+  return mockStaffInternals.cases()
+}
+
+async function seededCaseNow() {
+  return (await staffCases()).find((c) => c.id === MOCK_SEEDED_IDEA.id)
+}
+
+/** First event per public stage, oldest first (as `list_my_ideas` does). */
+function firstStages(events: CaseEvent[]): { stage: PublicStage; at: string }[] {
+  const out: { stage: PublicStage; at: string }[] = []
+  for (const e of events) if (e.public_stage && !out.some((x) => x.stage === e.public_stage)) out.push({ stage: e.public_stage, at: e.at })
+  return out
+}
+
 export const mockSubmission: SubmissionPort = {
   async listChallenges() {
     await wait()
@@ -184,7 +204,14 @@ export const mockSubmission: SubmissionPort = {
             : [],
         }
       })
-    return userId === SEEDED_OWNER ? [...mine, MOCK_SEEDED_IDEA] : mine
+    if (userId !== SEEDED_OWNER) return mine
+    const seeded = await seededCaseNow()
+    return [
+      ...mine,
+      seeded
+        ? { ...MOCK_SEEDED_IDEA, status: seeded.status, updated_at: seeded.updated_at, stages: firstStages(seeded.events) }
+        : MOCK_SEEDED_IDEA,
+    ]
   },
 
   async getChallengeForm(challengeId) {
@@ -341,5 +368,32 @@ export const mockSubmission: SubmissionPort = {
         : [...state.proposals.values()].find((x) => x.ownerId === userId && x.clientRequestId === query.clientRequestId)
     if (!p?.receipt || (query.versionNo !== undefined && query.versionNo !== p.receipt.version_no)) return { found: false }
     return { ...p.receipt, replayed: undefined, found: true }
+  },
+
+  async getMyCase(proposalId) {
+    await wait()
+    const userId = await currentApplicantId()
+    if (!userId) return null
+    const own = ownProposal(proposalId, userId)
+    const isMine = (own && own.status !== 'draft') || (userId === SEEDED_OWNER && proposalId === MOCK_SEEDED_IDEA.id)
+    if (!isMine) return null
+    const c = (await staffCases()).find((x) => x.id === proposalId)
+    if (!c) return null
+    const published = c.decisions.find((d) => d.published_at && !d.superseded_at)
+    const result: MyCase = {
+      id: c.id,
+      reference: c.reference,
+      title: c.title,
+      status: c.status,
+      challenge: c.challenge,
+      submitted_at: c.submitted_at,
+      version: c.version ? { version_no: c.version.version_no, data: { ...c.version.data }, form_schema: c.form_schema, files: [...c.files] } : null,
+      stages: firstStages(c.events),
+      // Only the closure reason reaches the applicant; screening and other reasons stay with staff.
+      closed_reason: c.status === 'closed' ? ([...c.events].reverse().find((e) => e.to_status === 'closed')?.reason ?? null) : null,
+      decision: published ? { outcome: published.outcome, reason: published.reason, published_at: published.published_at! } : null,
+      award: c.award ? { amount_minor: c.award.amount_minor, description: c.award.description, recorded_at: c.award.recorded_at } : null,
+    }
+    return result
   },
 }

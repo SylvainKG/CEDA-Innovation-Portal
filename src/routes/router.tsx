@@ -22,6 +22,7 @@ import { ComponentGalleryRoute } from '@/pages/ComponentGalleryRoute'
 import { ProposalFormPage } from '@/pages/applicant/ProposalForm'
 import { ReceiptPage } from '@/pages/applicant/ReceiptPage'
 import { MyIdeasPage } from '@/pages/applicant/MyIdeasPage'
+import { ApplicantCasePage } from '@/pages/applicant/ApplicantCasePage'
 import { ChallengesPage, PublicHome } from '@/pages/public/PublicHome'
 import { ChallengeBriefPage } from '@/pages/public/ChallengeBriefPage'
 import { apiMode } from '@/lib/api'
@@ -64,7 +65,7 @@ export const routes: RouteObject[] = [
     children: [
       { path: '/ideas', element: guard(['applicant'], <MyIdeasPage />) },
       { path: '/ideas/new', element: guard(['applicant'], <ProposalFormPage />) },
-      { path: '/ideas/:id', element: guard(['applicant'], nb('T08', 'Idea', 'Applicant case view')) },
+      { path: '/ideas/:id', element: guard(['applicant'], <ApplicantCasePage />) },
       { path: '/ideas/:id/edit', element: guard(['applicant'], <ProposalFormPage />) },
       { path: '/ideas/:id/revise', element: guard(['applicant'], nb('T04', 'Revise your idea', 'V2 revise mode')) },
       { path: '/ideas/:id/receipt', element: guard(['applicant'], <ReceiptPage />) },

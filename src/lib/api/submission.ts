@@ -7,6 +7,7 @@ import type {
   DeclarationText,
   DraftData,
   DraftView,
+  MyCase,
   MyIdea,
   ReceiptLookup,
   SaveDraftResult,
@@ -26,6 +27,8 @@ import type {
  * | getDeclaration        | read `content_pages` kind `declaration` (§3)                              |
  * | getDraft              | read `proposal_drafts` + `attachments` (§3, own only)                     |
  * | listMyIdeas           | RPC `list_my_ideas()` (migration 014: safe columns only, own cases)       |
+ * | getMyCase             | read own `proposals`, current version, its files, public `case_events`,   |
+ * |                       | published `decisions`, `awards` (§3; never staff-only columns)          |
  * | templateUrl           | public URL in the `challenge-files` bucket (§5; no request, no secrets)   |
  * | saveDraft             | RPC `save_draft` (§4)                                                     |
  * | uploadAttachment      | Storage upload to `proposal-files`, then RPC `register_attachment` (§5)   |
@@ -45,6 +48,8 @@ export interface SubmissionPort {
   getDeclaration(): Promise<DeclarationText>
   getDraft(proposalId: string): Promise<DraftView | null>
   listMyIdeas(): Promise<MyIdea[]>
+  /** The applicant's own submitted case; `null` when not theirs, a draft, or missing. */
+  getMyCase(proposalId: string): Promise<MyCase | null>
   /** Download URL of a challenge template, or `null` when downloads are not available (the section is hidden). */
   templateUrl(path: string): string | null
 
