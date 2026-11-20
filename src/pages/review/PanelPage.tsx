@@ -81,6 +81,7 @@ function PanelBody({ p }: { p: ScorePanel }) {
         <h2 id="matrix-h" className="text-h2 font-semibold">
           Scores by criterion
         </h2>
+        {p.scorecards.length > 1 ? <p className="text-sm text-ink-muted md:hidden">Swipe the table sideways to see the mean and spread.</p> : null}
         <div className="overflow-x-auto rounded-md bg-surface-card shadow-1">
           <table className="w-full border-collapse text-left">
             <caption className="sr-only">Scores by criterion and reviewer, with mean and spread</caption>
