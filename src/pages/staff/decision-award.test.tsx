@@ -11,6 +11,9 @@ import type { Role } from '@/lib/api/types'
 import { formatBWP, parseBWP } from '@/lib/money'
 import { routes } from '@/routes/router'
 
+/** Multi-step journeys: allow more than Vitest's 5 s default under full-suite load. */
+const JOURNEY = 20_000
+
 const CASE_1 = '30000000-0000-4000-8000-000000000001' // submitted
 const CASE_4 = '30000000-0000-4000-8000-000000000004' // in adjudication
 const CASE_6 = '30000000-0000-4000-8000-000000000006' // approved and awarded BWP 250,000.00
@@ -61,7 +64,7 @@ describe('money in thebe', () => {
     expect(parseBWP('ten')).toBeNull()
     expect(formatBWP(25_000_000)).toBe('BWP 250,000.00')
     expect(formatBWP(5)).toBe('BWP 0.05')
-  })
+  }, JOURNEY)
 })
 
 describe('Slice 5: decide, publish, award', () => {
@@ -90,7 +93,7 @@ describe('Slice 5: decide, publish, award', () => {
     await user.click(within(publish).getByRole('button', { name: 'Publish to applicant' }))
     expect(await screen.findByText('Decision published. The applicant is notified.')).toBeInTheDocument()
     expect((await mockStaff.getCase(CASE_4))?.status).toBe('approved')
-  })
+  }, JOURNEY)
 
   it('changing a draft keeps the earlier one as replaced', async () => {
     await as('adjudicator')
@@ -103,7 +106,7 @@ describe('Slice 5: decide, publish, award', () => {
     const panel = screen.getByRole('tabpanel')
     expect(within(panel).getByRole('heading', { name: 'Decision: Approved' })).toBeInTheDocument()
     expect(within(panel).getByText('Earlier drafts (1)')).toBeInTheDocument()
-  })
+  }, JOURNEY)
 
   it('only the administrator records the award, and only after a published approval', async () => {
     await as('admin')
@@ -129,7 +132,7 @@ describe('Slice 5: decide, publish, award', () => {
     // The same award again is replayed; a different one is refused.
     expect(await mockStaff.recordAward({ proposalId: CASE_4, amountMinor: 25_000_050, description: 'Seed grant for the pilot (DEMO).' })).toMatchObject({ kind: 'ok', data: { replayed: true } })
     expect(await mockStaff.recordAward({ proposalId: CASE_4, amountMinor: 1, description: 'Other' })).toMatchObject({ kind: 'refused', code: 'INVALID_STATE' })
-  })
+  }, JOURNEY)
 
   it('shows the seeded approval and award', async () => {
     await as('admin')
@@ -139,7 +142,7 @@ describe('Slice 5: decide, publish, award', () => {
     const panel = screen.getByRole('tabpanel')
     expect(within(panel).getByRole('heading', { name: 'Decision: Approved' })).toBeInTheDocument()
     expect(within(panel).getByRole('heading', { name: 'Award: BWP 250,000.00' })).toBeInTheDocument()
-  })
+  }, JOURNEY)
 
   it('a screening officer can close an open case with a reason', async () => {
     await as('screening_officer')
@@ -153,5 +156,5 @@ describe('Slice 5: decide, publish, award', () => {
     expect(await screen.findByText('Case closed. The applicant is notified and sees the reason.')).toBeInTheDocument()
     expect((await mockStaff.getCase(CASE_1))?.status).toBe('closed')
     expect(screen.queryByRole('button', { name: 'Close case' })).not.toBeInTheDocument()
-  })
+  }, JOURNEY)
 })

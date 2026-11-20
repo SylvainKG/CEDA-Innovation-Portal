@@ -138,6 +138,12 @@ function ownProposal(id: string, userId: string): MockProposal | undefined {
 /** The seeded earlier idea belongs to Demo Applicant A only. */
 const SEEDED_OWNER = 'demo-applicant-a'
 
+/** Mock-only: whether this mock user owns a submitted case (one submitted here, or the seeded idea). */
+export function mockOwnsCase(userId: string, caseId: string): boolean {
+  const p = ownProposal(caseId, userId)
+  return Boolean((p && p.status !== 'draft') || (userId === SEEDED_OWNER && caseId === MOCK_SEEDED_IDEA.id))
+}
+
 /**
  * The staff mock holds case state (screening, decisions, awards). It imports this module, so it is loaded lazily
  * here, at call time, to keep module start-up free of a circular import.
@@ -191,7 +197,7 @@ export const mockSubmission: SubmissionPort = {
           status: p.status,
           challenge: { id: form.challenge_id, title: form.title, closes_at: form.closes_at },
           updated_at: p.updatedAt ?? p.receipt?.submitted_at ?? p.savedAt,
-          open_feedback: null,
+          open_feedback: null as MyIdea['open_feedback'],
           // First event per public stage, like list_my_ideas (migration 014).
           stages: p.receipt
             ? [
@@ -204,14 +210,19 @@ export const mockSubmission: SubmissionPort = {
             : [],
         }
       })
-    if (userId !== SEEDED_OWNER) return mine
-    const seeded = await seededCaseNow()
-    return [
-      ...mine,
-      seeded
-        ? { ...MOCK_SEEDED_IDEA, status: seeded.status, updated_at: seeded.updated_at, stages: firstStages(seeded.events) }
-        : MOCK_SEEDED_IDEA,
-    ]
+    const seeded = userId === SEEDED_OWNER ? await seededCaseNow() : undefined
+    const all: MyIdea[] =
+      userId !== SEEDED_OWNER
+        ? mine
+        : [
+            ...mine,
+            seeded
+              ? { ...MOCK_SEEDED_IDEA, status: seeded.status, updated_at: seeded.updated_at, stages: firstStages(seeded.events) }
+              : MOCK_SEEDED_IDEA,
+          ]
+    // An open or expired request while the case waits on the applicant (list_my_ideas, migration 014).
+    const { mockFeedbackInternals } = await import('./feedback')
+    return all.map((idea) => (idea.status === 'action_required' ? { ...idea, open_feedback: mockFeedbackInternals.openFor(idea.id) } : idea))
   },
 
   async getChallengeForm(challengeId) {
