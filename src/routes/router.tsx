@@ -26,6 +26,7 @@ import { StaffHomePage } from '@/pages/staff/StaffHomePage'
 import { AdminUsersPage } from '@/pages/admin/AdminUsersPage'
 import { ChatSettingsPage } from '@/pages/admin/ChatSettingsPage'
 import { ChallengeEditorPage } from '@/pages/admin/ChallengeEditorPage'
+import { RubricEditorPage } from '@/pages/admin/RubricEditorPage'
 import { ChallengesPage as AdminChallengesPage } from '@/pages/admin/ChallengesPage'
 import { StaffCasePage } from '@/pages/staff/StaffCasePage'
 import { ForgotPasswordPage, ResetPasswordPage, VerifyEmailPage } from '@/pages/auth/RecoveryPages'
@@ -101,7 +102,7 @@ export const routes: RouteObject[] = [
       { path: '/support/inbox', element: guard(['support_consultant', 'support_lead'], <SupportInboxPage />) },
       { path: '/admin/challenges', element: guard(['admin'], <AdminChallengesPage />) },
       { path: '/admin/challenges/:id', element: guard(['admin'], <ChallengeEditorPage />) },
-      { path: '/admin/rubrics/:id', element: guard(['admin'], nb('T12', 'Rubric editor')) },
+      { path: '/admin/rubrics/:id', element: guard(['admin'], <RubricEditorPage />) },
       { path: '/admin/users', element: guard(['admin'], <AdminUsersPage />) },
       { path: '/admin/content', element: guard(['admin'], nb('T12', 'Content')) },
       { path: '/admin/settings/roles', element: guard(['admin'], nb('T12', 'Roles')) },

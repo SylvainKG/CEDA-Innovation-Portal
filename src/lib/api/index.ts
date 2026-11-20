@@ -1,6 +1,7 @@
 import type { AdminPort } from './admin'
 import type { ChallengeAdminPort } from './challenge-admin'
 import type { ChatPort } from './chat'
+import type { RubricAdminPort } from './rubric-admin'
 import type { CommitteePort } from './committee'
 import type { MfaPort } from './mfa'
 import type { VersionsPort } from './versions'
@@ -14,6 +15,7 @@ import type { SubmissionPort } from './submission'
 import { mockAdmin } from './mock/admin'
 import { mockChallengeAdmin } from './mock/challenge-admin'
 import { mockChat } from './mock/chat'
+import { mockRubricAdmin } from './mock/rubric-admin'
 import { mockCommittee } from './mock/committee'
 import { mockMfa } from './mock/mfa'
 import { mockVersions } from './mock/versions'
@@ -28,6 +30,7 @@ import { createBrowserClient, readSupabaseConfig } from './supabase/client'
 import { createSupabaseAdmin } from './supabase/admin'
 import { createSupabaseChallengeAdmin } from './supabase/challenge-admin'
 import { createSupabaseChat } from './supabase/chat'
+import { createSupabaseRubricAdmin } from './supabase/rubric-admin'
 import { createSupabaseCommittee } from './supabase/committee'
 import { createSupabaseMfa } from './supabase/mfa'
 import { createSupabaseVersions } from './supabase/versions'
@@ -65,8 +68,8 @@ export function resolveApiMode(raw: string | undefined, isDev: boolean): ApiMode
 
 export const apiMode: ApiMode = resolveApiMode(import.meta.env.VITE_API_MODE as string | undefined, import.meta.env.DEV)
 
-function buildApi(mode: ApiMode): { session: SessionPort; submission: SubmissionPort; content: ContentPort; staff: StaffPort; review: ReviewPort; feedback: FeedbackPort; oversight: OversightPort; chat: ChatPort; admin: AdminPort; mfa: MfaPort; versions: VersionsPort; committee: CommitteePort; challengeAdmin: ChallengeAdminPort } {
-  if (mode === 'mock') return { session: mockSession, submission: mockSubmission, content: mockContent, staff: mockStaff, review: mockReview, feedback: mockFeedback, oversight: mockOversight, chat: mockChat, admin: mockAdmin, mfa: mockMfa, versions: mockVersions, committee: mockCommittee, challengeAdmin: mockChallengeAdmin }
+function buildApi(mode: ApiMode): { session: SessionPort; submission: SubmissionPort; content: ContentPort; staff: StaffPort; review: ReviewPort; feedback: FeedbackPort; oversight: OversightPort; chat: ChatPort; admin: AdminPort; mfa: MfaPort; versions: VersionsPort; committee: CommitteePort; challengeAdmin: ChallengeAdminPort; rubricAdmin: RubricAdminPort } {
+  if (mode === 'mock') return { session: mockSession, submission: mockSubmission, content: mockContent, staff: mockStaff, review: mockReview, feedback: mockFeedback, oversight: mockOversight, chat: mockChat, admin: mockAdmin, mfa: mockMfa, versions: mockVersions, committee: mockCommittee, challengeAdmin: mockChallengeAdmin, rubricAdmin: mockRubricAdmin }
   // Fails fast at start-up when the URL or key is missing, rather than on the first request.
   const client = createBrowserClient(readSupabaseConfig(import.meta.env))
   return {
@@ -83,6 +86,7 @@ function buildApi(mode: ApiMode): { session: SessionPort; submission: Submission
     versions: createSupabaseVersions(client),
     committee: createSupabaseCommittee(client),
     challengeAdmin: createSupabaseChallengeAdmin(client),
+    rubricAdmin: createSupabaseRubricAdmin(client),
   }
 }
 

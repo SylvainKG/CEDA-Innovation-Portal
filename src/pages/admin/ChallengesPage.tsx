@@ -33,6 +33,7 @@ export function ChallengesPage() {
       </div>
       {creating ? <NewChallenge onCancel={() => setCreating(false)} /> : null}
       <DataTable caption="Challenges" columns={columns} rows={list.data} getRowKey={(c) => c.id} empty={<EmptyState title="No challenges yet" />} />
+      <Rubrics />
     </div>
   )
 }
@@ -107,5 +108,55 @@ export function DateTime({ id, label, value, onChange, error }: { id: string; la
         </span>
       ) : null}
     </div>
+  )
+}
+
+/** Rubrics (T12): each with its latest version, and "New rubric" (key and title; starts as an empty draft v1). */
+function Rubrics() {
+  const qc = useQueryClient()
+  const navigate = useNavigate()
+  const list = useQuery({ queryKey: ['admin', 'rubrics'], queryFn: () => api.rubricAdmin.listRubrics() })
+  const [v, setV] = useState({ key: '', title: '' })
+  const [res, setRes] = useState<CommandOutcome<{ rubric_id: string }> | null>(null)
+  if (list.isPending) return <LoadingState what="rubrics" lines={2} />
+  if (list.isError || !list.data) return <ErrorState message="We couldn't load the rubrics." onRetry={() => void list.refetch()} />
+  const fields = res?.kind === 'refused' ? res.fields : undefined
+  return (
+    <section aria-labelledby="rubrics-h" className="flex flex-col gap-3">
+      <h2 id="rubrics-h" className="text-h2 font-semibold">
+        Scoring rubrics
+      </h2>
+      <ul className="flex flex-col gap-2">
+        {list.data.map((r) => {
+          const latest = [...r.versions].sort((a, b) => b.version_no - a.version_no)[0]
+          return (
+            <li key={r.id} className="flex flex-wrap items-baseline gap-x-3 rounded-md bg-surface-card p-3 shadow-1">
+              <Link to={`/admin/rubrics/${r.id}`}>{r.title}</Link>
+              <span className="text-sm text-ink-muted">{latest ? `v${latest.version_no} ${latest.published_at ? 'published' : 'draft'}` : 'No versions'}</span>
+            </li>
+          )
+        })}
+      </ul>
+      <form
+        noValidate
+        aria-label="New rubric"
+        className="flex flex-wrap items-end gap-3"
+        onSubmit={async (e) => {
+          e.preventDefault()
+          const r = await api.rubricAdmin.create({ key: v.key.trim(), title: v.title }).catch((): CommandOutcome<{ rubric_id: string }> => ({ kind: 'unknown', requestKey: '' }))
+          setRes(r)
+          await qc.invalidateQueries({ queryKey: ['admin'] })
+          if (r.kind === 'ok') navigate(`/admin/rubrics/${r.data.rubric_id}`)
+        }}
+      >
+        <TextField id="rub-title" label="Rubric title" value={v.title} onChange={(e) => setV({ ...v, title: e.target.value })} error={fields?.title} />
+        <TextField id="rub-key" label="Rubric key" help="Lowercase letters, numbers and hyphens" value={v.key} onChange={(e) => setV({ ...v, key: e.target.value })} error={fields?.key} />
+        <Button type="submit" variant="secondary">
+          New rubric
+        </Button>
+      </form>
+      {res?.kind === 'refused' && !fields ? <Banner kind="error">{res.message}</Banner> : null}
+      {res?.kind === 'unknown' ? <Banner kind="warning">We couldn&apos;t confirm the rubric was created. Check the list before trying again.</Banner> : null}
+    </section>
   )
 }
