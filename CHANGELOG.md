@@ -4,6 +4,15 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `feature` **Supabase adapters** (`src/lib/api/supabase/`, the only place that imports supabase-js). `VITE_API_MODE=supabase` now selects them; it fails at start-up without `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`, or with a non-https URL (http only for a local stack). The mock stays the default for development and the staging demo.
+  - Session: Supabase Auth for identity, `my_access()` for roles (unknown role keys dropped), own `profiles.full_name` for the name.
+  - Slice 1: challenge, brief, form and declaration reads; draft read (unsubmitted files only); `list_my_ideas()` (migration 014, PR #42); `save_draft`, `register_attachment` after a Storage upload to `proposal-files/<proposal>/<uuid>.<ext>` (the user's file name never goes into the path), `remove_attachment`, `submit_proposal` and `get_submission_receipt`; template downloads from the public `challenge-files` bucket.
+  - Explicit columns everywhere (no `select *`); challenge lists filter `status in ('published','closed')` in the query; criteria are read without anchors.
+  - Outcomes: a known code is a refusal; a lost or malformed submit reply is UNKNOWN with the same request key; registration is retried once after a lost reply (idempotent by path); a lost save reply throws, so autosave keeps the answers on the device.
+  - `@supabase/supabase-js` pinned to 2.119.0 (released 4 Nov 2026). Production dependency audit: 0 vulnerabilities.
+
+  Evidence: 19 adapter tests against a recording fake client (142 in total); lint, type-check, and build in both modes pass. Not yet run against the hosted project. Before any build is switched to `supabase` mode, #42 (`list_my_ideas`, migration 014) must be merged and on hosted; the build uses the publishable key, and its URL must be on the Auth redirect allow-list (Stacey's #46 review). A Storage policy denial is recognised by its body (`statusCode` "403" / `Unauthorized`), not by the HTTP 400 it arrives with.
+
 - `repair` Proposal form data loss (T04; found by the issue #61 browser journey): moving between sections used a hash-only navigation, which dropped `?challenge=` from `/ideas/new?challenge=<id>`, unmounted the form and lost everything typed before the first autosave created the draft. Section links now keep the query string. Regression test in `submit-screens.test.tsx` (fails without the fix). The form's "Read the FAQs" link is now a 44 px target.
 - `feature` **T04 proposal form and T05 receipt**, built from the written spec (BCR-003, D-45 proposed; design review by Sandra pending). Routes `/ideas/new?challenge=`, `/ideas/:id/edit`, `/ideas/:id/receipt?v=`:
   - sections from the challenge's form schema, plus Attachments and Review & declare. Stepper on desktop, "Section n of m" on mobile; the step is in the URL hash, and focus moves to the step heading;
