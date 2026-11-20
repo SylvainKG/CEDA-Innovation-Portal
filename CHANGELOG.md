@@ -4,6 +4,7 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `policy change` Database gate (issue #14, item 1): the Database workflow now runs on every pull request, and a `Database gate` job passes when no database files changed or when all three database jobs pass. Only that job needs to be required in the `main` ruleset, so database PRs cannot merge without passing and other PRs are never left waiting for a check that never starts.
 - `policy change` **DEMO badge and Sample label colours** (Sandra, #47 review, 20 Nov: brand neutrals only). DEMO is a dark pill, `#333333` with white text (12.63:1) and the flask icon; Sample labels are `#F3F2EF` with `#333333` text and a 1 px dashed `#8A8580` border. Tokens `demo`, `demo-on`, `demo-subtle`, `demo-border` replace the placeholder purple `#6941C6`; `design-tokens.md` records them as decided.
 
 - `feature` `list_my_ideas()` for the applicant's My ideas page (T06, migration 014, asked for in PR #38): one read with only safe fields (no case-event reasons or actors), own cases only, drafts included, and the latest feedback request while the case waits on the applicant, including an expired one. Contract §5 now documents challenge template downloads from the public `challenge-files` bucket.
