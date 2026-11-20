@@ -30,4 +30,14 @@ Each test file rolls itself back. The case-reference sequence is restored afterw
 - **Never against the judging project after code freeze (22 Nov 2026, 18:00 CAT).** For judging, use `health()` and read-only checks.
 - Apply only migrations that are already on `main` before running it, so the hosted project matches the repository.
 
+## Snapshot and exact reset around a staging test run
+
+```bash
+node --env-file=.env tools/pglite-db-tests/staging-reset.mjs snapshot <file-outside-the-repo>
+# ... run the tests that write real data (for example the browser journey, issue #61) ...
+node --env-file=.env tools/pglite-db-tests/staging-reset.mjs reset <same-file> --confirm
+```
+
+`snapshot` is read-only. `reset` removes only the rows and Storage objects that are **not** in the snapshot, inside one transaction (protective triggers paused, then re-enabled), restores the reference sequence, and **commits only if every table is identical to the snapshot row by row**; otherwise it rolls back and nothing changes. It never edits rows that existed in the snapshot. Files need `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (the JWT service-role key; Storage refuses the `sb_secret_` key). Staging only; never against the judging project after code freeze. Delete the snapshot afterwards (it holds account e-mails). First used on 20 Nov for the #61 main journey (record in `artifacts/phase-00/hosted-supabase.md`).
+
 **Mutation check:** `MUTATE="<sql>" npm test` applies extra SQL after the seed. For example, replacing `private.can_read_case` with `select true` should make the isolation tests fail.
