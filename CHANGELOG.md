@@ -4,6 +4,8 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `policy change` **DEMO badge and Sample label colours** (Sandra, #47 review, 20 Nov: brand neutrals only). DEMO is a dark pill, `#333333` with white text (12.63:1) and the flask icon; Sample labels are `#F3F2EF` with `#333333` text and a 1 px dashed `#8A8580` border. Tokens `demo`, `demo-on`, `demo-subtle`, `demo-border` replace the placeholder purple `#6941C6`; `design-tokens.md` records them as decided.
+
 - `repair` Whitespace-only answers (migration 012): `private.validate_submission` trimmed with `btrim`, which strips only spaces, so an answer of newlines or tabs passed "Required" on submit and revision while the browser refused it. Answers are now trimmed of all surrounding whitespace before every check.
 - `policy change` Slice 1 contract review (migration 011, from the frontend review in PR #16): `submit_proposal` refuses an unverified email with `VALIDATION` and `fields.email` instead of `FORBIDDEN`, so the form can tell the applicant to verify; an applicant keeps reading the challenge their own case belongs to after it is unpublished (ADM-02), through the definer helper `private.owns_case_in_challenge`. The first-autosave duplicate risk is recorded as known debt.
 - `repair` Function privileges (SEC-02, migration 010): the schema-level default-privilege lines in migration 001 could not remove PostgreSQL's built-in PUBLIC execute, so `my_access()` was callable signed out (it returned null) and internal `private` helpers were executable by everyone (not reachable through the API). New functions now start closed, `my_access` is signed-in only, and `private` exposes only the helpers access policies use.
