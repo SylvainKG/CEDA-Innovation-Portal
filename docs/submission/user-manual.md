@@ -26,13 +26,13 @@ Screens still being built are marked **[confirm at release]**; that line is chec
 
 **Forgot your password.** Choose **Forgot your password?** and enter your email. If an account exists, we send a single-use link that expires. The message is the same whether or not an account exists.
 
-**Staff two-step sign-in.** Staff permissions require a second factor (an authenticator app); the server enforces this. Seeded demo staff accounts are exempt so that judges can sign in directly. **Not built in this version:** the screen for enrolling and entering the second factor, so real staff accounts are for future use.
+**Staff two-step sign-in.** Staff permissions require a second factor (an authenticator app); the server enforces this. The first time, the **Two-step sign-in** screen shows a QR code: scan it with an authenticator app (or type the key shown), then enter the 6-digit code. After that, enter a new code from the app when asked. Seeded demo staff accounts are exempt so that judges can sign in directly; the screen tells them so.
 
-**Notifications.** The bell shows updates about your cases. They also arrive live while you are signed in. **Email alerts** are optional; in this demonstration they are **Simulated** (queued but not sent).
+**Notifications.** The bell in the header shows how many updates are unread; **Notifications** lists them. They also arrive live while you are signed in. **Email alerts** are optional: switch them on or off on the Notifications page. In this demonstration they are **Simulated** (queued but not sent).
 
 **Help.** **Help** holds the FAQs, regulatory contacts and how to report a problem. All times are Gaborone time (CAT).
 
-**Staff home.** Staff accounts open on **Home**, which is a placeholder in this version: use the menu to reach your queue.
+**Staff home.** Staff accounts open on **Home**: counts for your role (for example ideas awaiting screening, reviews to do, chats waiting) and a list of what to do next. Each count and item links to the screen where you act.
 
 **What you can never see.** Each person sees only what their role allows. The server refuses everything else, so a hidden button isn't the only protection.
 
@@ -75,7 +75,7 @@ Screens still being built are marked **[confirm at release]**; that line is chec
 2. **Declare first.** Before the proposal opens, confirm you have **no conflict of interest** and will keep it confidential. If you have a conflict, declare it: your assignment is removed, the administrator reassigns the case, and the declaration is recorded.
 3. **Score** each criterion from **1 to 5** using the anchored definitions, with a reason of **at least 20 characters**. Drafts are saved; **Submit** when complete.
 4. You **can't see other reviewers' scores until you have submitted your own** on the same version.
-5. **Version 2:** for a revised idea, verify each roadmap task as **Verified** or **Not verified**, with a note. Version 1's scores stay with version 1.
+5. **Version 2:** for a revised idea, verify each roadmap task as **Verified** or **Not verified**, with a note. **Compare with version 1** shows both versions side by side, with each change named. Version 1's scores stay with version 1.
 
 ## 5. Adjudicator
 
@@ -88,9 +88,15 @@ Screens still being built are marked **[confirm at release]**; that line is chec
 
 - **All cases:** every case with its stage; **assign reviewers** (at least two), see each reviewer's load, and remove a reviewer.
 - **Record an award** on an approved case (amount in BWP and a description), and **close** a case with a reason.
-- **Challenges, forms, rubrics and content:** publish or unpublish a challenge; edit FAQs, contacts and notices. A submitted idea keeps the form version it used. **Not built in this version:** these screens are placeholders, and the seeded challenges and content are used as they are.
-- **Users and roles:** invite staff and grant or revoke roles. **You can't grant a role to yourself**; the attempt is refused and recorded. **Not built in this version:** the screen is a placeholder; the rule is enforced by the server.
-- **Settings:** review quorum, chat hours and closures, and the demo two-step exemption (switch it **off** for any real use). **Not built in this version:** these are stored settings the backend team changes; the settings screens are placeholders.
+- **Challenges:** edit a challenge's details, publish, unpublish or close it to new ideas. Build its **application form** (sections and fields: short text, long text, choice, email), save it as a draft, then publish it. A submitted idea keeps the form version it used.
+- **Rubrics:** add the criteria reviewers score, each with a weight and a description of what a 1, a 3 and a 5 look like. The weights must total 100%.
+- **Content:** FAQs, contacts, referrals, the support page, the privacy notice, the declaration and other pages. Save as a draft or publish; only published pages are shown to the public.
+- **Users and roles:** everyone registered, with their roles. Grant a role, remove one (with a reason), or **invite** staff by email (the email is Simulated in this demonstration). **You can't change your own roles:** the controls on your own row are disabled, and the server refuses and records the attempt anyway.
+- **Roles:** what each role can do. Built-in roles keep their permissions; add a new role to combine permissions differently, and choose whether it needs two-step sign-in.
+- **Chat settings:** whether chat is always open, always closed or follows the opening hours; the hours for each day of the week; and closure days (for example public holidays).
+- **Other settings:** the review quorum and the demo two-step exemption have no screen; they are stored settings the backend team changes. Switch the exemption **off** for any real use.
+
+Every change on these screens is recorded in the audit log.
 
 ## 7. Support consultant and support lead
 
@@ -100,7 +106,7 @@ Screens still being built are marked **[confirm at release]**; that line is chec
 
 ## 8. External committee member
 
-**All cases** shows each case's **reference and stage only**, with summary counts. You can't see proposal text, scores or internal notes (D-08). **[confirm at release]**
+**Home** shows how many cases are at each stage. **All cases** lists each case's **reference, challenge, stage and last update only**. You can't see proposal text, scores or internal notes (D-08).
 
 ## 9. Auditor
 
