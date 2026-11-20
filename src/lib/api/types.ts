@@ -416,12 +416,27 @@ export interface MyScorecard {
   items: ScoreItem[]
 }
 
+/** A roadmap task answered in the version being scored, with this reviewer's own check (INN-02, contract §4.4). */
+export interface TaskToVerify {
+  task_id: string
+  position: number
+  text: string
+  applicant_status: 'addressed' | 'not_addressed' | null
+  applicant_explanation: string | null
+  my_result: 'verified' | 'not_verified' | null
+  my_note: string | null
+}
+
 /** Everything the scoring screen needs. The proposal is present only once the reviewer has declared. */
 export interface ReviewWorkspace {
   row: ReviewQueueRow
   proposal: { version_no: number; data: DraftData; form_schema: FormSchema; files: AttachmentInfo[] } | null
   criteria: RubricCriterion[]
   scorecard: MyScorecard | null
+  /** On a revised version: the tasks answered in it, each to be verified before the scorecard can be submitted. */
+  tasks: TaskToVerify[]
+  /** The applicant's "What changed?" note for this version, when it is a revision. */
+  change_note?: string | null
 }
 
 export interface DeclareResult {

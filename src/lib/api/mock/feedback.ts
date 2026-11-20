@@ -19,12 +19,14 @@ const state = {
   requests: new Map<string, FeedbackRequest[]>(),
   /** Where each case returns to after the request (contract: `return_stage`). */
   returnTo: new Map<string, CaseStatus>(),
+  changeNotes: new Map<string, string>(),
   latencyMs: import.meta.env.MODE === 'test' ? 0 : 200,
 }
 
 function reset() {
   state.requests.clear()
   state.returnTo.clear()
+  state.changeNotes.clear()
   // seed.sql: 0003 clarification from screening, due 20 Nov 16:00 CAT.
   state.requests.set(CASE_3, [
     {
@@ -57,6 +59,20 @@ export const mockFeedbackInternals = {
   },
   requests: () => state.requests,
   returnTo: () => state.returnTo,
+  /** The applicant's "What changed?" per "<case>:<version>" (stored on proposal_versions on the server). */
+  changeNotes: () => state.changeNotes,
+  /** Record (or replace) one reviewer's check on a task, and refresh the request's summary. */
+  recordCheck(taskId: string, reviewerName: string | null, result: 'verified' | 'not_verified', note: string, at: string) {
+    for (const list of state.requests.values())
+      for (const r of list) {
+        const t = r.tasks.find((x) => x.task_id === taskId)
+        if (!t) continue
+        const others = (t.verifications ?? []).filter((v) => v.reviewer_name !== reviewerName)
+        t.verifications = [...others, { reviewer_name: reviewerName, result, note: note || null, verified_at: at }]
+        const all = r.tasks.flatMap((x) => x.verifications ?? [])
+        r.summary = { ...r.summary, verified: all.filter((v) => v.result === 'verified').length, not_verified: all.filter((v) => v.result === 'not_verified').length }
+      }
+  },
 }
 
 const wait = () => new Promise<void>((resolve) => setTimeout(resolve, state.latencyMs))

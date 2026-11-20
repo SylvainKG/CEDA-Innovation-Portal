@@ -117,4 +117,38 @@ describe('Supabase reviewer adapter', () => {
     const forbidden = fake({}, { get_score_panel: { data: null, error: { message: 'FORBIDDEN', hint: 'No access.', details: null } } })
     expect(await createSupabaseReview(forbidden.client).getPanel('p1')).toBeNull()
   })
+
+  it('lists the tasks answered in the scored version with this reviewer’s checks, and verifies with the contract arguments', async () => {
+    const f = fake(
+      {
+        proposals: { data: { current_version_id: 'v2', challenge_versions: { form_schema: { sections: [] }, rubric_version_id: 'r1' } }, error: null },
+        proposal_versions: { data: { version_no: 2, data: {}, change_note: 'Added a budget.' }, error: null },
+        attachments: { data: [], error: null },
+        rubric_criteria: { data: [], error: null },
+        scorecards: { data: null, error: null },
+        task_verifications: { data: [{ feedback_task_id: 't1', result: 'verified', note: '' }], error: null },
+      },
+      {
+        my_review_queue: { data: [{ ...ROW, version_no: 2, my_status: 'not_started' }], error: null },
+        get_roadmap: {
+          data: [
+            { kind: 'revision', answered_version_no: 1, tasks: [{ task_id: 'old', position: 1, text: 'Old', applicant_status: 'addressed', applicant_explanation: 'x', verifications: [] }] },
+            { kind: 'revision', answered_version_no: 2, tasks: [{ task_id: 't1', position: 1, text: 'Add a budget.', applicant_status: 'addressed', applicant_explanation: 'Done.', verifications: [] }, { task_id: 't2', position: 2, text: 'Name the site.', applicant_status: 'not_addressed', applicant_explanation: 'Later.', verifications: [] }] },
+          ],
+          error: null,
+        },
+        verify_feedback_task: { data: { task_id: 't2', result: 'not_verified', verified_at: 'x' }, error: null },
+      },
+    )
+    const port = createSupabaseReview(f.client)
+    const ws = await port.getWorkspace('a1')
+    expect(ws?.change_note).toBe('Added a budget.')
+    expect(ws?.tasks.map((t) => [t.task_id, t.my_result])).toEqual([
+      ['t1', 'verified'],
+      ['t2', null],
+    ])
+    expect(f.reads.find((r) => r.table === 'task_verifications')?.filters).toContainEqual(['eq', 'assignment_id', 'a1'])
+    expect((await port.verifyTask({ taskId: 't2', assignmentId: 'a1', result: 'not_verified', note: 'Missing.' })).kind).toBe('ok')
+    expect(f.rpcs).toContainEqual({ fn: 'verify_feedback_task', args: { p_task_id: 't2', p_assignment_id: 'a1', p_result: 'not_verified', p_note: 'Missing.' } })
+  })
 })
