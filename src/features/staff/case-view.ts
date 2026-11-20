@@ -1,4 +1,9 @@
-import type { CaseStatus } from '@/lib/api/types'
+import type { CaseDecision, CaseStatus, StaffCase } from '@/lib/api/types'
+
+/** The decision that counts: not superseded (drafts that were replaced are kept for the record). */
+export function activeDecision(c: Pick<StaffCase, 'decisions'>): CaseDecision | undefined {
+  return c.decisions.find((d) => !d.superseded_at)
+}
 
 /** Whole days a case has waited since submission (screening queue "Waiting" column). */
 export function daysWaiting(submittedAt: string, now: Date = new Date()): number {

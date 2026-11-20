@@ -1,6 +1,6 @@
 import { fromRpcError, rpcError } from '../errors'
 import type { StaffPort } from '../staff'
-import type { CaseAssignment, CaseEvent, CaseStatus, CommandOutcome, InternalNote, PublicStage, Role, StaffCase, StaffCaseRow } from '../types'
+import type { CaseAssignment, CaseAward, CaseDecision, CaseEvent, CaseStatus, CommandOutcome, InternalNote, PublicStage, Role, StaffCase, StaffCaseRow } from '../types'
 import { MOCK_CHALLENGE_FORMS, MOCK_SEEDED_IDEA, WATER_SMART_ID } from './fixtures'
 import { mockSession } from './session'
 import { mockMoveCase, mockSubmittedCases } from './submission'
@@ -123,6 +123,8 @@ function seedCase(c: SeedCase): StaffCase {
     files: [],
     events,
     assignments,
+    decisions: [],
+    award: null,
   }
 }
 
@@ -133,6 +135,9 @@ const state = {
   assignments: new Map<string, CaseAssignment[]>(),
   /** Internal notes per case, newest first. */
   notes: new Map<string, InternalNote[]>(),
+  /** Decisions per case (drafts, superseded and published). */
+  decisions: new Map<string, CaseDecision[]>(),
+  awards: new Map<string, CaseAward>(),
   latencyMs: import.meta.env.MODE === 'test' ? 0 : 200,
 }
 
@@ -140,11 +145,28 @@ function resetSeeded() {
   state.seeded.clear()
   state.assignments.clear()
   state.notes.clear()
+  state.decisions.clear()
+  state.awards.clear()
   for (const c of SEED) {
     const built = seedCase(c)
     state.seeded.set(built.id, built)
     state.assignments.set(built.id, built.assignments)
   }
+  // The seed's published decisions (0005 not approved, 0006 approved) and award (0006), seed.sql demo_decide.
+  for (const [n, outcome] of [[5, 'not_approved'], [6, 'approved']] as const) {
+    const c = SEED.find((x) => x.n === n)!
+    const at = new Date(Date.parse(c.submitted) + 6 * DAY).toISOString()
+    state.decisions.set(`30000000-0000-4000-8000-00000000000${n}`, [
+      { id: `60000000-0000-4000-8000-00000000000${n}`, outcome, reason: 'Fictional decision reason (DEMO).', recorded_at: at, published_at: at, superseded_at: null, on_current_version: true },
+    ])
+  }
+  state.awards.set('30000000-0000-4000-8000-000000000006', {
+    id: '70000000-0000-4000-8000-000000000006',
+    amount_minor: 25_000_000,
+    currency: 'BWP',
+    description: 'Fictional seed grant (DEMO).',
+    recorded_at: '2026-10-15T08:00:00Z',
+  })
 }
 resetSeeded()
 
@@ -183,11 +205,19 @@ function allCases(): StaffCase[] {
       events: s.events,
       assignments: [],
       active_reviewers: 0,
+      decisions: [],
+      award: null,
     }
   })
   return [...state.seeded.values(), ...submitted].map((c) => {
     const assignments = state.assignments.get(c.id) ?? []
-    return { ...c, assignments, active_reviewers: assignments.filter((a) => !a.revoked_at).length }
+    return {
+      ...c,
+      assignments,
+      active_reviewers: assignments.filter((a) => !a.revoked_at).length,
+      decisions: [...(state.decisions.get(c.id) ?? [])].sort((a, b) => b.recorded_at.localeCompare(a.recorded_at)),
+      award: state.awards.get(c.id) ?? null,
+    }
   })
 }
 
@@ -350,5 +380,74 @@ export const mockStaff: StaffPort = {
     const note: InternalNote = { id: crypto.randomUUID(), author_id: user.id, author_name: user.displayName, mine: true, body: text, created_at: new Date().toISOString() }
     state.notes.set(proposalId, [note, ...(state.notes.get(proposalId) ?? [])])
     return { kind: 'ok', data: { id: note.id, created_at: note.created_at } }
+  },
+
+  async recordDecision({ proposalId, outcome, reason }) {
+    await wait()
+    // Contract §4.5 order: permission → can read → outcome → in adjudication → not already published → reason.
+    if (!(await roles()).includes('adjudicator')) return refused('FORBIDDEN', "You don't have access to this action.")
+    const c = allCases().find((x) => x.id === proposalId)
+    if (!c) return refused('FORBIDDEN', "You don't have access to this action.")
+    if (outcome !== 'approved' && outcome !== 'not_approved') return refused('VALIDATION', 'Choose Approved or Not approved.', { outcome: 'Required' })
+    if (c.status !== 'in_adjudication') return refused('INVALID_STATE', 'A decision can be recorded only when the case is ready for decision.')
+    const list = state.decisions.get(proposalId) ?? []
+    if (list.some((d) => d.published_at)) return refused('INVALID_STATE', 'The decision has already been published.')
+    const text = reason.trim()
+    if (text.length < 1 || [...text].length > 4000) return refused('VALIDATION', 'Give a reason (up to 4,000 characters).', { reason: 'Required' })
+    const now = new Date().toISOString()
+    for (const d of list) if (!d.superseded_at) d.superseded_at = now
+    const decision: CaseDecision = { id: crypto.randomUUID(), outcome, reason: text, recorded_at: now, published_at: null, superseded_at: null, on_current_version: true }
+    state.decisions.set(proposalId, [...list, decision])
+    return { kind: 'ok', data: { decision_id: decision.id, outcome, published: false as const, case_status: c.status } }
+  },
+
+  async publishDecision({ decisionId }) {
+    await wait()
+    if (!(await roles()).includes('adjudicator')) return refused('FORBIDDEN', "You don't have access to this action.")
+    const entry = [...state.decisions.entries()].find(([, list]) => list.some((d) => d.id === decisionId))
+    if (!entry) return refused('FORBIDDEN', "You don't have access to this action.")
+    const [caseId, list] = entry
+    const d = list.find((x) => x.id === decisionId)!
+    if (d.published_at || d.superseded_at) return refused('INVALID_STATE', 'This decision has already been published or replaced.')
+    if (!d.on_current_version) return refused('INVALID_STATE', 'This decision was recorded on an earlier version. Record a new one.')
+    d.published_at = new Date().toISOString()
+    moveCase(caseId, { from_status: 'in_adjudication', to_status: d.outcome, public_stage: 'approval', reason: null, at: d.published_at })
+    return { kind: 'ok', data: { decision_id: d.id, outcome: d.outcome, published_at: d.published_at, case_status: d.outcome as CaseStatus } }
+  },
+
+  async recordAward({ proposalId, amountMinor, description }) {
+    await wait()
+    if (!(await roles()).includes('admin')) return refused('FORBIDDEN', "You don't have access to this action.")
+    const c = allCases().find((x) => x.id === proposalId)
+    if (!c) return refused('FORBIDDEN', "You don't have access to this action.")
+    const existing = state.awards.get(proposalId)
+    if (existing) {
+      if (existing.amount_minor === amountMinor && existing.description === description.trim())
+        return { kind: 'ok', data: { award_id: existing.id, amount_minor: existing.amount_minor, currency: 'BWP' as const, case_status: 'awarded' as CaseStatus, replayed: true } }
+      return refused('INVALID_STATE', 'An award has already been recorded for this case.')
+    }
+    const approved = (state.decisions.get(proposalId) ?? []).some((d) => d.published_at && d.outcome === 'approved')
+    if (!approved || c.status !== 'approved') return refused('CASE_NOT_APPROVED', 'An award can be recorded only after an approval is published.')
+    if (!Number.isInteger(amountMinor) || amountMinor < 1 || amountMinor > 10_000_000_000)
+      return refused('VALIDATION', 'Enter an amount between BWP 0.01 and BWP 100,000,000.', { amount: 'Out of range' })
+    const text = description.trim()
+    if (text.length < 1 || [...text].length > 1000) return refused('VALIDATION', 'Describe the award (up to 1,000 characters).', { description: 'Required' })
+    const award: CaseAward = { id: crypto.randomUUID(), amount_minor: amountMinor, currency: 'BWP', description: text, recorded_at: new Date().toISOString() }
+    state.awards.set(proposalId, award)
+    moveCase(proposalId, { from_status: 'approved', to_status: 'awarded', public_stage: 'award', reason: null, at: award.recorded_at })
+    return { kind: 'ok', data: { award_id: award.id, amount_minor: amountMinor, currency: 'BWP' as const, case_status: 'awarded' as CaseStatus, replayed: false } }
+  },
+
+  async closeCase({ proposalId, reason }) {
+    await wait()
+    const r = await roles()
+    if (!r.some((x) => x === 'screening_officer' || x === 'adjudicator')) return refused('FORBIDDEN', "You don't have access to this action.")
+    const c = allCases().find((x) => x.id === proposalId)
+    if (!c) return refused('FORBIDDEN', "You don't have access to this action.")
+    const text = reason.trim()
+    if (text.length < 1 || [...text].length > 500) return refused('VALIDATION', 'Give a reason (up to 500 characters).', { reason: 'Required' })
+    if (['approved', 'awarded', 'draft', 'closed'].includes(c.status)) return refused('INVALID_STATE', 'This case cannot be closed now.')
+    moveCase(proposalId, { from_status: c.status, to_status: 'closed', public_stage: null, reason: text, at: new Date().toISOString() })
+    return { kind: 'ok', data: { proposal_id: proposalId, case_status: 'closed' as CaseStatus } }
   },
 }

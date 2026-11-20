@@ -1,6 +1,7 @@
 import type {
   AssignReviewersResult,
   CaseStatus,
+  DecisionOutcome,
   CommandOutcome,
   InternalNote,
   ReviewerOption,
@@ -26,6 +27,10 @@ import type {
  * | revokeAssignment | RPC `revoke_assignment` (§4.2, `case.assign`)                                     |
  * | listNotes        | read `internal_notes` (§3, `case.note`; never the applicant)                    |
  * | addNote          | RPC `add_internal_note` (§4.2, `case.note`)                                     |
+ * | recordDecision   | RPC `record_decision` (§4.5, adjudicator). Unpublished; supersedes an earlier draft |
+ * | publishDecision  | RPC `publish_decision` (§4.5, adjudicator). Notifies the applicant; cannot be undone  |
+ * | recordAward      | RPC `record_award` (§4.5, admin, D-05). The same award again is replayed          |
+ * | closeCase        | RPC `close_case` (§4.5, screening officer or adjudicator)                       |
  *
  * Reads return `null` / `[]` for anything the reader may not see (RLS). None of these commands carries a
  * request key: `record_screening` and `revoke_assignment` refuse a repeat with `INVALID_STATE`, and
@@ -40,4 +45,8 @@ export interface StaffPort {
   revokeAssignment(input: { assignmentId: string; reason: string }): Promise<CommandOutcome<{ assignment_id: string; revoked: true }>>
   listNotes(proposalId: string): Promise<InternalNote[]>
   addNote(input: { proposalId: string; body: string }): Promise<CommandOutcome<{ id: string; created_at: string }>>
+  recordDecision(input: { proposalId: string; outcome: DecisionOutcome; reason: string }): Promise<CommandOutcome<{ decision_id: string; outcome: DecisionOutcome; published: false; case_status: CaseStatus }>>
+  publishDecision(input: { decisionId: string }): Promise<CommandOutcome<{ decision_id: string; outcome: DecisionOutcome; published_at: string; case_status: CaseStatus }>>
+  recordAward(input: { proposalId: string; amountMinor: number; description: string }): Promise<CommandOutcome<{ award_id: string; amount_minor: number; currency: 'BWP'; case_status: CaseStatus; replayed: boolean }>>
+  closeCase(input: { proposalId: string; reason: string }): Promise<CommandOutcome<{ proposal_id: string; case_status: CaseStatus }>>
 }

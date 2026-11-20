@@ -154,4 +154,37 @@ describe('Supabase staff adapter', () => {
     expect((await port.addNote({ proposalId: 'p1', body: 'Hi' })).kind).toBe('ok')
     expect(f.rpcs).toContainEqual({ fn: 'add_internal_note', args: { p_proposal_id: 'p1', p_body: 'Hi' } })
   })
+
+  it('reads decisions (marking the current version) and the award, and calls the Slice 5 RPCs with contract arguments', async () => {
+    const f = fake(
+      {
+        proposals: { data: ROW, error: null },
+        decisions: { data: [{ id: 'd2', outcome: 'approved', reason: 'R', recorded_at: 'b', published_at: null, superseded_at: null, version_id: 'v1' }, { id: 'd1', outcome: 'not_approved', reason: 'Old', recorded_at: 'a', published_at: null, superseded_at: 'b', version_id: 'v0' }], error: null },
+        awards: { data: { id: 'aw', amount_minor: '25000000', currency: 'BWP', description: 'Grant', recorded_at: 'c' }, error: null },
+      },
+      {
+        record_decision: { data: { decision_id: 'd3', outcome: 'approved', published: false, case_status: 'in_adjudication' }, error: null },
+        publish_decision: { data: { decision_id: 'd3', outcome: 'approved', published_at: 'x', case_status: 'approved' }, error: null },
+        record_award: { data: { award_id: 'aw', amount_minor: '100', currency: 'BWP', case_status: 'awarded', replayed: false }, error: null },
+        close_case: { data: null, error: { message: 'INVALID_STATE', hint: 'Approved cases cannot be closed.', details: null } },
+      },
+    )
+    const port = createSupabaseStaff(f.client)
+    const c = await port.getCase('p1')
+    expect(c?.decisions.map((d) => [d.id, d.on_current_version])).toEqual([['d2', true], ['d1', false]])
+    expect(c?.award?.amount_minor).toBe(25000000)
+    expect(f.reads.find((r) => r.table === 'decisions')?.columns).toBe('id, outcome, reason, recorded_at, published_at, superseded_at, version_id')
+    expect((await port.recordDecision({ proposalId: 'p1', outcome: 'approved', reason: 'R' })).kind).toBe('ok')
+    expect((await port.publishDecision({ decisionId: 'd3' })).kind).toBe('ok')
+    expect(await port.recordAward({ proposalId: 'p1', amountMinor: 100, description: 'G' })).toMatchObject({ kind: 'ok', data: { amount_minor: 100 } })
+    expect(await port.closeCase({ proposalId: 'p1', reason: 'x' })).toMatchObject({ kind: 'refused', code: 'INVALID_STATE' })
+    expect(f.rpcs).toEqual(
+      expect.arrayContaining([
+        { fn: 'record_decision', args: { p_proposal_id: 'p1', p_outcome: 'approved', p_reason: 'R' } },
+        { fn: 'publish_decision', args: { p_decision_id: 'd3' } },
+        { fn: 'record_award', args: { p_proposal_id: 'p1', p_amount_minor: 100, p_description: 'G' } },
+        { fn: 'close_case', args: { p_proposal_id: 'p1', p_reason: 'x' } },
+      ]),
+    )
+  })
 })
