@@ -67,5 +67,19 @@ export function createSupabaseOversight(client: SupabaseClient): OversightPort {
       }
       return ((data ?? []) as AuditRow[]).map((r) => ({ ...r, id: Number(r.id) }))
     },
+
+    async alertPreference() {
+      const { data: auth } = await client.auth.getUser()
+      if (!auth.user) return null
+      const { data, error } = await client.from('profiles').select('alerts_opt_in').eq('id', auth.user.id).maybeSingle()
+      if (error) throw new ApiError('Could not load your alert setting', error)
+      return data ? Boolean((data as { alerts_opt_in: boolean }).alerts_opt_in) : null
+    },
+
+    async setAlertPreference(optIn) {
+      const { data, error } = await client.rpc('set_alert_preference', { p_opt_in: optIn })
+      if (error) return fromRpcError(error)
+      return { kind: 'ok', data: data as { alerts_opt_in: boolean } }
+    },
   }
 }
