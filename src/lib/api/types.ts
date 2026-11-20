@@ -558,3 +558,87 @@ export interface FeedbackRequest {
   tasks: RoadmapTask[]
   summary: { tasks: number; addressed: number; verified: number | null; not_verified: number | null }
 }
+
+// ---------------------------------------------------------------------------------------------------
+// Slice 6a: notifications, reports, audit (contract §4.3 mark_notifications_read, §4.6; NTF-01, RPT-01, SEC-03).
+// ---------------------------------------------------------------------------------------------------
+
+/** An in-app notification (own rows only; never proposal content). */
+export interface AppNotification {
+  id: string
+  proposal_id: string | null
+  type: string
+  title: string
+  body: string
+  created_at: string
+  read_at: string | null
+}
+
+export interface ReportFilters {
+  challengeId?: string
+  /** YYYY-MM-DD, on the submission time. */
+  from?: string
+  to?: string
+}
+
+/** `get_programme_report` (RPT-01). */
+export interface ProgrammeReport {
+  generated_at: string
+  participation: { submitted: number; distinct_applicants: number; drafts_started: number; by_challenge: { challenge_id: string; title: string; submitted: number }[] }
+  outcomes: {
+    by_current_stage: Record<string, number>
+    approved: number
+    not_approved: number
+    awarded: number
+    closed: number
+    award_total_minor: number
+    currency: 'BWP'
+  }
+  funnel: { stage: string; reached: number }[]
+  time_in_stage: { status: string; cases: number; median_days: number | null }[]
+  overdue: { feedback_requests: number; reviews: number }
+  impact: {
+    reached_later_stage: number
+    reached_later_stage_share: number | null
+    resubmitted_after_feedback: number
+    roadmap_tasks_verified_share: number | null
+  }
+}
+
+/** `report_case_rows`: one row per case for the CSV (no proposal content). */
+export interface ReportCaseRow {
+  reference: string
+  challenge_title: string
+  public_stage: string | null
+  status: CaseStatus
+  submitted_at: string
+  versions: number
+  last_update: string
+  days_in_current_stage: number
+  published_outcome: string | null
+  award_minor: number | null
+  currency: 'BWP'
+}
+
+/** `query_audit` row (SEC-03), newest first. */
+export interface AuditRow {
+  id: number
+  at: string
+  actor_id: string | null
+  actor_name: string | null
+  actor_role: string | null
+  action: string
+  target_type: string
+  target_id: string | null
+  reference: string | null
+  metadata: Record<string, unknown>
+}
+
+export interface AuditQuery {
+  reference?: string
+  action?: string
+  from?: string
+  to?: string
+  limit?: number
+  beforeId?: number
+}
