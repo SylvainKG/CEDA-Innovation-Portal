@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@electric-sql/pglite": "0.5.16",
-    "@electric-sql/pglite-pgtap": "0.0.17"
+    "@electric-sql/pglite-pgtap": "0.0.17",
+    "pg": "8.13.1"
   }
 }
