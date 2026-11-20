@@ -223,3 +223,43 @@ export interface ChallengeBrief {
   templates: { name: string; path: string }[]
   criteria: { key: string; label: string; weight: number; guidance: string }[]
 }
+
+// ---------------------------------------------------------------------------------------------------
+// T02 authentication (Supabase Auth, IAM-02/IAM-03). Refusal reasons are what the screen may say: never
+// which of email or password was wrong, and never whether an account exists.
+// ---------------------------------------------------------------------------------------------------
+
+export type AuthRefusal =
+  /** Email or password is incorrect (never which one). */
+  | 'invalid_credentials'
+  /** The account exists but the email address is not verified yet. */
+  | 'email_not_confirmed'
+  | 'rate_limited'
+  /** The server's password rules refused the password. */
+  | 'weak_password'
+  /** The reset link expired or was already used (no recovery session). */
+  | 'invalid_link'
+  /** The server could not be reached or answered unexpectedly. */
+  | 'unavailable'
+
+export type AuthOutcome<T = null> = { kind: 'ok'; data: T } | { kind: 'refused'; reason: AuthRefusal }
+
+export interface RegisterInput {
+  fullName: string
+  email: string
+  organisation?: string
+  password: string
+  /** Version of the privacy notice the person accepted (stored by the server only if it is the current one). */
+  consentVersion: string
+}
+
+/** Current privacy notice (read from `content_pages`, kind `privacy`). */
+export interface PrivacyNotice {
+  version: string
+  title: string
+  body_md: string
+  is_sample: boolean
+}
+
+/** What changed in the auth session, so cached data for the previous person can be dropped. */
+export type AuthChange = 'signed_in' | 'signed_out' | 'user_updated' | 'password_recovery'
