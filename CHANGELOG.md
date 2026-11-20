@@ -4,6 +4,10 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `feature` **T12 chat settings** (`/admin/settings/chat`, CHT-02), Provisional UI built from the written spec. Administrators can set the demo switch (always open, always closed, or follow the opening hours), each weekday's hours in CAT, and closure days with a reason. Closing before opening is refused on the screen and by the server. After each change the settings are re-read, so the page shows what is saved. `ChatPort` gains `closures` (`service_closures`), `setHours` (`set_service_hours`), `setClosure` (`set_service_closure`) and `setOverride` (`set_chat_override`).
+
+  Evidence: 3 new tests (the demo switch closes chat for applicants; hours change with the before-opening refusal; closure added and removed; non-admins refused); 296 in total; lint, type-check and build pass.
+
 - `feature` **Committee view, status only** (D-08), Provisional UI built from the written spec. Committee members get a **Programme overview** home with counts by stage, and an **All cases** list with reference, challenge, stage and last update. There is no proposal text, no scores, no notes and no link into a case. D-08 is still OPEN in the decision register; this uses the least-privilege option, which is what the server already enforces (`list_case_status`, `case_stage_counts`), so it shows no more than either option would allow. New `CommitteePort`.
 
   Evidence: 3 new tests (counts reconcile with the seed; titles never shown; reviewer and applicant refused) and 1 updated; 293 in total; lint, type-check and build pass.
