@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { ApiError, fromRpcError } from '../errors'
+import { ApiError, fromRpcError, isRefusal } from '../errors'
 import type { ReviewPort } from '../review'
-import type { AttachmentInfo, DraftData, FormSchema, MyScorecard, ReviewQueueRow, RubricCriterion, ScorecardResult } from '../types'
+import type { AttachmentInfo, DraftData, FormSchema, MyScorecard, ReviewQueueRow, RubricCriterion, ScorecardResult, ScorePanel } from '../types'
 
 /**
  * Supabase reviewer adapter (Slice 3). Explicit columns only. Proposal text, files and the rubric are read only
@@ -121,6 +121,24 @@ export function createSupabaseReview(client: SupabaseClient): ReviewPort {
       const { data, error } = await client.rpc('save_scorecard', { p_assignment_id: assignmentId, p_items: items, p_overall_comment: overallComment })
       if (error) return fromRpcError(error)
       return { kind: 'ok', data: data as ScorecardResult }
+    },
+
+    async getPanel(proposalId) {
+      const { data, error } = await client.rpc('get_score_panel', { p_proposal_id: proposalId })
+      if (error) {
+        // FORBIDDEN (not allowed yet, e.g. a reviewer before submitting) reads as "not visible".
+        if (isRefusal(error)) return null
+        readFailed('the score panel', error)
+      }
+      const panel = data as ScorePanel | null
+      if (!panel) return null
+      // numeric columns can arrive as text; the screen does arithmetic on them.
+      return {
+        ...panel,
+        criteria: panel.criteria.map((c) => ({ ...c, weight: Number(c.weight) })),
+        scorecards: panel.scorecards.map((s) => ({ ...s, weighted_score: s.weighted_score === null ? null : Number(s.weighted_score) })),
+        criteria_summary: panel.criteria_summary.map((c) => ({ ...c, mean: Number(c.mean) })),
+      }
     },
 
     async submitScorecard({ assignmentId, items, overallComment }) {

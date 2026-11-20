@@ -10,7 +10,9 @@ import { NotBuiltYet } from '@/pages/NotBuiltYet'
 import { SignInPage } from '@/pages/auth/SignInPage'
 import { RegisterPage } from '@/pages/auth/RegisterPage'
 import { ContactsPage, FaqPage, PrivacyPage, SupportPage } from '@/pages/help/HelpPages'
+import { DecisionQueuePage } from '@/pages/review/DecisionQueuePage'
 import { MyReviewsPage } from '@/pages/review/MyReviewsPage'
+import { PanelPage } from '@/pages/review/PanelPage'
 import { ScorePage } from '@/pages/review/ScorePage'
 import { AllCasesPage } from '@/pages/staff/AllCasesPage'
 import { ScreeningQueuePage } from '@/pages/staff/ScreeningQueuePage'
@@ -74,11 +76,12 @@ export const routes: RouteObject[] = [
       { path: '/staff', element: guard(STAFF_ROLES, nb('T06', 'Home', 'Staff')) },
       { path: '/staff/queue/screening', element: guard(['screening_officer', 'admin'], <ScreeningQueuePage />) },
       { path: '/staff/reviews', element: guard(['reviewer'], <MyReviewsPage />) },
-      { path: '/staff/queue/decision', element: guard(['adjudicator', 'admin'], nb('T07', 'Ready for decision')) },
+      { path: '/staff/queue/decision', element: guard(['adjudicator', 'admin'], <DecisionQueuePage />) },
       { path: '/staff/cases', element: guard(['admin', 'committee_member'], <AllCasesPage />) },
       { path: '/staff/cases/:id', element: guard(STAFF_ROLES, <StaffCasePage />) },
       { path: '/staff/cases/:id/score', element: guard(['reviewer'], <ScorePage />) },
-      { path: '/staff/cases/:id/panel', element: guard(['adjudicator', 'admin'], nb('T09', 'Panel comparison')) },
+      // Reviewers too: the server shows them the panel only after they have submitted their own scorecard.
+      { path: '/staff/cases/:id/panel', element: guard(['adjudicator', 'admin', 'reviewer'], <PanelPage />) },
       { path: '/reports', element: guard(['adjudicator', 'admin', 'support_lead', 'committee_member'], nb('T13', 'Reports')) },
       { path: '/audit', element: guard(['admin', 'auditor'], nb('T14', 'Audit log')) },
       { path: '/support/inbox', element: guard(['support_consultant', 'support_lead'], nb('T15', 'Support inbox')) },

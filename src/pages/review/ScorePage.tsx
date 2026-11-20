@@ -482,6 +482,9 @@ function SubmittedCard({ w }: { w: ReviewWorkspace }) {
         })}
       </dl>
       {card.overall_comment ? <p className="whitespace-pre-wrap break-words">{card.overall_comment}</p> : null}
+      <p>
+        <Link to={`/staff/cases/${w.row.proposal_id}/panel`}>Compare with the other reviews</Link>
+      </p>
     </section>
   )
 }

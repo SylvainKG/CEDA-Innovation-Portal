@@ -98,4 +98,23 @@ describe('Supabase reviewer adapter', () => {
       { fn: 'submit_scorecard', args: { p_assignment_id: 'a1', p_items: items, p_overall_comment: '' } },
     ])
   })
+
+  it('reads the panel through get_score_panel, turns numeric text into numbers, and reads FORBIDDEN as not visible', async () => {
+    const panel = {
+      proposal_id: 'p1', reference: 'CEDA-2026-0004', version_id: 'v1', version_no: 1,
+      criteria: [{ criterion_id: 'c1', key: 'innovation', label: 'Innovation', weight: '30.00', anchors: {} }],
+      scorecards: [{ scorecard_id: 's1', assignment_id: 'a1', reviewer_id: 'r1', reviewer_name: 'Demo Reviewer 1', submitted_at: 'x', overall_comment: '', weighted_score: '4.30', items: [] }],
+      criteria_summary: [{ criterion_id: 'c1', key: 'innovation', mean: '4.50', min: 4, max: 5, spread: 1, flagged: false }],
+      aggregate: { mean_weighted: 4.03, min_weighted: 3.75, max_weighted: 4.3, spread: 0.55, flagged: false },
+      submitted_count: 2, quorum: 2, spread_flag_threshold: 2,
+    }
+    const ok = fake({}, { get_score_panel: { data: panel, error: null } })
+    const got = await createSupabaseReview(ok.client).getPanel('p1')
+    expect(ok.rpcs[0]).toEqual({ fn: 'get_score_panel', args: { p_proposal_id: 'p1' } })
+    expect(got?.criteria[0]?.weight).toBe(30)
+    expect(got?.scorecards[0]?.weighted_score).toBe(4.3)
+    expect(got?.criteria_summary[0]?.mean).toBe(4.5)
+    const forbidden = fake({}, { get_score_panel: { data: null, error: { message: 'FORBIDDEN', hint: 'No access.', details: null } } })
+    expect(await createSupabaseReview(forbidden.client).getPanel('p1')).toBeNull()
+  })
 })

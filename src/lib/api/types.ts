@@ -439,3 +439,28 @@ export interface ScorecardResult {
   quorum_reached?: boolean
   replayed?: boolean
 }
+
+/** `get_score_panel` (contract §4.3): every submitted scorecard on a version, side by side. */
+export interface ScorePanel {
+  proposal_id: string
+  reference: string
+  version_id: string
+  version_no: number
+  criteria: { criterion_id: string; key: string; label: string; weight: number; anchors: Record<string, string> }[]
+  scorecards: {
+    scorecard_id: string
+    assignment_id: string
+    reviewer_id: string
+    reviewer_name: string | null
+    submitted_at: string
+    overall_comment: string
+    weighted_score: number | null
+    items: { criterion_id: string; score: number; reason: string }[]
+  }[]
+  /** Per criterion; `flagged` when its scores differ by `spread_flag_threshold` or more (BCR-001 B7). */
+  criteria_summary: { criterion_id: string; key: string; mean: number; min: number; max: number; spread: number; flagged: boolean }[]
+  aggregate: { mean_weighted: number | null; min_weighted: number | null; max_weighted: number | null; spread: number | null; flagged: boolean } | null
+  submitted_count: number
+  quorum: number
+  spread_flag_threshold: number
+}

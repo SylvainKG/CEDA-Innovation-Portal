@@ -96,6 +96,14 @@ export function useSaveScorecard(assignmentId: string) {
   return useReviewAction<ScoreInput, ScorecardResult>(assignmentId, send, landed)
 }
 
+export function usePanel(proposalId: string | undefined) {
+  return useQuery({
+    queryKey: [...reviewKeys.all, 'panel', proposalId ?? ''],
+    queryFn: () => api.review.getPanel(proposalId as string),
+    enabled: Boolean(proposalId),
+  })
+}
+
 export function useSubmitScorecard(assignmentId: string) {
   const send = useCallback((input: ScoreInput) => api.review.submitScorecard({ assignmentId, ...input }), [assignmentId])
   const landed = useCallback((fresh: ReviewWorkspace | null) => fresh?.scorecard?.status === 'submitted', [])
