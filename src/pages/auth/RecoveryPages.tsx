@@ -11,8 +11,13 @@ import { isEmail, PASSWORD_MIN, REFUSAL_TEXT, RESEND_WAIT_S } from './auth-text'
 /** T02 Verify: "Check your email", with a resend link that waits 60 s between sends. */
 export function VerifyEmailPage() {
   const location = useLocation()
-  const email = (location.state as { email?: string } | null)?.email
-  const [wait, setWait] = useState(RESEND_WAIT_S)
+  // Known only right after registering (navigation state). After a refresh, ask for it (Sandra's #47 review).
+  const known = (location.state as { email?: string } | null)?.email
+  const [typed, setTyped] = useState('')
+  const [typedError, setTypedError] = useState<string | undefined>()
+  const email = known ?? typed.trim()
+  // Right after registering a link was just sent, so the first resend waits; otherwise it may go at once.
+  const [wait, setWait] = useState(known ? RESEND_WAIT_S : 0)
   const [status, setStatus] = useState<'idle' | 'sent' | AuthRefusal>('idle')
 
   useEffect(() => {
@@ -22,7 +27,11 @@ export function VerifyEmailPage() {
   }, [wait])
 
   async function resend() {
-    if (!email) return
+    if (!known) {
+      if (!email) return setTypedError('Enter your email address')
+      if (!isEmail(email)) return setTypedError('Enter an email address like name@example.com')
+      setTypedError(undefined)
+    }
     const outcome = await api.session.resendVerification(email)
     setStatus(outcome.kind === 'ok' ? 'sent' : outcome.reason)
     setWait(RESEND_WAIT_S)
@@ -32,7 +41,7 @@ export function VerifyEmailPage() {
     <div className="py-6">
       <AuthCard title="Check your email">
         <p>
-          We've sent a verification link to {email ? <strong>{email}</strong> : 'your email address'}. Open it, then sign in. It can
+          We've sent a verification link to {known ? <strong>{known}</strong> : 'your email address'}. Open it, then sign in. It can
           take a few minutes; check your spam folder too.
         </p>
         <p className="text-sm text-ink-muted">
@@ -41,11 +50,21 @@ export function VerifyEmailPage() {
         </p>
         {status === 'sent' ? <Banner kind="success">We sent a new link.</Banner> : null}
         {status !== 'idle' && status !== 'sent' ? <Banner kind="error">{REFUSAL_TEXT[status]}</Banner> : null}
-        {email ? (
-          <Button variant="secondary" onClick={() => void resend()} disabled={wait > 0} disabledReason={`You can resend in ${wait} s`}>
-            Resend the link
-          </Button>
-        ) : null}
+        {known ? null : (
+          <TextField
+            id="verify-email"
+            label="Email address"
+            type="email"
+            autoComplete="email"
+            help="Enter the address you registered with to get a new link."
+            value={typed}
+            onChange={(e) => setTyped(e.target.value)}
+            error={typedError}
+          />
+        )}
+        <Button variant="secondary" onClick={() => void resend()} disabled={wait > 0} disabledReason={`You can resend in ${wait} s`}>
+          Resend the link
+        </Button>
         <p>
           <Link to="/auth/sign-in">Go to sign in</Link>
         </p>

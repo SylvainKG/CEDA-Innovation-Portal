@@ -92,7 +92,8 @@ export function RegisterPage() {
                 <div className="text-sm">
                   <PlainMarkdown source={notice.data.body_md} />
                 </div>
-                <div className="flex items-start gap-3">
+                {/* The whole row is the target, and the box is 24 px (Sandra's #47 review). */}
+                <label htmlFor="reg-consent" className="-mx-2 flex min-h-touch cursor-pointer items-start gap-3 rounded-md px-2 py-2 hover:bg-surface-sunken">
                   <input
                     id="reg-consent"
                     type="checkbox"
@@ -101,10 +102,10 @@ export function RegisterPage() {
                     onChange={(e) => setConsent(e.target.checked)}
                     aria-invalid={errorFor('reg-consent') ? true : undefined}
                     aria-describedby={errorFor('reg-consent') ? 'reg-consent-error' : undefined}
-                    className="mt-1 h-5 w-5 shrink-0"
+                    className="mt-0.5 h-6 w-6 shrink-0"
                   />
-                  <label htmlFor="reg-consent">I have read the privacy notice and agree that CEDA may use my details to assess my ideas.</label>
-                </div>
+                  <span>I have read the privacy notice and agree that CEDA may use my details to assess my ideas.</span>
+                </label>
                 {errorFor('reg-consent') ? (
                   <p id="reg-consent-error" className="text-sm text-error">
                     {errorFor('reg-consent')}
