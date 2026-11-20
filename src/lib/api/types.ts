@@ -690,3 +690,23 @@ export interface ChatStatistics {
   average_wait_seconds: number | null
   by_day: { day: string; volume: number; missed: number }[]
 }
+
+// ---------------------------------------------------------------------------------------------------
+// T12 users and roles (IAM-01, ARC-01; contract §4.2 grant_role / revoke_role, invite-staff Edge Function).
+// ---------------------------------------------------------------------------------------------------
+
+export interface RoleOption {
+  key: string
+  label: string
+  requires_mfa: boolean
+}
+
+/** A registered person as an administrator sees them (profiles + active user_roles; role.manage). */
+export interface AdminUser {
+  id: string
+  full_name: string
+  email: string | null
+  organisation: string | null
+  is_demo: boolean
+  roles: string[]
+}

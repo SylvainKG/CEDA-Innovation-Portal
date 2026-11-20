@@ -22,6 +22,7 @@ import { ApplicantChatPage } from '@/pages/support/ApplicantChatPage'
 import { SupportInboxPage } from '@/pages/support/SupportInboxPage'
 import { ScreeningQueuePage } from '@/pages/staff/ScreeningQueuePage'
 import { StaffHomePage } from '@/pages/staff/StaffHomePage'
+import { AdminUsersPage } from '@/pages/admin/AdminUsersPage'
 import { StaffCasePage } from '@/pages/staff/StaffCasePage'
 import { ForgotPasswordPage, ResetPasswordPage, VerifyEmailPage } from '@/pages/auth/RecoveryPages'
 import { ComponentGalleryRoute } from '@/pages/ComponentGalleryRoute'
@@ -97,7 +98,7 @@ export const routes: RouteObject[] = [
       { path: '/admin/challenges', element: guard(['admin'], nb('T12', 'Challenges', 'Admin')) },
       { path: '/admin/challenges/:id', element: guard(['admin'], nb('T12', 'Challenge editor')) },
       { path: '/admin/rubrics/:id', element: guard(['admin'], nb('T12', 'Rubric editor')) },
-      { path: '/admin/users', element: guard(['admin'], nb('T12', 'Users and roles')) },
+      { path: '/admin/users', element: guard(['admin'], <AdminUsersPage />) },
       { path: '/admin/content', element: guard(['admin'], nb('T12', 'Content')) },
       { path: '/admin/settings/roles', element: guard(['admin'], nb('T12', 'Roles')) },
       { path: '/admin/settings/chat', element: guard(['admin'], nb('T12', 'Chat settings')) },
