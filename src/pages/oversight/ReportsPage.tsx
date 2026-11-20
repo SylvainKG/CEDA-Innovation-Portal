@@ -3,10 +3,11 @@ import { Banner, Button, DashboardCard } from '@/components'
 import { Tabs } from '@/components/Tabs'
 import { EmptyState, ErrorState, ForbiddenState, LoadingState } from '@/components/states/States'
 import { downloadText, reportCsv } from '@/features/oversight/csv'
+import { useChatStats } from '@/features/chat/queries'
 import { useReport } from '@/features/oversight/queries'
 import { useChallenges } from '@/features/submission/queries'
 import { api } from '@/lib/api'
-import type { CaseStatus, ProgrammeReport, ReportFilters } from '@/lib/api/types'
+import type { CaseStatus, ChatStatistics, ProgrammeReport, ReportFilters } from '@/lib/api/types'
 import { formatBWP } from '@/lib/money'
 import { formatDateTimeCAT } from '@/lib/format'
 import { staffStatus } from '@/lib/status'
@@ -26,13 +27,24 @@ export function ReportsPage() {
   const [draft, setDraft] = useState<ReportFilters>({})
   const [periodError, setPeriodError] = useState<string | null>(null)
   const report = useReport(filters)
+  const chat = useChatStats()
   const challenges = useChallenges()
   const [exporting, setExporting] = useState(false)
   const [exportError, setExportError] = useState<string | null>(null)
 
   if (report.isPending) return <LoadingState what="the report" />
   if (report.isError) return <ErrorState level="h1" message="We couldn't load the report." onRetry={() => void report.refetch()} />
-  if (report.data === null) return <ForbiddenState home="/staff" />
+  if (report.data === null) {
+    // The support lead reads chat statistics only (spec T13: "support lead for the chat statistics tab").
+    if (chat.isPending) return <LoadingState what="chat statistics" />
+    if (!chat.data) return <ForbiddenState home="/staff" />
+    return (
+      <div className="flex flex-col gap-6">
+        <h1 className="text-h1 font-semibold">Reports</h1>
+        <ChatStats s={chat.data} />
+      </div>
+    )
+  }
   const r = report.data
 
   function apply() {
@@ -127,6 +139,7 @@ export function ReportsPage() {
             { id: 'outcomes', label: 'Outcomes', content: <Outcomes r={r} /> },
             { id: 'timelines', label: 'Timelines', content: <Timelines r={r} /> },
             { id: 'impact', label: 'Impact', content: <Impact r={r} /> },
+            ...(chat.data ? [{ id: 'chat', label: 'Chat', content: <ChatStats s={chat.data} /> }] : []),
           ]}
         />
       )}
@@ -185,6 +198,25 @@ function Timelines({ r }: { r: ProgrammeReport }) {
         <DashboardCard label="Overdue feedback requests" value={r.overdue.feedback_requests} definition="Open requests past their response deadline." />
         <DashboardCard label="Overdue reviews" value={r.overdue.reviews} definition="Active assignments past their due date without a submitted scorecard." />
       </Tiles>
+    </div>
+  )
+}
+
+function ChatStats({ s }: { s: ChatStatistics }) {
+  const wait = s.average_wait_seconds === null ? 'No data' : s.average_wait_seconds < 60 ? `${s.average_wait_seconds} s` : `${Math.round(s.average_wait_seconds / 60)} min`
+  return (
+    <div className="flex flex-col gap-6">
+      <h2 className="text-h2 font-semibold">Chat</h2>
+      <Tiles>
+        <DashboardCard label="Chats" value={s.volume} definition="Chats started (all time)." />
+        <DashboardCard label="Handled" value={s.handled} definition="Chats a consultant accepted." />
+        <DashboardCard label="Missed" value={s.missed} definition="Chats no one accepted within 30 minutes or before closing time." />
+      </Tiles>
+      <Tiles>
+        <DashboardCard label="Average wait" value={wait} definition="From starting a chat to a consultant accepting it." />
+        <DashboardCard label="Waiting now" value={s.waiting_now} definition="Chats in the queue at this moment." />
+      </Tiles>
+      <BarList title="Chats per day" definition="Chats started each day (CAT)." unit="chats" rows={s.by_day.map((d) => ({ label: d.day, value: d.volume }))} />
     </div>
   )
 }

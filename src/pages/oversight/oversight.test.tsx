@@ -101,8 +101,8 @@ describe('T13 reports (RPT-01)', () => {
     expect(await screen.findByText('No activity in this period.', {}, LOAD)).toBeInTheDocument()
   })
 
-  it('shows "no access" to roles the server refuses (support lead) and the port returns nothing', async () => {
-    await as('support_lead')
+  it('shows "no access" to roles the server refuses (committee member) and the port returns nothing', async () => {
+    await as('committee_member')
     renderAt('/reports')
     expect(await screen.findByRole('heading', { name: NO_ACCESS }, LOAD)).toBeInTheDocument()
     await as('reviewer')
