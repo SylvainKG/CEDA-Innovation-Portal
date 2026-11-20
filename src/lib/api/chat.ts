@@ -14,6 +14,10 @@ import type { ChatInboxRow, ChatMessage, ChatSession, ChatStatistics, ChatStatus
  * | close          | RPC `close_chat`; closing an ended chat is a replay, not an error                 |
  * | inbox          | RPC `my_chat_inbox` (chat.handle)                                                  |
  * | statistics     | RPC `chat_statistics` (chat.stats: support lead)                                   |
+ * | closures       | read `service_closures` (day, reason)                                               |
+ * | setHours       | RPC `set_service_hours` (config.manage: admin)                                      |
+ * | setClosure     | RPC `set_service_closure`; a null reason re-opens the day                           |
+ * | setOverride    | RPC `set_chat_override('open' | 'closed' | null)`: the demo switch (CHT-02)         |
  *
  * `start` and `send` carry no request key: after a lost reply the screen re-reads the thread before saying
  * whether the message was sent, rather than sending it again blindly.
@@ -30,4 +34,8 @@ export interface ChatPort {
   inbox(): Promise<ChatInboxRow[] | null>
   /** `null` when the person may not read chat statistics. */
   statistics(range: { from?: string; to?: string }): Promise<ChatStatistics | null>
+  closures(): Promise<{ day: string; reason: string }[]>
+  setHours(input: { weekday: number; isWorking: boolean; opensAt: string; closesAt: string }): Promise<CommandOutcome<{ weekday: number; is_working: boolean }>>
+  setClosure(input: { day: string; reason: string | null }): Promise<CommandOutcome<{ day: string; closed: boolean }>>
+  setOverride(mode: 'open' | 'closed' | null): Promise<CommandOutcome<{ mode: 'open' | 'closed' | null; open: boolean }>>
 }

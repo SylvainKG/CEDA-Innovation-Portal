@@ -80,5 +80,29 @@ export function createSupabaseChat(client: SupabaseClient): ChatPort {
       const s = data as ChatStatistics
       return { ...s, average_wait_seconds: s.average_wait_seconds === null ? null : Number(s.average_wait_seconds) }
     },
+
+    async closures() {
+      const { data, error } = await client.from('service_closures').select('day, reason').order('day')
+      if (error) throw new ApiError('Could not load the closures', error)
+      return (data ?? []) as { day: string; reason: string }[]
+    },
+
+    async setHours({ weekday, isWorking, opensAt, closesAt }) {
+      const { data, error } = await client.rpc('set_service_hours', { p_weekday: weekday, p_is_working: isWorking, p_opens_at: opensAt, p_closes_at: closesAt })
+      if (error) return fromRpcError(error)
+      return { kind: 'ok', data: data as { weekday: number; is_working: boolean } }
+    },
+
+    async setClosure({ day, reason }) {
+      const { data, error } = await client.rpc('set_service_closure', { p_day: day, p_reason: reason })
+      if (error) return fromRpcError(error)
+      return { kind: 'ok', data: data as { day: string; closed: boolean } }
+    },
+
+    async setOverride(mode) {
+      const { data, error } = await client.rpc('set_chat_override', { p_mode: mode })
+      if (error) return fromRpcError(error)
+      return { kind: 'ok', data: data as { mode: 'open' | 'closed' | null; open: boolean } }
+    },
   }
 }

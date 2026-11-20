@@ -6,7 +6,7 @@ import type { CaseStatus, StaffCaseRow } from '@/lib/api/types'
 import { formatDateCAT } from '@/lib/format'
 import { useSession } from '@/lib/session'
 import { staffStatus } from '@/lib/status'
-import { NotBuiltYet } from '@/pages/NotBuiltYet'
+import { CommitteeCases } from './CommitteeView'
 
 const ALL: readonly CaseStatus[] = []
 /** Statuses an admin can filter by, in workflow order (drafts are never visible to staff). */
@@ -24,13 +24,12 @@ const FILTERABLE: readonly CaseStatus[] = [
 /**
  * T07 "All cases" for administrators (spec T07, admin variant), built from the written spec (BCR-003; design
  * review pending). Every submitted case with its status, active reviewers and last update; a status filter kept
- * in the address so it survives reloads and can be shared. The committee variant (D-08: reference, challenge and
- * stage only, through `list_case_status`) is not built yet.
+ * in the address so it survives reloads and can be shared. Committee members get the status-only variant (D-08).
  */
 export function AllCasesPage() {
   const { data: user } = useSession()
   if (user && !user.roles.includes('admin') && user.roles.includes('committee_member')) {
-    return <NotBuiltYet template="T07" title="All cases" variant="Committee" />
+    return <CommitteeCases />
   }
   return <AdminCases />
 }
