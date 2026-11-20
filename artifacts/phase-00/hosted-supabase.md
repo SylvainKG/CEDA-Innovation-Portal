@@ -113,6 +113,20 @@ Option A agreed with Stacey: run on two new cases only, then remove exactly what
 
 **Demo-data note:** the seeded clarification on `CEDA-2026-0003` (due 20 Nov 16:00 CAT) was expired by the 14:00 UTC maintenance run, as designed, before the snapshot.
 
+## 3d. C-02 link expiry and C-16 live-update isolation (20 Nov 2026, 14:46–14:48 UTC)
+
+Run as the demo accounts with supabase-js 2.119.0 (the browser client), under a snapshot and the verified reset (`tools/pglite-db-tests/staging-reset.mjs`, #68).
+
+| Claim | Check | Result |
+|---|---|---|
+| C-02 | Applicant B asks `attachment-url` for a link to A's draft file | **Passed:** 403 `FORBIDDEN` |
+| C-02 | The owner's link, fetched at once | **Passed:** function 200, `expires_in` 60; download 200, 242 bytes identical to the upload |
+| C-02 | The same link fetched 62 s later | **Passed:** 400 `InvalidJWT`, "`exp` claim timestamp check failed" |
+| C-16 | Applicant A (control) subscribed to `notifications` and `case_events`; A submits | **Passed:** 2 events (`case_events` INSERT, `notifications` INSERT) |
+| C-16 | Applicant B subscribed to the same tables at the same time | **Passed:** 0 events |
+
+**Reset:** the extra rows (1 case, 1 version, 1 attachment, 1 case event, 1 notification, 4 audit entries) were removed and the sequence set from 9 back to 8. All 33 tables were identical to the snapshot before commit; the test file was deleted through the Storage API (200), and Storage again matches the snapshot. This was the first real use of the tool's delete path, files included. The snapshot was deleted afterwards.
+
 ## 4. Not done or not run
 
 | Item | Status |
