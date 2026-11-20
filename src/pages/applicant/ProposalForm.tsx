@@ -165,7 +165,9 @@ function ProposalForm({ form, draft, onCreated }: { form: ChallengeForm; draft?:
     autosave.change(next)
   }
 
-  const goTo = (key: string) => navigate({ hash: `step-${key}` })
+  // Keep the query string: on a new idea the address is `/ideas/new?challenge=<id>`, and a hash-only navigation
+  // would drop `?challenge=`, unmount this form and lose everything typed before the first save created the draft.
+  const goTo = (key: string) => navigate({ search: location.search, hash: `step-${key}` })
   const stepComplete = (s: Step) => {
     if (s.section) return s.section.fields.every((f) => !localErrors[f.key])
     if (s.key === 'attachments') return form.required_docs.every((d) => !localErrors[`doc:${d.key}`])
@@ -205,7 +207,9 @@ function ProposalForm({ form, draft, onCreated }: { form: ChallengeForm; draft?:
           </div>
           <div className="rounded-md bg-surface-card p-4 text-sm shadow-1">
             <p className="font-semibold">Need help?</p>
-            <Link to={FAQ_HREF}>Read the FAQs</Link>
+            <Link to={FAQ_HREF} className="inline-flex min-h-touch items-center">
+              Read the FAQs
+            </Link>
           </div>
     </>
   )
