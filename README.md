@@ -49,11 +49,11 @@ npm run dev             # http://localhost:5173
 ### Environment variables (names only)
 | Name | Purpose |
 |---|---|
-| `VITE_API_MODE` | `mock` (typed mock adapters, no backend). `supabase` arrives with the API contract |
-| `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | Supabase project (public by design; RLS protects data). Not used yet |
+| `VITE_API_MODE` | `mock` (typed mock adapters, fictional data, no backend) or `supabase` (the real backend: Supabase Auth, RLS and the workflow RPCs) |
+| `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | Supabase project URL and publishable key, needed when `VITE_API_MODE=supabase` (public by design; RLS protects data). Never the service-role key |
 
 ### Mock session (development only)
-With `VITE_API_MODE=mock`, the sign-in page offers fictional demo personas so the team can preview each role's navigation. **This is not authentication** and grants no access to data. Real sign-in arrives with Supabase Auth.
+With `VITE_API_MODE=mock`, the sign-in page also offers fictional demo personas so the team can preview each role. **This is not authentication** and grants no access to real data. With `VITE_API_MODE=supabase`, sign-in is Supabase Auth with the seeded demo accounts (`docs/submission/judge-guide.md`).
 
 ### Project structure
 ```
