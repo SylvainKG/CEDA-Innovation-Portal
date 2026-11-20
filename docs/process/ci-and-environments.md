@@ -2,7 +2,7 @@
 
 **Owner:** Sylvain (CI, release) with Stacey (Supabase) · **Status:** Draft for team review · 15 Nov 2026
 **Implements:** blueprint §5 Phase 0, D-14, D-17, D-40, D-42 · Evidence skill: "Delivery application"
-This is a plan. Nothing here is set up yet; every item is **Not run** until it has a run record in `artifacts/phase-00/`.
+CI (§2) is live; other items stay **Not run** until they have a run record in `artifacts/phase-NN/`.
 
 ---
 
@@ -20,7 +20,7 @@ This is a plan. Nothing here is set up yet; every item is **Not run** until it h
 
 ## 2. CI pipeline (D-42)
 
-One workflow file, `.github/workflows/ci.yml`, maintained by Sylvain. **Stage 1** (`secrets`) is live. **Stage 2** (`lint`, `typecheck`, `unit`, `build`, `audit`) arrives after the frontend scaffold. **Stage 3** (`db`) arrives with migration 001. Node version comes from `.nvmrc`; dependencies are installed with `npm ci` from the committed lockfile.
+Maintained by Sylvain. All three stages are live: **stage 1** (`secrets`) and **stage 2** (`lint`, `typecheck`, `unit`, `build`, `audit`) in `.github/workflows/ci.yml`; **stage 3** (database) in `.github/workflows/db.yml` (Stacey). The `main` ruleset requires `secrets` and, since 20 Nov 2026, **`Database gate`**; whether the five stage-2 checks are also required is the repository owner's decision (open). Node version comes from `.nvmrc`; dependencies are installed with `npm ci` from the committed lockfile.
 
 | Job | Command (proposed) | Required for merge from | Notes |
 |---|---|---|---|
@@ -28,7 +28,7 @@ One workflow file, `.github/workflows/ci.yml`, maintained by Sylvain. **Stage 1*
 | `typecheck` | `npm run typecheck` (`tsc --noEmit`) | Scaffold merge | |
 | `unit` | `npm run test` (Vitest, run mode) | Scaffold merge | |
 | `build` | `npm run build` (type-check + Vite production build), with `VITE_API_MODE=mock` set explicitly | Scaffold merge | Catches build-only failures the other jobs miss |
-| `db` (`.github/workflows/db.yml`: PGlite stand-in, Supabase local stack with `supabase test db`, `deno check`) | Migrations + seed + pgTAP; Edge Function type check | **Require only the `Database gate` check** in the `main` ruleset | Runs on every pull request. The gate passes at once when no file under `supabase/`, `tools/pglite-db-tests/` or `db.yml` changed, and otherwise only when all three database jobs pass, so a required database check never blocks other PRs (issue #14, item 1). Disposable database; needs no secrets. Seed reads `DEMO_PASSWORD` from a CI-only dummy value |
+| `db` (`.github/workflows/db.yml`: PGlite stand-in, Supabase local stack with `supabase test db`, `deno check`) | Migrations + seed + pgTAP; Edge Function type check | **`Database gate` is required** in the `main` ruleset (since 20 Nov 2026); the three jobs behind it are not required on their own | Runs on every pull request. The gate passes at once when no file under `supabase/`, `tools/pglite-db-tests/` or `db.yml` changed, and otherwise only when all three database jobs pass, so a required database check never blocks other PRs (issue #14, item 1). Disposable database; needs no secrets. Seed reads `DEMO_PASSWORD` from a CI-only dummy value |
 | `secrets` | Secret scanner over the PR diff and full history (e.g. gitleaks) | **Immediately**, even before code exists | Covers R-10 |
 | `audit` | `npm audit --omit=dev --audit-level=high` (packages that ship in the built site); the full report, dev tooling included, is saved as a job artifact and listed in the job summary | Scaffold merge | The report feeds SEC-02. A high or critical finding in a shipped package blocks merge. One in dev-only tooling (build, test, lint) does not block, but must be recorded with a reason in ADR-001 and upgraded once a fix exists (since 18 Nov 2026: GHSA-fc5q-39xc-vjpf in `picomatch`, no patched version) |
 | `e2e` | Playwright against staging, `--trace off` | **Not required** for merge; runs after deploy to staging and on demand | Chrome, Edge, Firefox + one mobile viewport (QA-01). Results go to `artifacts/phase-NN/` |
