@@ -358,6 +358,29 @@ export function createSupabaseSubmission(client: SupabaseClient): SubmissionPort
       }
     },
 
+    async submitRevision({ proposalId, clientRequestId, data, changeNote, taskResponses, declarationVersion }) {
+      try {
+        // The revision working copy: save_draft works on the case while a revision is open (contract §4.4).
+        // Repeating it after a lost reply is harmless (it replaces the copy).
+        if (data) {
+          const saved = await client.rpc('save_draft', { p_data: data, p_proposal_id: proposalId, p_challenge_id: null })
+          if (saved.error) return fromRpcError(saved.error, clientRequestId)
+        }
+        const { data: receipt, error } = await client.rpc('submit_revision', {
+          p_proposal_id: proposalId,
+          p_client_request_id: clientRequestId,
+          p_change_note: changeNote,
+          p_task_responses: taskResponses,
+          p_declaration_version: declarationVersion,
+        })
+        if (error) return fromRpcError(error, clientRequestId)
+        if (!receipt || typeof receipt !== 'object') return { kind: 'unknown', requestKey: clientRequestId }
+        return ok(receipt as SubmissionReceipt)
+      } catch {
+        return { kind: 'unknown', requestKey: clientRequestId }
+      }
+    },
+
     async getSubmissionReceipt(query): Promise<ReceiptLookup> {
       const { data, error } = await client.rpc('get_submission_receipt', {
         p_proposal_id: 'proposalId' in query ? query.proposalId : null,

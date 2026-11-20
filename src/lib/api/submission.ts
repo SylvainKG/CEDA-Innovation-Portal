@@ -34,6 +34,8 @@ import type {
  * | uploadAttachment      | Storage upload to `proposal-files`, then RPC `register_attachment` (§5)   |
  * | removeAttachment      | RPC `remove_attachment` (§4)                                              |
  * | submitProposal        | RPC `submit_proposal` (§4, §4.1)                                          |
+ * | submitRevision        | `save_draft` (the revision working copy, if edited), then RPC `submit_revision`  |
+ * |                       | (§4.4): V2, V3 … with task answers and a change note; idempotent by request key  |
  * | getSubmissionReceipt  | RPC `get_submission_receipt` (§4)                                         |
  *
  * Commands return a `CommandOutcome`: `refused` means nothing changed; `unknown` means the reply was lost and
@@ -60,6 +62,19 @@ export interface SubmissionPort {
   submitProposal(input: {
     proposalId: string
     clientRequestId: string
+    declarationVersion: string
+  }): Promise<CommandOutcome<SubmissionReceipt>>
+  /**
+   * Submit a revision (T04 V2 mode, INN-02). `data` is the edited answers, or `null` if unchanged (the server then
+   * reuses the current version). The request key works as for the first submission: reuse it until a receipt
+   * arrives; a lost reply is `unknown`.
+   */
+  submitRevision(input: {
+    proposalId: string
+    clientRequestId: string
+    data: DraftData | null
+    changeNote: string
+    taskResponses: { task_id: string; status: 'addressed' | 'not_addressed'; explanation: string }[]
     declarationVersion: string
   }): Promise<CommandOutcome<SubmissionReceipt>>
   /** `versionNo` picks a specific version's receipt (V2 receipts, Slice 4); omitted means the first. */
