@@ -1,4 +1,5 @@
 import { useCallback, useId, useState } from 'react'
+import { VersionCompare } from './VersionCompare'
 import { Link, useParams } from 'react-router-dom'
 import { Banner, Button, ButtonLink, Dialog, ReferencePill, StageTimeline, StatusBadge, TextField } from '@/components'
 import { Tabs } from '@/components/Tabs'
@@ -135,6 +136,7 @@ export function StaffCasePage() {
         tabs={[
           { id: 'proposal', label: 'Proposal', content: <ProposalTab c={c} /> },
           { id: 'timeline', label: 'Timeline', content: <TimelineTab c={c} /> },
+          ...((c.version?.version_no ?? 1) >= 2 ? [{ id: 'versions', label: 'Compare versions', content: <VersionCompare proposalId={c.id} schema={c.form_schema} /> }] : []),
           {
             id: 'reviewers',
             label: 'Reviewers',

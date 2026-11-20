@@ -1,5 +1,5 @@
 import type { ContentPort } from '../content'
-import type { ContentPage } from '../types'
+import type { AdminContentPage, ContentPage } from '../types'
 
 /** The seed's published help content (supabase/seed.sql), in position order. Fictional sample wording. */
 export const MOCK_CONTENT: ContentPage[] = [
@@ -25,9 +25,23 @@ export const MOCK_CONTENT: ContentPage[] = [
   },
 ]
 
-/** MOCK content adapter: development and demo preview only. */
+const seedStore = (): AdminContentPage[] => MOCK_CONTENT.map((c, i) => ({ ...c, version: null, position: i, status: 'published' }))
+const store = { pages: seedStore() }
+
+/** Mock-only: the admin editor (T12 content) changes the same pages the public help pages read. */
+export const mockContentInternals = {
+  pages: () => store.pages,
+  reset() {
+    store.pages = seedStore()
+  },
+}
+
+/** MOCK content adapter: development and demo preview only. Published pages only, like RLS for the public. */
 export const mockContent: ContentPort = {
   async list(kind) {
-    return MOCK_CONTENT.filter((c) => c.kind === kind)
+    return store.pages
+      .filter((c) => c.kind === kind && c.status === 'published')
+      .sort((a, b) => a.position - b.position)
+      .map((c) => ({ slug: c.slug, kind: c.kind as ContentPage['kind'], title: c.title, body_md: c.body_md, is_sample: c.is_sample }))
   },
 }

@@ -28,7 +28,7 @@ export function ChallengeList() {
           Check back soon.
         </EmptyState>
       ) : null}
-      <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {list.map((c) => (
           <li key={c.id}>
             <ChallengeCard challenge={c} />

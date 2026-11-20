@@ -152,10 +152,11 @@ describe('T07 all cases (admin)', () => {
     expect(links.sort()).toEqual(['CEDA-2026-0002', 'CEDA-2026-0008'])
   })
 
-  it('keeps the committee variant as not built yet (D-08 reads differ)', async () => {
+  it('gives committee members the status-only variant instead of the admin table (D-08)', async () => {
     await as('committee_member')
     renderAt('/staff/cases')
     expect(await screen.findByRole('heading', { level: 1, name: 'All cases' })).toBeInTheDocument()
-    expect(document.body.textContent).toContain('Not built yet: T07')
+    expect(await screen.findByText(/No proposal text, scores or notes \(D-08\)/)).toBeInTheDocument()
+    expect(screen.queryByRole('columnheader', { name: 'Reviewers' })).not.toBeInTheDocument()
   })
 })

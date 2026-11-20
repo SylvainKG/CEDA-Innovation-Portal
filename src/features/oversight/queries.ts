@@ -11,7 +11,7 @@ export const oversightKeys = {
 }
 
 export function useNotifications(enabled = true) {
-  return useQuery({ queryKey: oversightKeys.notifications, queryFn: () => api.oversight.listNotifications(), enabled, refetchInterval: 60_000 })
+  return useQuery({ queryKey: oversightKeys.notifications, queryFn: () => api.oversight.listNotifications(), enabled, refetchInterval: 30_000, refetchOnWindowFocus: true })
 }
 
 /**
