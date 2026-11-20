@@ -4,6 +4,7 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `repair` Proposal form data loss (T04; found by the issue #61 browser journey): moving between sections used a hash-only navigation, which dropped `?challenge=` from `/ideas/new?challenge=<id>`, unmounted the form and lost everything typed before the first autosave created the draft. Section links now keep the query string. Regression test in `submit-screens.test.tsx` (fails without the fix). The form's "Read the FAQs" link is now a 44 px target.
 - `feature` **T04 proposal form and T05 receipt**, built from the written spec (BCR-003, D-45 proposed; design review by Sandra pending). Routes `/ideas/new?challenge=`, `/ideas/:id/edit`, `/ideas/:id/receipt?v=`:
   - sections from the challenge's form schema, plus Attachments and Review & declare. Stepper on desktop, "Section n of m" on mobile; the step is in the URL hash, and focus moves to the step heading;
   - autosave with the honest indicator; "restore unsaved changes from this device" prompt; offline banner. The first save moves the address to `/ideas/:id/edit` without remounting the form;
