@@ -18,7 +18,7 @@ function fail(message) {
 }
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) fail('SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set.')
-if (!DEMO_PASSWORD || DEMO_PASSWORD.length < 10) fail('DEMO_PASSWORD must be set and at least 10 characters long.')
+if (!DEMO_PASSWORD || DEMO_PASSWORD.length < 12) fail('DEMO_PASSWORD must be set and at least 12 characters long (Auth minimum).')
 
 const headers = {
   apikey: SUPABASE_SERVICE_ROLE_KEY,
