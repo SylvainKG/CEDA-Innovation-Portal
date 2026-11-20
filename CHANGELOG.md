@@ -4,6 +4,34 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `policy change` Password minimum 12 (spec T02, decided by Stacey 19 Nov; raised in PR #47): `supabase/config.toml` and the hosted Auth setting are 12 (were 10), and `scripts/set-demo-passwords.mjs` checks the same length. Redirect allow-lists gain path patterns on our own hosts (`http://localhost:5173/**` here; the Amplify staging host on hosted), so verification and reset links reach `/auth/sign-in` and `/auth/reset` instead of falling back to the Site URL. No wildcard domains.
+- `policy change` Database gate (issue #14, item 1): the Database workflow now runs on every pull request, and a `Database gate` job passes when no database files changed or when all three database jobs pass. Only that job needs to be required in the `main` ruleset, so database PRs cannot merge without passing and other PRs are never left waiting for a check that never starts.
+- `policy change` **DEMO badge and Sample label colours** (Sandra, #47 review, 20 Nov: brand neutrals only). DEMO is a dark pill, `#333333` with white text (12.63:1) and the flask icon; Sample labels are `#F3F2EF` with `#333333` text and a 1 px dashed `#8A8580` border. Tokens `demo`, `demo-on`, `demo-subtle`, `demo-border` replace the placeholder purple `#6941C6`; `design-tokens.md` records them as decided.
+
+- `feature` `list_my_ideas()` for the applicant's My ideas page (T06, migration 014, asked for in PR #38): one read with only safe fields (no case-event reasons or actors), own cases only, drafts included, and the latest feedback request while the case waits on the applicant, including an expired one. Contract §5 now documents challenge template downloads from the public `challenge-files` bucket.
+- `feature` Hosted pgTAP runner and run record: `tools/pglite-db-tests/run-hosted.mjs` runs every pgTAP file against the hosted database without Docker (each file rolls back; the reference sequence is restored), and `artifacts/phase-00/hosted-supabase.md` records the hosted schema, test, account and Edge Function results with commits and times, including the Auth URL configuration and the 10-character password minimum set on 17 Nov.
+- `feature` Slice 1 behaviour hooks (APP-01, APP-03; no screens yet), in `src/features/submission/`:
+  - `useSubmitIdea`: one request key per draft, reused on every retry; a lost reply is "Not confirmed yet" with a status check by key; opening the page with a pending key checks before allowing another submit;
+  - `useAutosave`: debounced, one save at a time, every change also kept on the device; lost updates retried with back-off; the first (unkeyed) save and refusals are never retried blindly;
+  - read hooks for the challenge form, declaration, draft and receipt.
+
+  Evidence: 9 new tests (81 in total), lint, type-check and build pass. Mock only.
+
+  Review fixes (Stacey, Sylvain): typing during the first save is kept on the device under the new draft id; `INVALID_STATE` and `REQUEST_CONFLICT` on submit look up this idea's receipt by its id (never by the conflicting key); a pending key that belongs to another idea is dropped; device copies and submit keys are cleared whenever the person changes (`clearDeviceData`); the draft id is returned from state. 93 tests.
+- `feature` Slice 1 data layer, mock only (APP-01, APP-02, APP-03; no screens yet):
+  - types for the form schema, draft, attachments and receipt, copied from the API contract (Stacey, Draft for review, `db/phase-0-foundation`);
+  - `SubmissionPort` mapping one-to-one to the documented reads and RPCs (`save_draft`, `register_attachment`, `remove_attachment`, `submit_proposal`, `get_submission_receipt`);
+  - RPC error mapping: a known code is a refusal with field errors; a lost reply on a keyed command is an unknown outcome, never "failed";
+  - submit request keys kept per draft until a receipt arrives (contract §4.1 rule 1);
+  - client form check mirroring the server's rules and wording, plus completeness counts;
+  - mock adapter following the contract's check order, idempotent replay, `REQUEST_CONFLICT`, first reference `CEDA-2026-0009` (B10), and a lost-reply switch for testing the unknown path. Fixtures copied from the seed.
+
+  Evidence: 17 new unit tests (72 in total), lint, type-check and build pass. Proves the mock only; server behaviour is evidenced by the pgTAP suites.
+
+  Review fixes (Stacey, Sylvain): `IMMUTABLE` is a known refusal, never an unknown outcome; "open" is status **and** dates (`isChallengeOpen`, as `private.challenge_is_open`), with `opens_at` and the `unpublished` status from migration 011; mock attachment refusals use the server's wording and field keys; lengths count characters as Postgres does; optional `versionNo` on the receipt lookup. 76 tests.
+- `feature` Supabase keep-alive workflow (OPS-03): the hosted project stays on the Free plan, which pauses after about a week without activity, so `.github/workflows/keep-alive.yml` calls the public `health()` RPC every second day and on demand. Needs the `SUPABASE_URL` variable and `SUPABASE_PUBLISHABLE_KEY` secret in the repository settings.
+- `policy change` CI `audit` gate (SEC-02): fails on high or critical findings in **shipped** packages (`npm audit --omit=dev`). Findings in dev-only tooling are listed in the job summary and the saved report, and must be recorded in ADR-001; they no longer block every PR while no fix exists (GHSA-fc5q-39xc-vjpf in `picomatch`, build and test tooling only, 18 Nov 2026).
+- `repair` Whitespace-only answers (migration 012): `private.validate_submission` trimmed with `btrim`, which strips only spaces, so an answer of newlines or tabs passed "Required" on submit and revision while the browser refused it. Answers are now trimmed of all surrounding whitespace before every check.
 - `policy change` Slice 1 contract review (migration 011, from the frontend review in PR #16): `submit_proposal` refuses an unverified email with `VALIDATION` and `fields.email` instead of `FORBIDDEN`, so the form can tell the applicant to verify; an applicant keeps reading the challenge their own case belongs to after it is unpublished (ADM-02), through the definer helper `private.owns_case_in_challenge`. The first-autosave duplicate risk is recorded as known debt.
 - `repair` Function privileges (SEC-02, migration 010): the schema-level default-privilege lines in migration 001 could not remove PostgreSQL's built-in PUBLIC execute, so `my_access()` was callable signed out (it returned null) and internal `private` helpers were executable by everyone (not reachable through the API). New functions now start closed, `my_access` is signed-in only, and `private` exposes only the helpers access policies use.
 - `feature` Privilege regression suite `010_security_privileges.test.sql`: exact function allow-lists, `search_path` pinning, no views, no browser table writes, private proposal bucket.
