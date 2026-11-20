@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
+import { ButtonLink } from '@/components/ButtonLink'
 import { Link, NavLink, Outlet } from 'react-router-dom'
 import { Brand, Footer, MockRoleSwitcher, SkipLink, TopBarEnd } from './ShellParts'
 
@@ -26,9 +27,9 @@ export function PublicShell() {
             <Link to="/auth/sign-in" className="inline-flex min-h-touch min-w-touch items-center justify-center px-2 text-ink">
               Sign in
             </Link>
-            <Link to="/auth/register" className="inline-flex min-h-touch items-center rounded-md bg-brand px-4 font-semibold text-brand-on no-underline">
+            <ButtonLink to="/auth/register">
               Register
-            </Link>
+            </ButtonLink>
           </nav>
           <div className="flex items-center gap-2">
             <TopBarEnd />

@@ -9,6 +9,11 @@ import { STAFF_ROLES, type Role } from '@/lib/api/types'
 import { NotBuiltYet } from '@/pages/NotBuiltYet'
 import { SignInPlaceholder } from '@/pages/SignInPlaceholder'
 import { ComponentGalleryRoute } from '@/pages/ComponentGalleryRoute'
+import { ProposalFormPage } from '@/pages/applicant/ProposalForm'
+import { ReceiptPage } from '@/pages/applicant/ReceiptPage'
+import { MyIdeasPage } from '@/pages/applicant/MyIdeasPage'
+import { ChallengesPage, PublicHome } from '@/pages/public/PublicHome'
+import { ChallengeBriefPage } from '@/pages/public/ChallengeBriefPage'
 import { apiMode } from '@/lib/api'
 import { RequireRole } from './guards'
 
@@ -20,9 +25,9 @@ export const routes: RouteObject[] = [
   {
     element: <PublicShell />,
     children: [
-      { path: '/', element: nb('T01', 'Innovation challenges', 'Public home') },
-      { path: '/challenges', element: nb('T01', 'Challenges') },
-      { path: '/challenges/:slug', element: nb('T03', 'Challenge brief') },
+      { path: '/', element: <PublicHome /> },
+      { path: '/challenges', element: <ChallengesPage /> },
+      { path: '/challenges/:slug', element: <ChallengeBriefPage /> },
       { path: '/auth/sign-in', element: <SignInPlaceholder /> },
       { path: '/auth/register', element: nb('T02', 'Register') },
       { path: '/auth/verify', element: nb('T02', 'Verify your email') },
@@ -47,12 +52,12 @@ export const routes: RouteObject[] = [
   {
     element: <ApplicantShell />,
     children: [
-      { path: '/ideas', element: guard(['applicant'], nb('T06', 'My ideas', 'Applicant')) },
-      { path: '/ideas/new', element: guard(['applicant'], nb('T04', 'New idea')) },
+      { path: '/ideas', element: guard(['applicant'], <MyIdeasPage />) },
+      { path: '/ideas/new', element: guard(['applicant'], <ProposalFormPage />) },
       { path: '/ideas/:id', element: guard(['applicant'], nb('T08', 'Idea', 'Applicant case view')) },
-      { path: '/ideas/:id/edit', element: guard(['applicant'], nb('T04', 'Edit draft')) },
+      { path: '/ideas/:id/edit', element: guard(['applicant'], <ProposalFormPage />) },
       { path: '/ideas/:id/revise', element: guard(['applicant'], nb('T04', 'Revise your idea', 'V2 revise mode')) },
-      { path: '/ideas/:id/receipt', element: guard(['applicant'], nb('T05', 'Receipt')) },
+      { path: '/ideas/:id/receipt', element: guard(['applicant'], <ReceiptPage />) },
     ],
   },
   {

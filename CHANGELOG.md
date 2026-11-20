@@ -4,6 +4,43 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `repair` Proposal form data loss (T04; found by the issue #61 browser journey): moving between sections used a hash-only navigation, which dropped `?challenge=` from `/ideas/new?challenge=<id>`, unmounted the form and lost everything typed before the first autosave created the draft. Section links now keep the query string. Regression test in `submit-screens.test.tsx` (fails without the fix). The form's "Read the FAQs" link is now a 44 px target.
+- `feature` **T04 proposal form and T05 receipt**, built from the written spec (BCR-003, D-45 proposed; design review by Sandra pending). Routes `/ideas/new?challenge=`, `/ideas/:id/edit`, `/ideas/:id/receipt?v=`:
+  - sections from the challenge's form schema, plus Attachments and Review & declare. Stepper on desktop, "Section n of m" on mobile; the step is in the URL hash, and focus moves to the step heading;
+  - autosave with the honest indicator; "restore unsaved changes from this device" prompt; offline banner. The first save moves the address to `/ideas/:id/edit` without remounting the form;
+  - attachments per required document with server-worded refusals and remove;
+  - review step: read-only summary with Edit links, the declaration, an error summary linked to each field, and submit with unknown-outcome recovery;
+  - receipt from the server's data only; "What happens next"; print stylesheet with a print-only DEMO line;
+  - closed challenge, someone else's draft or receipt (Not found), and error states;
+  - `TextField` and `Select` accept a caller `id`; `ReceiptCard` can render its heading as the page h1; `saveNow` reports whether the save was confirmed.
+
+  Evidence: 8 new screen tests through the real route table (101 in total), lint, type-check and build pass. Mock only.
+
+- `feature` **T06 My ideas** (applicant), built from the written spec (BCR-003): one IdeaCard per idea, sorted by action needed (a response, then drafts), then most recent update; action banner; empty state listing open challenges; "Start a new idea". New reads `listMyIdeas` (own `proposals` + open `feedback_requests` + `case_events` stages) and `listChallenges`, with the seed's case 0008 in the mock so Applicant A sees two cards. IdeaCard gains `deadlineLabel` ("Submit by" for drafts). The list refreshes after a submit or an edit.
+
+  Evidence: 7 new tests (rules and page), 108 in total.
+
+- `feature` **T01 public home and challenge list, T03 challenge brief**, built from the written spec (BCR-003). Routes `/`, `/challenges`, `/challenges/:slug`:
+  - intro band with Register and Sign in;
+  - challenge cards (Open / Closing soon / Closed, closing date in CAT with a relative hint), open first; "How it works" in the 5 public stages;
+  - brief with status, dates and audience; "How your idea is assessed" (criteria and weights, never anchors); templates listed; the primary action is a sticky aside on desktop and a bottom bar on mobile, "Continue your draft" for an applicant with one, disabled with the reason when closed; unknown or unpublished → Not found;
+  - new read `getChallengeBrief`; `challengeTiming` ("Closing soon" = last 7 days, an assumption); `PlainMarkdown` renders seeded text without interpreting HTML; `ChallengeCard`.
+  - The e2e smoke test's expected home heading changes from the placeholder to the spec's title.
+
+  Evidence: 7 new tests, 115 in total; lint, type-check and build pass.
+
+- `repair` #38 review fixes:
+  - **F4 status colours** (decided 18 Nov, Sandra) in `tokens.css`: indigo and slate placeholders retired, Action required amber, Awarded solid gold, review and closed with borders; `PencilLine` for Draft. `TonePill` shares the tones, so challenge pills follow F4 (Open = Approved, Closing soon = Action required, Opening soon = Under review, Closed = Closed);
+  - closed challenge cards keep full contrast (no reduced opacity);
+  - upload shows "Uploading…" with an indeterminate bar, never a made-up percentage;
+  - T04 on mobile: a "Progress & help" button near the top; progress links are 44 px targets;
+  - `ButtonLink` replaces seven copies of link-as-button styling;
+  - expired feedback requests: a notice, no action (`open_feedback.status`);
+  - template downloads use the backend's public URL (`templateUrl`), hidden when none;
+  - the T03 mobile action bar is sticky, so it never covers the footer.
+
+  Evidence: 6 new tests, 121 in total.
+
 - `repair` Seeded clarification on CEDA-2026-0003 now due 4 Dec 2026, 16:00 CAT (was 20 Nov), so the demo's open question survives judging; the maintenance job had expired it on 20 Nov. The hosted project was extended the same day through `extend_feedback_deadline`.
 - `policy change` Password minimum 12 (spec T02, decided by Stacey 19 Nov; raised in PR #47): `supabase/config.toml` and the hosted Auth setting are 12 (were 10), and `scripts/set-demo-passwords.mjs` checks the same length. Redirect allow-lists gain path patterns on our own hosts (`http://localhost:5173/**` here; the Amplify staging host on hosted), so verification and reset links reach `/auth/sign-in` and `/auth/reset` instead of falling back to the Site URL. No wildcard domains.
 - `policy change` Database gate (issue #14, item 1): the Database workflow now runs on every pull request, and a `Database gate` job passes when no database files changed or when all three database jobs pass. Only that job needs to be required in the `main` ruleset, so database PRs cannot merge without passing and other PRs are never left waiting for a check that never starts.
@@ -19,6 +56,7 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
   Evidence: 9 new tests (81 in total), lint, type-check and build pass. Mock only.
 
   Review fixes (Stacey, Sylvain): typing during the first save is kept on the device under the new draft id; `INVALID_STATE` and `REQUEST_CONFLICT` on submit look up this idea's receipt by its id (never by the conflicting key); a pending key that belongs to another idea is dropped; device copies and submit keys are cleared whenever the person changes (`clearDeviceData`); the draft id is returned from state. 93 tests.
+
 - `feature` Slice 1 data layer, mock only (APP-01, APP-02, APP-03; no screens yet):
   - types for the form schema, draft, attachments and receipt, copied from the API contract (Stacey, Draft for review, `db/phase-0-foundation`);
   - `SubmissionPort` mapping one-to-one to the documented reads and RPCs (`save_draft`, `register_attachment`, `remove_attachment`, `submit_proposal`, `get_submission_receipt`);

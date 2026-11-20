@@ -1,10 +1,13 @@
 import type {
   AttachmentInfo,
+  ChallengeBrief,
   ChallengeForm,
+  ChallengeSummary,
   CommandOutcome,
   DeclarationText,
   DraftData,
   DraftView,
+  MyIdea,
   ReceiptLookup,
   SaveDraftResult,
   SubmissionReceipt,
@@ -17,9 +20,13 @@ import type {
  *
  * | Method                | Contract                                                                 |
  * |-----------------------|--------------------------------------------------------------------------|
+ * | listChallenges        | read `challenges` (§3, published and closed; also anon)                   |
+ * | getChallengeBrief     | read `challenges` + `challenge_versions` + `rubric_criteria` (§3, public) |
  * | getChallengeForm      | read `challenges` + `challenge_versions` (§3, published rows)             |
  * | getDeclaration        | read `content_pages` kind `declaration` (§3)                              |
  * | getDraft              | read `proposal_drafts` + `attachments` (§3, own only)                     |
+ * | listMyIdeas           | RPC `list_my_ideas()` (migration 014: safe columns only, own cases)       |
+ * | templateUrl           | public URL in the `challenge-files` bucket (§5; no request, no secrets)   |
  * | saveDraft             | RPC `save_draft` (§4)                                                     |
  * | uploadAttachment      | Storage upload to `proposal-files`, then RPC `register_attachment` (§5)   |
  * | removeAttachment      | RPC `remove_attachment` (§4)                                              |
@@ -31,9 +38,15 @@ import type {
  * which includes "does not exist" (RLS; contract §1).
  */
 export interface SubmissionPort {
+  listChallenges(): Promise<ChallengeSummary[]>
+  /** `null` when no published or closed challenge has this slug (an unpublished one renders Not found). */
+  getChallengeBrief(slug: string): Promise<ChallengeBrief | null>
   getChallengeForm(challengeId: string): Promise<ChallengeForm | null>
   getDeclaration(): Promise<DeclarationText>
   getDraft(proposalId: string): Promise<DraftView | null>
+  listMyIdeas(): Promise<MyIdea[]>
+  /** Download URL of a challenge template, or `null` when downloads are not available (the section is hidden). */
+  templateUrl(path: string): string | null
 
   saveDraft(input: { data: DraftData; proposalId?: string; challengeId?: string }): Promise<CommandOutcome<SaveDraftResult>>
   uploadAttachment(input: { proposalId: string; file: File; docKey?: string }): Promise<CommandOutcome<AttachmentInfo>>

@@ -61,7 +61,7 @@ export function MockRoleSwitcher({ compact = false }: { compact?: boolean }) {
   if (apiMode !== 'mock') return null
   const current = mockRoleOf(user?.id)
   return (
-    <label className="flex items-center gap-2 text-sm">
+    <label data-print="hide" className="flex items-center gap-2 text-sm">
       <span className={compact ? 'sr-only' : 'text-ink-muted'}>Mock session (development only)</span>
       <select
         className="min-h-touch rounded-sm border border-line-input bg-surface-card px-2 text-base"

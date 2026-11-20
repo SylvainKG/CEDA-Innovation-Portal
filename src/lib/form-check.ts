@@ -45,6 +45,21 @@ export function checkForm(
   return errors
 }
 
+/**
+ * How a challenge card describes its timing (spec T01: Open / Closing soon / Closed).
+ * "Closing soon" = open and closing within 7 days: the spec names the label but not the window (assumption,
+ * recorded in the PR for Sandra).
+ */
+export type ChallengeTiming = 'upcoming' | 'open' | 'closing_soon' | 'closed'
+export const CLOSING_SOON_DAYS = 7
+
+export function challengeTiming(c: Pick<ChallengeForm, 'status' | 'opens_at' | 'closes_at'>, now: Date = new Date()): ChallengeTiming {
+  if (c.status === 'published' && now.getTime() < new Date(c.opens_at).getTime()) return 'upcoming'
+  if (!isChallengeOpen(c, now)) return 'closed'
+  const left = new Date(c.closes_at).getTime() - now.getTime()
+  return left <= CLOSING_SOON_DAYS * 24 * 60 * 60 * 1000 ? 'closing_soon' : 'open'
+}
+
 /** Share of required items (fields + documents) that are filled in, for the completeness meter. */
 export function completeness(
   schema: FormSchema,
