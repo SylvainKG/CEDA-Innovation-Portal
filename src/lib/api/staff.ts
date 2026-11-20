@@ -2,6 +2,7 @@ import type {
   AssignReviewersResult,
   CaseStatus,
   CommandOutcome,
+  InternalNote,
   ReviewerOption,
   ScreeningOutcome,
   ScreeningResult,
@@ -23,6 +24,8 @@ import type {
  * |                  | and active `assignments` for each reviewer's load                                 |
  * | assignReviewers  | RPC `assign_reviewers` (§4.2, `case.assign`)                                      |
  * | revokeAssignment | RPC `revoke_assignment` (§4.2, `case.assign`)                                     |
+ * | listNotes        | read `internal_notes` (§3, `case.note`; never the applicant)                    |
+ * | addNote          | RPC `add_internal_note` (§4.2, `case.note`)                                     |
  *
  * Reads return `null` / `[]` for anything the reader may not see (RLS). None of these commands carries a
  * request key: `record_screening` and `revoke_assignment` refuse a repeat with `INVALID_STATE`, and
@@ -35,4 +38,6 @@ export interface StaffPort {
   listReviewers(): Promise<ReviewerOption[]>
   assignReviewers(input: { proposalId: string; reviewerIds: string[]; dueAt?: string }): Promise<CommandOutcome<AssignReviewersResult>>
   revokeAssignment(input: { assignmentId: string; reason: string }): Promise<CommandOutcome<{ assignment_id: string; revoked: true }>>
+  listNotes(proposalId: string): Promise<InternalNote[]>
+  addNote(input: { proposalId: string; body: string }): Promise<CommandOutcome<{ id: string; created_at: string }>>
 }

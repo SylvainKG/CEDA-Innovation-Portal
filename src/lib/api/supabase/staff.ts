@@ -8,6 +8,7 @@ import type {
   CaseEvent,
   CaseStatus,
   DraftData,
+  InternalNote,
   FormSchema,
   PublicStage,
   RequiredDoc,
@@ -181,6 +182,30 @@ export function createSupabaseStaff(client: SupabaseClient): StaffPort {
       const { data, error } = await client.rpc('revoke_assignment', { p_assignment_id: assignmentId, p_reason: reason })
       if (error) return fromRpcError(error)
       return { kind: 'ok', data: data as { assignment_id: string; revoked: true } }
+    },
+
+    async listNotes(proposalId) {
+      const notes = await client
+        .from('internal_notes')
+        .select('id, author_id, body, created_at')
+        .eq('proposal_id', proposalId)
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false })
+      if (notes.error) readFailed('notes', notes.error)
+      const rows = (notes.data ?? []) as { id: string; author_id: string; body: string; created_at: string }[]
+      if (rows.length === 0) return []
+      const me = (await client.auth.getSession()).data.session?.user.id
+      // Names: only admins may read other people's profiles; anyone else gets none, and the screen says "Staff".
+      const profiles = await client.from('profiles').select('id, full_name').in('id', [...new Set(rows.map((r) => r.author_id))])
+      const names = new Map(((profiles.data ?? []) as { id: string; full_name: string }[]).map((p) => [p.id, p.full_name?.trim() || null]))
+      return rows.map((r): InternalNote => ({ ...r, author_name: names.get(r.author_id) ?? null, mine: r.author_id === me }))
+    },
+
+    async addNote({ proposalId, body }) {
+      // No request key: an unexpected error throws, and the screen re-reads the notes before saying anything.
+      const { data, error } = await client.rpc('add_internal_note', { p_proposal_id: proposalId, p_body: body })
+      if (error) return fromRpcError(error)
+      return { kind: 'ok', data: data as { id: string; created_at: string } }
     },
 
     async recordScreening({ proposalId, result, reason }) {

@@ -112,3 +112,39 @@ export function useCaseCommand<I>(
   const reset = useCallback(() => setState({ kind: 'idle' }), [])
   return { state, run, reset }
 }
+
+export function useNotes(proposalId: string, enabled: boolean) {
+  return useQuery({ queryKey: [...staffKeys.case(proposalId), 'notes'], queryFn: () => api.staff.listNotes(proposalId), enabled })
+}
+
+/**
+ * Add an internal note. There is no request key, and unlike the other actions a repeat would add a second note,
+ * so after a lost reply the hook looks for the note in a fresh list and never suggests that retrying is safe.
+ */
+export function useAddNote(proposalId: string) {
+  const qc = useQueryClient()
+  const [state, setState] = useState<CaseCommandState>({ kind: 'idle' })
+  const add = useCallback(
+    async (body: string): Promise<CaseCommandState> => {
+      setState({ kind: 'saving' })
+      const started = Date.now() - 60_000
+      let next: CaseCommandState
+      try {
+        const outcome = await api.staff.addNote({ proposalId, body })
+        if (outcome.kind === 'ok') next = { kind: 'done' }
+        else if (outcome.kind === 'refused') next = { kind: 'refused', code: outcome.code, message: outcome.message, fields: outcome.fields }
+        else next = { kind: 'unconfirmed' }
+      } catch {
+        const fresh = await api.staff.listNotes(proposalId).catch(() => [])
+        const found = fresh.some((n) => n.mine && n.body === body.trim() && Date.parse(n.created_at) >= started)
+        next = found ? { kind: 'done' } : { kind: 'unconfirmed' }
+      }
+      setState(next)
+      if (next.kind === 'done' || next.kind === 'unconfirmed') await qc.invalidateQueries({ queryKey: [...staffKeys.case(proposalId), 'notes'] })
+      return next
+    },
+    [proposalId, qc],
+  )
+  const reset = useCallback(() => setState({ kind: 'idle' }), [])
+  return { state, add, reset }
+}

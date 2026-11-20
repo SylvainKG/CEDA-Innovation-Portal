@@ -131,4 +131,27 @@ describe('Supabase staff adapter', () => {
     const f = fake({ proposals: { data: [{ ...ROW, assignments: [{ revoked_at: null }, { revoked_at: '2026-11-19T10:00:00Z' }] }], error: null } })
     expect((await createSupabaseStaff(f.client).listCases())[0]?.active_reviewers).toBe(1)
   })
+
+  it('reads notes newest first with explicit columns, marks your own, and adds with the contract arguments', async () => {
+    const f = fake(
+      {
+        internal_notes: { data: [{ id: 'n1', author_id: 'me', body: 'Mine', created_at: 'b' }, { id: 'n2', author_id: 'other', body: 'Theirs', created_at: 'a' }], error: null },
+        profiles: { data: [], error: null },
+      },
+      { add_internal_note: { data: { id: 'n3', created_at: 'c' }, error: null } },
+    )
+    ;(f.client as unknown as { auth: unknown }).auth = { getSession: async () => ({ data: { session: { user: { id: 'me' } } } }) }
+    const port = createSupabaseStaff(f.client)
+    const notes = await port.listNotes('p1')
+    expect(notes.map((n) => [n.id, n.mine, n.author_name])).toEqual([
+      ['n1', true, null],
+      ['n2', false, null],
+    ])
+    const read = f.reads.find((r) => r.table === 'internal_notes')
+    expect(read?.columns).toBe('id, author_id, body, created_at')
+    expect(read?.filters).toContainEqual(['is', 'deleted_at', null])
+    expect(read?.filters).toContainEqual(['order', 'created_at', { ascending: false }])
+    expect((await port.addNote({ proposalId: 'p1', body: 'Hi' })).kind).toBe('ok')
+    expect(f.rpcs).toContainEqual({ fn: 'add_internal_note', args: { p_proposal_id: 'p1', p_body: 'Hi' } })
+  })
 })

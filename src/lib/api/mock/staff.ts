@@ -1,6 +1,6 @@
 import { fromRpcError, rpcError } from '../errors'
 import type { StaffPort } from '../staff'
-import type { CaseAssignment, CaseEvent, CaseStatus, CommandOutcome, PublicStage, Role, StaffCase, StaffCaseRow } from '../types'
+import type { CaseAssignment, CaseEvent, CaseStatus, CommandOutcome, InternalNote, PublicStage, Role, StaffCase, StaffCaseRow } from '../types'
 import { MOCK_CHALLENGE_FORMS, MOCK_SEEDED_IDEA, WATER_SMART_ID } from './fixtures'
 import { mockSession } from './session'
 import { mockMoveCase, mockSubmittedCases } from './submission'
@@ -131,12 +131,15 @@ const state = {
   seeded: new Map<string, StaffCase>(),
   /** Assignments per case (seeded and session cases alike), including removed ones. */
   assignments: new Map<string, CaseAssignment[]>(),
+  /** Internal notes per case, newest first. */
+  notes: new Map<string, InternalNote[]>(),
   latencyMs: import.meta.env.MODE === 'test' ? 0 : 200,
 }
 
 function resetSeeded() {
   state.seeded.clear()
   state.assignments.clear()
+  state.notes.clear()
   for (const c of SEED) {
     const built = seedCase(c)
     state.seeded.set(built.id, built)
@@ -154,6 +157,8 @@ const wait = () => new Promise<void>((resolve) => setTimeout(resolve, state.late
 const refused = (...args: Parameters<typeof rpcError>): CommandOutcome<never> => fromRpcError(rpcError(...args))
 
 const READ_ALL: Role[] = ['screening_officer', 'adjudicator', 'admin']
+/** case.note (contract §2). Reviewers hold it too but reach only assigned cases, which this mock does not model yet. */
+const NOTE: Role[] = ['screening_officer', 'adjudicator', 'admin']
 
 async function roles(): Promise<Role[]> {
   return (await mockSession.getSession())?.roles ?? []
@@ -303,5 +308,26 @@ export const mockStaff: StaffPort = {
     if (a.revoked_at) return refused('INVALID_STATE', 'This assignment was already removed.')
     a.revoked_at = new Date().toISOString()
     return { kind: 'ok', data: { assignment_id: assignmentId, revoked: true as const } }
+  },
+
+  async listNotes(proposalId) {
+    await wait()
+    const r = await roles()
+    if (!r.some((x) => NOTE.includes(x)) || !allCases().some((c) => c.id === proposalId)) return []
+    const me = (await mockSession.getSession())?.id
+    const admin = r.includes('admin')
+    return (state.notes.get(proposalId) ?? []).map((n) => ({ ...n, mine: n.author_id === me, author_name: admin || n.author_id === me ? n.author_name : null }))
+  },
+
+  async addNote({ proposalId, body }) {
+    await wait()
+    const user = await mockSession.getSession()
+    if (!user || !user.roles.some((x) => NOTE.includes(x)) || !allCases().some((c) => c.id === proposalId))
+      return refused('FORBIDDEN', "You don't have access to this action.")
+    const text = body.trim()
+    if (text.length < 1 || [...text].length > 4000) return refused('VALIDATION', 'Write a note (up to 4,000 characters).', { body: 'Required' })
+    const note: InternalNote = { id: crypto.randomUUID(), author_id: user.id, author_name: user.displayName, mine: true, body: text, created_at: new Date().toISOString() }
+    state.notes.set(proposalId, [note, ...(state.notes.get(proposalId) ?? [])])
+    return { kind: 'ok', data: { id: note.id, created_at: note.created_at } }
   },
 }

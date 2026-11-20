@@ -6,6 +6,7 @@ import { stagesFor } from '@/features/ideas/idea-view'
 import { eventLabel } from '@/features/staff/case-view'
 import { useRecordScreening, useStaffCase } from '@/features/staff/queries'
 import { AssignReviewersDialog, RemoveReviewerDialog } from './AssignmentDialogs'
+import { NotesTab } from './NotesTab'
 import type { CaseAssignment, ScreeningResult, StaffCase } from '@/lib/api/types'
 import { formatBytes, formatDateCAT, formatDateTimeCAT } from '@/lib/format'
 import { useSession } from '@/lib/session'
@@ -42,6 +43,8 @@ export function StaffCasePage() {
   const canScreen = Boolean(user?.roles.includes('screening_officer'))
   // case.assign is the admin's permission (contract §2); the server checks it again.
   const canAssign = Boolean(user?.roles.includes('admin'))
+  // case.note (contract §2): screening officers, reviewers, adjudicators and admins. Never applicants.
+  const canNote = Boolean(user?.roles.some((r) => r === 'screening_officer' || r === 'reviewer' || r === 'adjudicator' || r === 'admin'))
   const stages = stagesFor({
     status: c.status,
     stages: c.events
@@ -88,6 +91,7 @@ export function StaffCasePage() {
             label: 'Reviewers',
             content: <ReviewersTab assignments={c.assignments} onRemove={canAssign ? (assignment, name) => setRemoving({ assignment, name }) : undefined} />,
           },
+          ...(canNote ? [{ id: 'notes', label: 'Internal notes', content: <NotesTab proposalId={c.id} /> }] : []),
         ]}
       />
 
@@ -178,7 +182,7 @@ function Tabs({ label, tabs }: { label: string; tabs: { id: string; label: strin
   }
   return (
     <div className="flex flex-col gap-4">
-      <div role="tablist" aria-label={label} className="flex gap-1 overflow-x-auto border-b border-line">
+      <div role="tablist" aria-label={label} className="flex flex-wrap gap-x-1 border-b border-line">
         {tabs.map((t, i) => (
           <button
             key={t.id}
