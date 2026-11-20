@@ -49,7 +49,7 @@ The full dated log is `docs/submission/research-log.md`. The main findings and w
 - **Accessibility:** one main heading per page, a skip link, visible focus, labels on every field, 44 × 44 px touch targets, and contrast of at least 4.5:1. Each page is checked at 360 px and 1280 px.
 - **Brand:** CEDA's colours, fonts and logo from the team's Make file (D-04), with the orange used where it meets contrast rules.
 
-**Process.** Where a design frame existed, screens follow it; elsewhere they were built from the written specification and reviewed by the designer on staging (BCR-003). By 20 November every screen of the main journey was built, along with notifications, reports, the audit log and live chat. Not built in this version: the staff home page, the admin settings and users screens, staff two-step enrolment and the committee view; they show an honest "Not built yet" page. Design review status: **[confirm at release]**.
+**Process.** Where a design frame existed, screens follow it; elsewhere they were built from the written specification and reviewed by the designer on staging (BCR-003). By 20 November every planned screen was built: the main journey, notifications, reports, the audit log and live chat, plus the staff home page, the administration screens (users and roles, challenges, forms and rubrics, content, chat hours), staff two-step enrolment, the committee view and side-by-side version compare. Screens without a design frame are marked Provisional until the designer has reviewed them. Design review status: **[confirm at release]**.
 
 <p><img src="img/proposal-form.png" alt="Proposal form with sections, autosave and progress" width="49%"> <img src="img/applicant-case.png" alt="Applicant case view with the stage timeline" width="49%"></p>
 <p><img src="img/reviewer-scorecard.png" alt="Reviewer scorecard with anchored 1-5 scores and hidden peer scores" width="49%"> <img src="img/reports.png" alt="Reports dashboard with CSV export" width="49%"></p>
@@ -130,7 +130,7 @@ It is backed by a side-by-side comparison of V1 and V2 (INN-01) and a rule-based
 
 **Testing.**
 
-- **477 pgTAP assertions** in 11 suites, run on every database change, in CI on the Supabase local stack and on the hosted project. **Mutation checks** confirm the tests fail when a rule is broken.
+- **487 pgTAP assertions** in 12 suites, run in CI on the Supabase local stack on every database change. The suite was also run against the hosted project (460 assertions, all passed, 17 Nov, at migration 012); a later hosted run before code freeze is **[confirm at release]**. **Mutation checks** confirm the tests fail when a rule is broken.
 - A **two-connection concurrency test** for double submits.
 - **Vitest** for the frontend logic.
 - **Playwright** browser checks at 360 and 1280 px, and a security-header check against the deployed site.
@@ -160,7 +160,7 @@ Every claim is in `docs/testing/claim-register.md`, with its evidence and what i
 ## 11. Lessons learned
 
 1. **Put the rule where it can't be skipped.** Enforcing access and state in the database meant screens could be built fast without each one re-implementing security, and it made the negative tests meaningful.
-2. **Test the refusal, not only the success.** Most of our 477 assertions check that the wrong person or the wrong state is refused and that nothing changed. Mutation checks proved the tests can fail.
+2. **Test the refusal, not only the success.** Most of our 487 assertions check that the wrong person or the wrong state is refused and that nothing changed. Mutation checks proved the tests can fail.
 3. **Say exactly what was verified, and where.** We learned to label evidence by layer ("database", "API on the hosted project", "browser") and to write Not run and Simulated plainly. Our own reset tool, for example, showed that the database owner can pause protective triggers, so we narrowed the audit claim to "any portal user, including administrators".
 4. **Small, reviewed, green pull requests.** Seven required checks and review on every PR caught real problems: function privileges, a confidential screening note visible to applicants, whitespace-only answers, and a data-loss bug in the form's first autosave, before they reached the build.
 5. **Design and code in parallel.** When design frames lagged, building from the written spec with design review on staging kept the plan on time (BCR-003).
@@ -174,5 +174,5 @@ Every claim is in `docs/testing/claim-register.md`, with its evidence and what i
 | Retention and data-subject requests | Proposed in the data-handling note; manual, not automated |
 | Region comparison with Mumbai | **Not run** |
 | Restore into a full Supabase project, and file storage backup | **Not run** |
-| Staff home, admin settings and users screens, staff two-step enrolment, committee view | **Not built** in this version |
+| Settings screens for the review quorum and the demo two-step exemption | **Not built:** stored settings changed by the backend team |
 | Hosted browser journey result, design review, plan and contact details | **[confirm at release]** |
