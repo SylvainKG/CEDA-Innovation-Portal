@@ -26,11 +26,13 @@ Screens still being built are marked **[confirm at release]**; that line is chec
 
 **Forgot your password.** Choose **Forgot your password?** and enter your email. If an account exists, we send a single-use link that expires. The message is the same whether or not an account exists.
 
-**Staff two-step sign-in.** Staff permissions require a second factor (an authenticator app). Seeded demo staff accounts are exempt so that judges can sign in directly.
+**Staff two-step sign-in.** Staff permissions require a second factor (an authenticator app); the server enforces this. Seeded demo staff accounts are exempt so that judges can sign in directly. **Not built in this version:** the screen for enrolling and entering the second factor, so real staff accounts are for future use.
 
 **Notifications.** The bell shows updates about your cases. They also arrive live while you are signed in. **Email alerts** are optional; in this demonstration they are **Simulated** (queued but not sent).
 
 **Help.** **Help** holds the FAQs, regulatory contacts and how to report a problem. All times are Gaborone time (CAT).
+
+**Staff home.** Staff accounts open on **Home**, which is a placeholder in this version: use the menu to reach your queue.
 
 **What you can never see.** Each person sees only what their role allows. The server refuses everything else, so a hidden button isn't the only protection.
 
@@ -50,12 +52,12 @@ Screens still being built are marked **[confirm at release]**; that line is chec
 
 **When CEDA asks you something.**
 - **Clarification:** answer the question in a short reply. No new version is created.
-- **Revision (Feedback Roadmap):** CEDA lists specific tasks. Choose **Revise your idea**, update your answers and files, and for **each task** say whether you **Addressed** it, with a short explanation (up to 500 characters). Add a change note, then submit **version 2**. Your reference stays the same, and version 1 is kept. **[confirm at release]**
+- **Revision (Feedback Roadmap):** CEDA lists specific tasks. Choose **Revise your idea**, update your answers (replacing files in version 2 isn't available in this version), and for **each task** say whether you **Addressed** it, with a short explanation (up to 500 characters). Add a change note, then submit **version 2**. Your reference stays the same, and version 1 is kept.
 - After the deadline you can't reply until CEDA extends it.
 
 **Outcome.** When CEDA publishes the decision you see **Approved** or **Not approved**, the reason and next steps. An **award**, if any, appears after approval.
 
-**Live chat.** Talk to a CEDA consultant during service hours, **09:00–16:00 CAT on working days**. Outside those hours the chat says it is closed. **[confirm at release]**
+**Live chat.** Talk to a CEDA consultant during service hours, **09:00–16:00 CAT on working days**. Outside those hours the chat says it is closed.
 
 ## 3. Screening officer
 
@@ -65,7 +67,7 @@ Screens still being built are marked **[confirm at release]**; that line is chec
    - **Eligible** moves the case to evaluation. Your reason stays with staff as an internal note, and the applicant sees only that the idea is under review.
    - **Ineligible** closes the case, and the applicant sees your reason.
 4. **Request a clarification** (a question and deadline) or **a revision** (tasks and deadline) when needed.
-5. **Internal notes** are visible to staff only, never to the applicant. **[confirm at release]**
+5. **Internal notes** are visible to staff only, never to the applicant.
 
 ## 4. Reviewer
 
@@ -73,28 +75,28 @@ Screens still being built are marked **[confirm at release]**; that line is chec
 2. **Declare first.** Before the proposal opens, confirm you have **no conflict of interest** and will keep it confidential. If you have a conflict, declare it: your assignment is removed, the administrator reassigns the case, and the declaration is recorded.
 3. **Score** each criterion from **1 to 5** using the anchored definitions, with a reason of **at least 20 characters**. Drafts are saved; **Submit** when complete.
 4. You **can't see other reviewers' scores until you have submitted your own** on the same version.
-5. **Version 2:** for a revised idea, verify each roadmap task as **Verified** or **Not verified**, with a note. Version 1's scores stay with version 1. **[confirm at release]**
+5. **Version 2:** for a revised idea, verify each roadmap task as **Verified** or **Not verified**, with a note. Version 1's scores stay with version 1.
 
 ## 5. Adjudicator
 
 1. **Ready for decision** lists cases whose reviews have reached the quorum (two scorecards).
 2. The **score panel** shows each reviewer's scores, the weighted total and the spread between reviewers.
 3. **Record decision** (Approved or Not approved, with a reason). It stays a **draft, invisible to the applicant**, until you **Publish** it.
-4. An award can only follow a published approval. **[confirm at release]** the screens.
+4. An award can only follow a published approval.
 
 ## 6. Administrator
 
-- **All cases:** every case with its stage; **assign reviewers** (at least two), see each reviewer's load, and remove a reviewer. **[confirm at release]**
+- **All cases:** every case with its stage; **assign reviewers** (at least two), see each reviewer's load, and remove a reviewer.
 - **Record an award** on an approved case (amount in BWP and a description), and **close** a case with a reason.
-- **Challenges, forms, rubrics and content:** publish or unpublish a challenge; edit FAQs, contacts and notices. A submitted idea keeps the form version it used. **[confirm at release]** the screens.
-- **Users and roles:** invite staff and grant or revoke roles. **You can't grant a role to yourself**; the attempt is refused and recorded. **[confirm at release]** the screen.
-- **Settings:** review quorum, chat hours and closures, and the demo two-step exemption (switch it **off** for any real use).
+- **Challenges, forms, rubrics and content:** publish or unpublish a challenge; edit FAQs, contacts and notices. A submitted idea keeps the form version it used. **Not built in this version:** these screens are placeholders, and the seeded challenges and content are used as they are.
+- **Users and roles:** invite staff and grant or revoke roles. **You can't grant a role to yourself**; the attempt is refused and recorded. **Not built in this version:** the screen is a placeholder; the rule is enforced by the server.
+- **Settings:** review quorum, chat hours and closures, and the demo two-step exemption (switch it **off** for any real use). **Not built in this version:** these are stored settings the backend team changes; the settings screens are placeholders.
 
 ## 7. Support consultant and support lead
 
-- **Support inbox:** take a waiting chat, reply, and close it. One consultant can handle several chats. **[confirm at release]**
+- **Support inbox:** take a waiting chat, reply, and close it. One consultant can handle several chats.
 - You **can't see proposals, files or scores**, by design.
-- **Support lead:** chat statistics (volume, handled, missed, average wait) for a chosen period. **[confirm at release]**
+- **Support lead:** chat statistics (volume, handled, missed, average wait) for a chosen period.
 
 ## 8. External committee member
 
@@ -102,4 +104,4 @@ Screens still being built are marked **[confirm at release]**; that line is chec
 
 ## 9. Auditor
 
-The **audit log** records every workflow action: who did it, what, when and the outcome. You can filter by person, case, action and date. Entries can't be changed or deleted by any portal user, including administrators. The log holds no passwords, proposal text or note text. **[confirm at release]** the screen.
+The **audit log** records every workflow action: who did it, what, when and the outcome. You can filter by case, action and date (a filter by person isn't available in this version). Entries can't be changed or deleted by any portal user, including administrators. The log holds no passwords, proposal text or note text.
