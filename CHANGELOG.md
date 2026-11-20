@@ -4,6 +4,7 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `feature` `list_my_ideas()` for the applicant's My ideas page (T06, migration 014, asked for in PR #38): one read with only safe fields (no case-event reasons or actors), own cases only, drafts included, and the latest feedback request while the case waits on the applicant, including an expired one. Contract §5 now documents challenge template downloads from the public `challenge-files` bucket.
 - `feature` Hosted pgTAP runner and run record: `tools/pglite-db-tests/run-hosted.mjs` runs every pgTAP file against the hosted database without Docker (each file rolls back; the reference sequence is restored), and `artifacts/phase-00/hosted-supabase.md` records the hosted schema, test, account and Edge Function results with commits and times, including the Auth URL configuration and the 10-character password minimum set on 17 Nov.
 - `feature` Slice 1 behaviour hooks (APP-01, APP-03; no screens yet), in `src/features/submission/`:
   - `useSubmitIdea`: one request key per draft, reused on every retry; a lost reply is "Not confirmed yet" with a status check by key; opening the page with a pending key checks before allowing another submit;
