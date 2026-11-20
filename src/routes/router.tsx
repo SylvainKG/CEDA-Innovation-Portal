@@ -8,6 +8,7 @@ import { NotFoundState } from '@/components/states/States'
 import { STAFF_ROLES, type Role } from '@/lib/api/types'
 import { NotBuiltYet } from '@/pages/NotBuiltYet'
 import { SignInPage } from '@/pages/auth/SignInPage'
+import { MfaPage } from '@/pages/auth/MfaPage'
 import { RegisterPage } from '@/pages/auth/RegisterPage'
 import { ContactsPage, FaqPage, PrivacyPage, SupportPage } from '@/pages/help/HelpPages'
 import { DecisionQueuePage } from '@/pages/review/DecisionQueuePage'
@@ -52,7 +53,7 @@ export const routes: RouteObject[] = [
       { path: '/auth/verify', element: <VerifyEmailPage /> },
       { path: '/auth/forgot', element: <ForgotPasswordPage /> },
       { path: '/auth/reset', element: <ResetPasswordPage /> },
-      { path: '/auth/mfa', element: nb('T02', 'Two-step sign-in') },
+      { path: '/auth/mfa', element: <MfaPage /> },
       { path: '/help/faqs', element: <FaqPage /> },
       { path: '/help/contacts', element: <ContactsPage /> },
       { path: '/help/support', element: <SupportPage /> },

@@ -42,7 +42,16 @@ export function SignInPage() {
       return
     }
     await adopt(outcome.data)
-    navigate(next ?? homeFor(outcome.data.roles))
+    const target = next ?? homeFor(outcome.data.roles)
+    // D-07: staff whose roles need a second step go through it first; the server withholds their access until then.
+    if (outcome.data.roles.some((r) => r !== 'applicant')) {
+      const mfa = await api.mfa.status().catch(() => null)
+      if (mfa?.required) {
+        navigate(`/auth/mfa?next=${encodeURIComponent(target)}`)
+        return
+      }
+    }
+    navigate(target)
   }
 
   async function resend() {
