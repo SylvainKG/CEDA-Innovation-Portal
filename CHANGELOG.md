@@ -4,6 +4,17 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `feature` Slice 1 data layer, mock only (APP-01, APP-02, APP-03; no screens yet):
+  - types for the form schema, draft, attachments and receipt, copied from the API contract (Stacey, Draft for review, `db/phase-0-foundation`);
+  - `SubmissionPort` mapping one-to-one to the documented reads and RPCs (`save_draft`, `register_attachment`, `remove_attachment`, `submit_proposal`, `get_submission_receipt`);
+  - RPC error mapping: a known code is a refusal with field errors; a lost reply on a keyed command is an unknown outcome, never "failed";
+  - submit request keys kept per draft until a receipt arrives (contract §4.1 rule 1);
+  - client form check mirroring the server's rules and wording, plus completeness counts;
+  - mock adapter following the contract's check order, idempotent replay, `REQUEST_CONFLICT`, first reference `CEDA-2026-0009` (B10), and a lost-reply switch for testing the unknown path. Fixtures copied from the seed.
+
+  Evidence: 17 new unit tests (72 in total), lint, type-check and build pass. Proves the mock only; server behaviour is evidenced by the pgTAP suites.
+
+  Review fixes (Stacey, Sylvain): `IMMUTABLE` is a known refusal, never an unknown outcome; "open" is status **and** dates (`isChallengeOpen`, as `private.challenge_is_open`), with `opens_at` and the `unpublished` status from migration 011; mock attachment refusals use the server's wording and field keys; lengths count characters as Postgres does; optional `versionNo` on the receipt lookup. 76 tests.
 - `feature` Supabase keep-alive workflow (OPS-03): the hosted project stays on the Free plan, which pauses after about a week without activity, so `.github/workflows/keep-alive.yml` calls the public `health()` RPC every second day and on demand. Needs the `SUPABASE_URL` variable and `SUPABASE_PUBLISHABLE_KEY` secret in the repository settings.
 - `policy change` CI `audit` gate (SEC-02): fails on high or critical findings in **shipped** packages (`npm audit --omit=dev`). Findings in dev-only tooling are listed in the job summary and the saved report, and must be recorded in ADR-001; they no longer block every PR while no fix exists (GHSA-fc5q-39xc-vjpf in `picomatch`, build and test tooling only, 18 Nov 2026).
 - `repair` Whitespace-only answers (migration 012): `private.validate_submission` trimmed with `btrim`, which strips only spaces, so an answer of newlines or tabs passed "Required" on submit and revision while the browser refused it. Answers are now trimmed of all surrounding whitespace before every check.
