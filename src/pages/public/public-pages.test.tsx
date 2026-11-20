@@ -55,9 +55,11 @@ describe('PlainMarkdown', () => {
 describe('T01 public home', () => {
   it('closed cards keep full contrast and use the F4 Closed tone with an icon', async () => {
     renderAt('/challenges')
-    const pill = await screen.findByText('Closed — not accepting submissions')
-    expect(pill.closest('[data-tone]')).toHaveAttribute('data-tone', 'closed')
-    expect(pill.closest('article')?.className).not.toMatch(/opacity/)
+    const card = (await screen.findByText('Closed — not accepting submissions')).closest('article') as HTMLElement
+    expect(within(card).getByText('Closed', { selector: '[data-tone] *, [data-tone]' }).closest('[data-tone]')).toHaveAttribute('data-tone', 'closed')
+    expect(card.className).not.toMatch(/opacity/)
+    // A closed challenge offers no "View challenge" button; its brief stays reachable through the title.
+    expect(within(card).queryByRole('link', { name: /^View challenge/ })).not.toBeInTheDocument()
   })
 
   it('has the intro, the challenges (open first, closed labelled) and the five steps', async () => {
@@ -68,8 +70,9 @@ describe('T01 public home', () => {
     await screen.findByText('Closed — not accepting submissions')
     const cards = screen.getAllByRole('article')
     expect(within(cards[0] as HTMLElement).getByRole('heading', { name: 'Water-Smart Agriculture Challenge 2026' })).toBeInTheDocument()
+    expect(within(cards[0] as HTMLElement).getByRole('link', { name: 'View challenge: Water-Smart Agriculture Challenge 2026' })).toHaveAttribute('href', '/challenges/water-smart-agriculture-2026')
     expect(within(cards[1] as HTMLElement).getByText('Closed — not accepting submissions')).toBeInTheDocument()
-    const steps = within(screen.getByRole('heading', { name: 'How it works' }).closest('section') as HTMLElement).getAllByRole('listitem')
+    const steps = within(screen.getByRole('heading', { name: 'From submission to award' }).closest('section') as HTMLElement).getAllByRole('listitem')
     expect(steps).toHaveLength(5)
   })
 })
