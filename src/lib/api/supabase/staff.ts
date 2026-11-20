@@ -2,6 +2,7 @@ import type { SupabaseClient } from '@supabase/supabase-js'
 import { ApiError, fromRpcError } from '../errors'
 import type { StaffPort } from '../staff'
 import type {
+  AssignReviewersResult,
   AttachmentInfo,
   CaseAssignment,
   CaseEvent,
@@ -19,7 +20,8 @@ import type {
  * well as by RLS. Reviewer names come from `profiles`, which only `role.manage` holders (admins) may read; for
  * anyone else the names are simply absent and the screen says "Reviewer".
  */
-const CASE_COLUMNS = 'id, reference, title, status, submitted_at, updated_at, challenge_versions(challenge_id, challenges(id, title))'
+const CASE_COLUMNS =
+  'id, reference, title, status, submitted_at, updated_at, challenge_versions(challenge_id, challenges(id, title)), assignments(revoked_at)'
 const CASE_DETAIL_COLUMNS =
   'id, reference, title, status, submitted_at, updated_at, current_version_id, challenge_versions(challenge_id, form_schema, required_docs, challenges(id, title))'
 
@@ -31,6 +33,8 @@ interface CaseRowRaw {
   submitted_at: string | null
   updated_at: string
   challenge_versions: { challenge_id: string; challenges: { id: string; title: string } | null } | null
+  /** Only the revocation time, to count active assignments (RLS returns none to readers who may not see them). */
+  assignments?: { revoked_at: string | null }[] | null
 }
 
 function toRow(r: CaseRowRaw): StaffCaseRow {
@@ -43,6 +47,7 @@ function toRow(r: CaseRowRaw): StaffCaseRow {
     challenge: { id: challenge?.id ?? r.challenge_versions?.challenge_id ?? '', title: challenge?.title ?? '' },
     submitted_at: r.submitted_at ?? r.updated_at,
     updated_at: r.updated_at,
+    active_reviewers: (r.assignments ?? []).filter((a) => !a.revoked_at).length,
   }
 }
 
@@ -120,6 +125,7 @@ export function createSupabaseStaff(client: SupabaseClient): StaffPort {
       const v = version.data as { version_no: number; data: unknown; submitted_at: string; declaration_version: string } | null
       return {
         ...toRow(raw),
+        active_reviewers: assignmentRows.filter((a) => !a.revoked_at).length,
         version: v ? { version_no: v.version_no, submitted_at: v.submitted_at, data: toDraftData(v.data), declaration_version: v.declaration_version } : null,
         form_schema: raw.challenge_versions?.form_schema ?? { sections: [] },
         required_docs: raw.challenge_versions?.required_docs ?? [],
@@ -143,6 +149,38 @@ export function createSupabaseStaff(client: SupabaseClient): StaffPort {
         ),
         assignments: assignmentRows.map((a) => ({ ...a, reviewer_name: names.get(a.reviewer_id) ?? null })),
       }
+    },
+
+    async listReviewers() {
+      // Active reviewer grants with the person's name. Only `role.manage` holders (admins) may read other people's
+      // roles and profiles, so for anyone else this is empty: they cannot assign either.
+      const grants = await client
+        .from('user_roles')
+        .select('user_id, profiles!user_roles_user_id_fkey(full_name)')
+        .eq('role_key', 'reviewer')
+        .is('revoked_at', null)
+      if (grants.error) readFailed('reviewers', grants.error)
+      const rows = (grants.data ?? []) as unknown as { user_id: string; profiles: { full_name: string } | null }[]
+      if (rows.length === 0) return []
+      const load = await client.from('assignments').select('reviewer_id').is('revoked_at', null).in('reviewer_id', rows.map((r) => r.user_id))
+      if (load.error) readFailed('reviewer workload', load.error)
+      const counts = new Map<string, number>()
+      for (const a of (load.data ?? []) as { reviewer_id: string }[]) counts.set(a.reviewer_id, (counts.get(a.reviewer_id) ?? 0) + 1)
+      return rows
+        .map((r) => ({ id: r.user_id, name: r.profiles?.full_name?.trim() || 'Reviewer', active_assignments: counts.get(r.user_id) ?? 0 }))
+        .sort((a, b) => a.name.localeCompare(b.name))
+    },
+
+    async assignReviewers({ proposalId, reviewerIds, dueAt }) {
+      const { data, error } = await client.rpc('assign_reviewers', { p_proposal_id: proposalId, p_reviewer_ids: reviewerIds, p_due_at: dueAt ?? null })
+      if (error) return fromRpcError(error)
+      return { kind: 'ok', data: data as AssignReviewersResult }
+    },
+
+    async revokeAssignment({ assignmentId, reason }) {
+      const { data, error } = await client.rpc('revoke_assignment', { p_assignment_id: assignmentId, p_reason: reason })
+      if (error) return fromRpcError(error)
+      return { kind: 'ok', data: data as { assignment_id: string; revoked: true } }
     },
 
     async recordScreening({ proposalId, result, reason }) {

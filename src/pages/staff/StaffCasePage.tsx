@@ -5,6 +5,7 @@ import { ErrorState, LoadingState, NotFoundState } from '@/components/states/Sta
 import { stagesFor } from '@/features/ideas/idea-view'
 import { eventLabel } from '@/features/staff/case-view'
 import { useRecordScreening, useStaffCase } from '@/features/staff/queries'
+import { AssignReviewersDialog, RemoveReviewerDialog } from './AssignmentDialogs'
 import type { CaseAssignment, ScreeningResult, StaffCase } from '@/lib/api/types'
 import { formatBytes, formatDateCAT, formatDateTimeCAT } from '@/lib/format'
 import { useSession } from '@/lib/session'
@@ -20,6 +21,8 @@ export function StaffCasePage() {
   const kase = useStaffCase(id)
   const { data: user } = useSession()
   const [screeningOpen, setScreeningOpen] = useState(false)
+  const [assignOpen, setAssignOpen] = useState(false)
+  const [removing, setRemoving] = useState<{ assignment: CaseAssignment; name: string } | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
   const onScreened = useCallback((result: ScreeningResult) => {
@@ -37,6 +40,8 @@ export function StaffCasePage() {
   const c = kase.data
 
   const canScreen = Boolean(user?.roles.includes('screening_officer'))
+  // case.assign is the admin's permission (contract §2); the server checks it again.
+  const canAssign = Boolean(user?.roles.includes('admin'))
   const stages = stagesFor({
     status: c.status,
     stages: c.events
@@ -49,7 +54,13 @@ export function StaffCasePage() {
   return (
     <div className="flex flex-col gap-6">
       <p>
-        <Link to={canScreen ? '/staff/queue/screening' : '/staff'}>{canScreen ? '← Screening queue' : '← Staff home'}</Link>
+        {canScreen ? (
+          <Link to="/staff/queue/screening">← Screening queue</Link>
+        ) : canAssign ? (
+          <Link to="/staff/cases">← All cases</Link>
+        ) : (
+          <Link to="/staff">← Staff home</Link>
+        )}
       </p>
 
       <header className="flex flex-col gap-3">
@@ -64,7 +75,7 @@ export function StaffCasePage() {
         <StageTimeline stages={stages} compact />
         {closedReason ? <Banner kind="info" title="Closed">{closedReason}</Banner> : null}
         {notice ? <Banner kind="success">{notice}</Banner> : null}
-        <PrimaryAction c={c} canScreen={canScreen} onScreen={() => setScreeningOpen(true)} />
+        <PrimaryAction c={c} canScreen={canScreen} canAssign={canAssign} onScreen={() => setScreeningOpen(true)} onAssign={() => setAssignOpen(true)} />
       </header>
 
       <Tabs
@@ -72,7 +83,11 @@ export function StaffCasePage() {
         tabs={[
           { id: 'proposal', label: 'Proposal', content: <ProposalTab c={c} /> },
           { id: 'timeline', label: 'Timeline', content: <TimelineTab c={c} /> },
-          { id: 'reviewers', label: 'Reviewers', content: <ReviewersTab assignments={c.assignments} /> },
+          {
+            id: 'reviewers',
+            label: 'Reviewers',
+            content: <ReviewersTab assignments={c.assignments} onRemove={canAssign ? (assignment, name) => setRemoving({ assignment, name }) : undefined} />,
+          },
         ]}
       />
 
@@ -84,19 +99,68 @@ export function StaffCasePage() {
           onDone={onScreened}
         />
       ) : null}
+      {canAssign ? (
+        <>
+          <AssignReviewersDialog
+            c={c}
+            open={assignOpen}
+            onOpenChange={setAssignOpen}
+            onDone={(names) => {
+              setAssignOpen(false)
+              setNotice(`Assigned ${names.join(' and ')}. Reviewers must declare conflicts before they can open the proposal.`)
+            }}
+          />
+          <RemoveReviewerDialog
+            c={c}
+            assignment={removing?.assignment ?? null}
+            name={removing?.name ?? 'reviewer'}
+            onOpenChange={(open) => {
+              if (!open) setRemoving(null)
+            }}
+            onDone={(name) => {
+              setRemoving(null)
+              setNotice(`Removed ${name} from this case. Their submitted scores are kept.`)
+            }}
+          />
+        </>
+      ) : null}
     </div>
   )
 }
 
 /** The single primary action for this role and state (spec T08 header). */
-function PrimaryAction({ c, canScreen, onScreen }: { c: StaffCase; canScreen: boolean; onScreen: () => void }) {
-  if (c.status !== 'submitted') return null
-  if (!canScreen) return <p className="text-ink-muted">Waiting for a screening officer to record eligibility.</p>
-  return (
-    <div>
-      <Button onClick={onScreen}>Record screening</Button>
-    </div>
-  )
+function PrimaryAction({
+  c,
+  canScreen,
+  canAssign,
+  onScreen,
+  onAssign,
+}: {
+  c: StaffCase
+  canScreen: boolean
+  canAssign: boolean
+  onScreen: () => void
+  onAssign: () => void
+}) {
+  if (c.status === 'submitted') {
+    if (!canScreen) return <p className="text-ink-muted">Waiting for a screening officer to record eligibility.</p>
+    return (
+      <div>
+        <Button onClick={onScreen}>Record screening</Button>
+      </div>
+    )
+  }
+  if (c.status === 'in_evaluation' && canAssign) {
+    return (
+      <div className="flex flex-wrap items-center gap-3">
+        <Button onClick={onAssign}>Assign reviewers</Button>
+        <span className="text-ink-muted">
+          {c.active_reviewers === 0 ? 'No reviewers yet.' : `${c.active_reviewers} ${c.active_reviewers === 1 ? 'reviewer' : 'reviewers'} assigned.`}
+        </span>
+      </div>
+    )
+  }
+  return null
 }
 
 /** Accessible tabs: arrow keys move between tabs, only the selected panel is shown (WAI-ARIA tabs pattern). */
@@ -221,7 +285,7 @@ function declarationText(a: CaseAssignment): string {
   return a.has_conflict ? 'Declared a conflict' : 'Declared: no conflict'
 }
 
-function ReviewersTab({ assignments }: { assignments: CaseAssignment[] }) {
+function ReviewersTab({ assignments, onRemove }: { assignments: CaseAssignment[]; onRemove?: (a: CaseAssignment, name: string) => void }) {
   if (assignments.length === 0) return <p className="text-ink-muted">No reviewers are assigned yet. An administrator assigns reviewers once the case is eligible.</p>
   return (
     <ul className="flex max-w-form flex-col gap-3">
@@ -233,6 +297,13 @@ function ReviewersTab({ assignments }: { assignments: CaseAssignment[] }) {
             {a.due_at ? ` · due ${formatDateCAT(a.due_at)}` : ''}
           </span>
           <span>{declarationText(a)}</span>
+          {onRemove && !a.revoked_at ? (
+            <div>
+              <Button variant="secondary" size="sm" onClick={() => onRemove(a, a.reviewer_name ?? `Reviewer ${i + 1}`)}>
+                Remove reviewer
+              </Button>
+            </div>
+          ) : null}
         </li>
       ))}
     </ul>

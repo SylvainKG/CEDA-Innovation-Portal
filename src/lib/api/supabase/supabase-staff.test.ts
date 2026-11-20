@@ -51,7 +51,7 @@ describe('Supabase staff adapter', () => {
     const f = fake({ proposals: { data: [ROW], error: null } })
     const rows = await createSupabaseStaff(f.client).listCases({ statuses: ['submitted'] })
     expect(rows).toEqual([
-      { id: 'p1', reference: 'CEDA-2026-0001', title: 'Drip kits', status: 'submitted', challenge: { id: 'c1', title: 'Water-Smart' }, submitted_at: ROW.submitted_at, updated_at: ROW.updated_at },
+      { id: 'p1', reference: 'CEDA-2026-0001', title: 'Drip kits', status: 'submitted', challenge: { id: 'c1', title: 'Water-Smart' }, submitted_at: ROW.submitted_at, updated_at: ROW.updated_at, active_reviewers: 0 },
     ])
     expect(f.reads[0]?.columns).not.toContain('*')
     expect(f.reads[0]?.filters).toContainEqual(['neq', 'status', 'draft'])
@@ -95,5 +95,40 @@ describe('Supabase staff adapter', () => {
     })
     const lost = fake({}, { record_screening: { data: null, error: { message: 'TypeError: Failed to fetch', code: '' } } })
     await expect(createSupabaseStaff(lost.client).recordScreening({ proposalId: 'p1', result: 'eligible', reason: 'x' })).rejects.toThrow()
+  })
+
+  it('lists active reviewers with their load; names come from the user_id profile link', async () => {
+    const f = fake({
+      user_roles: { data: [{ user_id: 'r2', profiles: { full_name: 'Demo Reviewer 2' } }, { user_id: 'r1', profiles: { full_name: 'Demo Reviewer 1' } }], error: null },
+      assignments: { data: [{ reviewer_id: 'r1' }, { reviewer_id: 'r1' }], error: null },
+    })
+    expect(await createSupabaseStaff(f.client).listReviewers()).toEqual([
+      { id: 'r1', name: 'Demo Reviewer 1', active_assignments: 2 },
+      { id: 'r2', name: 'Demo Reviewer 2', active_assignments: 0 },
+    ])
+    const roles = f.reads.find((r) => r.table === 'user_roles')
+    expect(roles?.columns).toBe('user_id, profiles!user_roles_user_id_fkey(full_name)')
+    expect(roles?.filters).toContainEqual(['eq', 'role_key', 'reviewer'])
+    expect(roles?.filters).toContainEqual(['is', 'revoked_at', null])
+    expect(f.reads.find((r) => r.table === 'assignments')?.filters).toContainEqual(['is', 'revoked_at', null])
+  })
+
+  it('assigns and removes reviewers with the contract arguments', async () => {
+    const f = fake({}, {
+      assign_reviewers: { data: { proposal_id: 'p1', assigned: [{ assignment_id: 'a3', reviewer_id: 'r3' }], already_assigned: [], active_reviewers: 3 }, error: null },
+      revoke_assignment: { data: { assignment_id: 'a3', revoked: true }, error: null },
+    })
+    const port = createSupabaseStaff(f.client)
+    expect((await port.assignReviewers({ proposalId: 'p1', reviewerIds: ['r3'], dueAt: '2026-12-03T15:00:00.000Z' })).kind).toBe('ok')
+    expect((await port.revokeAssignment({ assignmentId: 'a3', reason: 'Workload.' })).kind).toBe('ok')
+    expect(f.rpcs).toEqual([
+      { fn: 'assign_reviewers', args: { p_proposal_id: 'p1', p_reviewer_ids: ['r3'], p_due_at: '2026-12-03T15:00:00.000Z' } },
+      { fn: 'revoke_assignment', args: { p_assignment_id: 'a3', p_reason: 'Workload.' } },
+    ])
+  })
+
+  it('counts only active reviewers on a list row', async () => {
+    const f = fake({ proposals: { data: [{ ...ROW, assignments: [{ revoked_at: null }, { revoked_at: '2026-11-19T10:00:00Z' }] }], error: null } })
+    expect((await createSupabaseStaff(f.client).listCases())[0]?.active_reviewers).toBe(1)
   })
 })
