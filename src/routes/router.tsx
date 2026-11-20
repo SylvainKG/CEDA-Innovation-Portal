@@ -6,7 +6,6 @@ import { RoleShell } from '@/layouts/RoleShell'
 import { StaffShell } from '@/layouts/StaffShell'
 import { NotFoundState } from '@/components/states/States'
 import { STAFF_ROLES, type Role } from '@/lib/api/types'
-import { NotBuiltYet } from '@/pages/NotBuiltYet'
 import { SignInPage } from '@/pages/auth/SignInPage'
 import { MfaPage } from '@/pages/auth/MfaPage'
 import { RegisterPage } from '@/pages/auth/RegisterPage'
@@ -27,6 +26,8 @@ import { AdminUsersPage } from '@/pages/admin/AdminUsersPage'
 import { ChatSettingsPage } from '@/pages/admin/ChatSettingsPage'
 import { ChallengeEditorPage } from '@/pages/admin/ChallengeEditorPage'
 import { RubricEditorPage } from '@/pages/admin/RubricEditorPage'
+import { ContentAdminPage } from '@/pages/admin/ContentAdminPage'
+import { RolesPage } from '@/pages/admin/RolesPage'
 import { ChallengesPage as AdminChallengesPage } from '@/pages/admin/ChallengesPage'
 import { StaffCasePage } from '@/pages/staff/StaffCasePage'
 import { ForgotPasswordPage, ResetPasswordPage, VerifyEmailPage } from '@/pages/auth/RecoveryPages'
@@ -42,7 +43,6 @@ import { apiMode } from '@/lib/api'
 import { RequireRole } from './guards'
 
 /** Routes from docs/design/figma-handoff/navigation-map.md ("Routes by template"). */
-const nb = (template: string, title: string, variant?: string) => <NotBuiltYet template={template} title={title} variant={variant} />
 const guard = (roles: readonly Role[], el: ReactElement) => <RequireRole anyOf={roles}>{el}</RequireRole>
 
 export const routes: RouteObject[] = [
@@ -104,8 +104,8 @@ export const routes: RouteObject[] = [
       { path: '/admin/challenges/:id', element: guard(['admin'], <ChallengeEditorPage />) },
       { path: '/admin/rubrics/:id', element: guard(['admin'], <RubricEditorPage />) },
       { path: '/admin/users', element: guard(['admin'], <AdminUsersPage />) },
-      { path: '/admin/content', element: guard(['admin'], nb('T12', 'Content')) },
-      { path: '/admin/settings/roles', element: guard(['admin'], nb('T12', 'Roles')) },
+      { path: '/admin/content', element: guard(['admin'], <ContentAdminPage />) },
+      { path: '/admin/settings/roles', element: guard(['admin'], <RolesPage />) },
       { path: '/admin/settings/chat', element: guard(['admin'], <ChatSettingsPage />) },
     ],
   },

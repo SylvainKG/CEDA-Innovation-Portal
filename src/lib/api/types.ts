@@ -802,3 +802,35 @@ export interface AdminRubric {
   title: string
   versions: AdminRubricVersion[]
 }
+
+// ---------------------------------------------------------------------------------------------------
+// T12 roles and content (ARC-01, HLP-01; migration 008).
+// ---------------------------------------------------------------------------------------------------
+
+export interface AdminRole {
+  key: string
+  label: string
+  /** Built-in roles keep their permissions; new roles are data (ARC-01). */
+  is_system: boolean
+  requires_mfa: boolean
+  permissions: string[]
+}
+
+export interface PermissionOption {
+  key: string
+  description: string
+}
+
+export type AdminContentKind = 'faq' | 'contact' | 'referral' | 'support' | 'privacy' | 'declaration' | 'page'
+
+export interface AdminContentPage {
+  slug: string
+  kind: AdminContentKind
+  title: string
+  body_md: string
+  /** Wording version; required for privacy and declaration (consents are stored against it). */
+  version: string | null
+  position: number
+  is_sample: boolean
+  status: 'draft' | 'published'
+}
