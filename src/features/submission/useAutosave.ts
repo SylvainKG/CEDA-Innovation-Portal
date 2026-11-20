@@ -61,12 +61,18 @@ export function useAutosave({ challengeId, proposalId: initialId, onCreated, deb
   const onCreatedRef = useRef(onCreated)
   onCreatedRef.current = onCreated
 
-  const flush = useCallback(async () => {
+  /**
+   * Save now. Resolves `true` when everything typed so far is confirmed by the server (or nothing was pending),
+   * `false` when the latest answers are only on this device. Waits for a save already in flight.
+   */
+  const flush = useCallback(async (): Promise<boolean> => {
     clearTimeout(timer.current)
-    if (inFlight.current || !dirty.current || !latest.current) return
+    for (let waited = 0; inFlight.current && waited < 15_000; waited += 50) await new Promise((r) => setTimeout(r, 50))
+    if (inFlight.current) return false
+    if (!dirty.current || !latest.current) return !dirty.current
     if (typeof navigator !== 'undefined' && navigator.onLine === false) {
       setState({ kind: 'local' })
-      return
+      return false
     }
     const data = latest.current
     dirty.current = false
@@ -109,8 +115,9 @@ export function useAutosave({ challengeId, proposalId: initialId, onCreated, deb
       inFlight.current = false
     }
     if (result === 'saved') {
-      if (dirty.current) void flush()
-      return
+      // Answers typed during the save are sent next; report what the caller can rely on.
+      if (dirty.current) return flush()
+      return true
     }
     // Not confirmed: the answers are still on this device.
     dirty.current = true
@@ -118,12 +125,13 @@ export function useAutosave({ challengeId, proposalId: initialId, onCreated, deb
     // retried blindly (see above). Both wait for the next edit or saveNow.
     if (creating || result === 'refused') {
       setState({ kind: 'local' })
-      return
+      return false
     }
     const delay = RETRY_DELAYS_MS[Math.min(attempt.current, RETRY_DELAYS_MS.length - 1)]
     attempt.current += 1
     setState({ kind: 'retrying' })
     timer.current = setTimeout(() => void flush(), delay)
+    return false
   }, [challengeId])
 
   const change = useCallback(
