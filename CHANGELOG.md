@@ -4,6 +4,10 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `feature` **T12 users and roles** (`/admin/users`, IAM-01), Provisional UI built from the written spec. Administrators see everyone registered with their roles as chips; they can grant a role, remove one (a reason is required, in a confirm dialog), and invite staff by email (the `invite-staff` Edge Function). The administrator's own row has the role controls disabled ("You can't change your own roles."), and the server refuses a self-change anyway. After every change the list is re-read, so it shows what the server holds; an unconfirmed change says so and is safe to retry. New `AdminPort` (`roles`, `profiles` with active `user_roles`, `grant_role`, `revoke_role`, `invite-staff`). The adapter reads `grant_role`/`revoke_role`'s in-body refusal (`ok: false`) as a refusal, not a success. Not built yet: the rest of T12 (challenges, rubrics, content, roles and permissions, chat hours).
+
+  Evidence: 6 new tests (grant then remove with a reason, own row disabled and self-change refused, invite with field errors and a safe repeat, non-admins refused; adapter: in-body refusal, invite 403/422/unknown); 280 in total; lint, type-check and build pass.
+
 - `feature` **T06 staff home** (`/staff`), Provisional UI built from the written spec. Each role sees its own figures: awaiting screening (screening officers, admins), reviews to do with the overdue count (reviewers), ready for decision (adjudicators, admins), submitted this week and in evaluation (admins), chats waiting (support). "Your next tasks" lists up to 5 linked tasks, oldest or soonest first, and "Recent activity" shows the reader's 10 latest notifications. Everything comes from reads the person already has; no new server calls. Not built yet: the committee variant (D-08) and the live 2-second highlight.
 
   Evidence: 5 new tests (screening, reviewer, adjudicator, support with and without a waiting chat; each role sees only its own figures); 274 in total; lint, type-check and build pass.

@@ -62,8 +62,8 @@ describe('routing and role shells (UI convenience; the server enforces access)',
   })
 
   it('labels unbuilt screens honestly instead of faking them', async () => {
-    renderAt('/admin/users', 'admin')
-    expect(await screen.findByRole('heading', { level: 1, name: 'Users and roles' })).toBeInTheDocument()
+    renderAt('/admin/content', 'admin')
+    expect(await screen.findByRole('heading', { level: 1, name: 'Content' })).toBeInTheDocument()
     expect(document.body.textContent).toContain('Not built yet: T12')
   })
 
