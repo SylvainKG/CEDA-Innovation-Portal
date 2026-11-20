@@ -1,7 +1,8 @@
 import type { ChallengeAdminPort } from '../challenge-admin'
 import { fromRpcError, rpcError } from '../errors'
-import type { AdminChallenge, AdminChallengeVersion, CommandOutcome, FormSchema, RequiredDoc, RubricVersionOption } from '../types'
+import type { AdminChallenge, AdminChallengeVersion, CommandOutcome, FormSchema, RequiredDoc } from '../types'
 import { MOCK_CHALLENGE_FORMS, MOCK_CHALLENGES } from './fixtures'
+import { mockRubricVersionOptions } from './rubric-admin'
 import { mockSession } from './session'
 
 /**
@@ -10,10 +11,7 @@ import { mockSession } from './session'
  * time; the form needs a required "title" field, unique keys, labels and options for choice fields; publishing
  * needs a published rubric; only an unused draft can be deleted. Changes here don't reach the public pages.
  */
-const RUBRICS: RubricVersionOption[] = [
-  { id: '11000000-0000-4000-8000-000000000001', title: 'Water-smart rubric (DEMO)', version_no: 1, published: true },
-  { id: '11000000-0000-4000-8000-0000000000d1', title: 'Draft rubric (DEMO)', version_no: 1, published: false },
-]
+const SEED_RUBRIC_VERSION = '11000000-0000-4000-8000-000000000001'
 
 interface Stored {
   challenge: AdminChallenge
@@ -33,7 +31,7 @@ function seed(): Stored[] {
           brief_md: `Fictional brief for ${c.title} (DEMO).`,
           form_schema: structuredClone(form.form_schema),
           required_docs: structuredClone(form.required_docs),
-          rubric_version_id: RUBRICS[0]!.id,
+          rubric_version_id: SEED_RUBRIC_VERSION,
           published_at: c.opens_at,
         },
       ],
@@ -93,7 +91,7 @@ export const mockChallengeAdmin: ChallengeAdminPort = {
   },
 
   async listRubricVersions() {
-    return RUBRICS.map((r) => ({ ...r }))
+    return mockRubricVersionOptions()
   },
 
   async create({ slug, title, summary, opensAt, closesAt, audience }) {
@@ -123,7 +121,7 @@ export const mockChallengeAdmin: ChallengeAdminPort = {
     if (!(await admin())) return NO()
     const i = state.items.find((x) => x.challenge.id === challengeId)
     if (!i) return refused('VALIDATION', 'Choose a challenge.')
-    if (!RUBRICS.some((r) => r.id === rubricVersionId)) return refused('VALIDATION', 'Choose a rubric version.', { rubric_version_id: 'Unknown' })
+    if (!mockRubricVersionOptions().some((r) => r.id === rubricVersionId)) return refused('VALIDATION', 'Choose a rubric version.', { rubric_version_id: 'Unknown' })
     if (briefMd.length > 20000) return refused('VALIDATION', 'The brief is too long.', { brief_md: 'Up to 20,000 characters' })
     const errors = formErrors(formSchema, requiredDocs)
     if (Object.keys(errors).length) return refused('VALIDATION', 'The form needs attention.', errors)
@@ -144,7 +142,7 @@ export const mockChallengeAdmin: ChallengeAdminPort = {
     if (!i) return refused('VALIDATION', 'Choose a challenge.')
     const draft = i.versions.find((v) => !v.published_at)
     if (draft) {
-      if (!RUBRICS.find((r) => r.id === draft.rubric_version_id)?.published) return refused('VALIDATION', 'Publish the rubric before the challenge.', { rubric_version_id: 'Rubric not published' })
+      if (!mockRubricVersionOptions().find((r) => r.id === draft.rubric_version_id)?.published) return refused('VALIDATION', 'Publish the rubric before the challenge.', { rubric_version_id: 'Rubric not published' })
       draft.published_at = new Date().toISOString()
     } else if (!i.versions.some((v) => v.published_at)) return refused('VALIDATION', 'Add the application form before publishing.')
     i.challenge.status = 'published'

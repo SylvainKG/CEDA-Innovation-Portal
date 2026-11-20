@@ -784,3 +784,21 @@ export interface ChallengeDetailsInput {
   closesAt: string
   audience: string
 }
+
+// ---------------------------------------------------------------------------------------------------
+// T12 rubrics (REV-02, ARC-01, D-20): versions are drafts until published; published ones are locked.
+// ---------------------------------------------------------------------------------------------------
+
+export interface AdminRubricVersion {
+  id: string
+  version_no: number
+  published_at: string | null
+  criteria: RubricCriterion[]
+}
+
+export interface AdminRubric {
+  id: string
+  key: string
+  title: string
+  versions: AdminRubricVersion[]
+}
