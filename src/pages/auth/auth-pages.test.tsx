@@ -138,6 +138,26 @@ describe('T02 verify, forgot and reset', () => {
     }
   })
 
+  it('after a refresh (address unknown) asks for the address, checks it, then resends at once', async () => {
+    const resend = vi.spyOn(mockSession, 'resendVerification')
+    renderAt('/auth/verify')
+    await screen.findByRole('heading', { level: 1, name: 'Check your email' })
+    press('Resend the link')
+    expect(screen.getByText('Enter your email address')).toBeInTheDocument()
+    type(/^Email address/, 'person@example.test')
+    press('Resend the link')
+    expect(await screen.findByText('We sent a new link.')).toBeInTheDocument()
+    expect(resend).toHaveBeenCalledWith('person@example.test')
+    resend.mockRestore()
+  })
+
+  it('makes the whole consent row the target', async () => {
+    renderAt('/auth/register')
+    await screen.findByRole('heading', { name: 'Privacy notice' })
+    fireEvent.click(screen.getByText(/I have read the privacy notice/))
+    expect(screen.getByRole('checkbox', { name: /I have read the privacy notice/ })).toBeChecked()
+  })
+
   it('answers a reset request neutrally', async () => {
     renderAt('/auth/forgot')
     type(/Email address/, 'nobody@example.test')
