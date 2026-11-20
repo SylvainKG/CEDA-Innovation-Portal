@@ -138,6 +138,8 @@ const state = {
   /** Decisions per case (drafts, superseded and published). */
   decisions: new Map<string, CaseDecision[]>(),
   awards: new Map<string, CaseAward>(),
+  /** Earlier versions of seeded cases, oldest first, with the files they had (INN-01). */
+  history: new Map<string, { version: NonNullable<StaffCase['version']>; files: StaffCase['files'] }[]>(),
   latencyMs: import.meta.env.MODE === 'test' ? 0 : 200,
 }
 
@@ -147,6 +149,7 @@ function resetSeeded() {
   state.notes.clear()
   state.decisions.clear()
   state.awards.clear()
+  state.history.clear()
   for (const c of SEED) {
     const built = seedCase(c)
     state.seeded.set(built.id, built)
@@ -251,9 +254,12 @@ export const mockStaffInternals = {
   setSeededVersion(caseId: string, version: NonNullable<StaffCase['version']>): boolean {
     const c = state.seeded.get(caseId)
     if (!c) return false
+    if (c.version) state.history.set(caseId, [...(state.history.get(caseId) ?? []), { version: c.version, files: [...c.files] }])
     c.version = version
     return true
   },
+  /** Earlier versions of a case (seeded cases only), oldest first. */
+  history: (caseId: string) => state.history.get(caseId) ?? [],
 }
 
 function toRow(c: StaffCase): StaffCaseRow {

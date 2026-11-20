@@ -710,3 +710,23 @@ export interface AdminUser {
   is_demo: boolean
   roles: string[]
 }
+
+// ---------------------------------------------------------------------------------------------------
+// INN-01 version compare: every submitted version of a case (proposal_versions + attachments; RLS can_read_case).
+// ---------------------------------------------------------------------------------------------------
+
+export interface VersionFile {
+  doc_key: string | null
+  filename: string
+  size_bytes: number
+  /** Content fingerprint: the same file name with a different fingerprint was replaced. */
+  sha256: string | null
+}
+
+export interface VersionSnapshot {
+  version_no: number
+  submitted_at: string
+  change_note: string | null
+  data: DraftData
+  files: VersionFile[]
+}

@@ -1,4 +1,5 @@
 import { useId, useMemo, useState } from 'react'
+import { VersionCompare } from '@/pages/staff/VersionCompare'
 import { Link, useParams } from 'react-router-dom'
 import { Banner, Button, Dialog, ReferencePill, TextField } from '@/components'
 import { ErrorState, LoadingState, NotFoundState } from '@/components/states/States'
@@ -357,6 +358,15 @@ function ScorecardForm({ w }: { w: ReviewWorkspace }) {
           <p className="text-sm font-semibold">What changed in version {w.proposal?.version_no}</p>
           <p className="whitespace-pre-wrap break-words">{w.change_note}</p>
         </div>
+      ) : null}
+
+      {w.proposal && w.proposal.version_no >= 2 ? (
+        <details className="rounded-md border border-line p-3">
+          <summary className="min-h-touch cursor-pointer font-semibold">Compare with version {w.proposal.version_no - 1}</summary>
+          <div className="mt-3">
+            <VersionCompare proposalId={w.row.proposal_id} schema={w.proposal.form_schema} />
+          </div>
+        </details>
       ) : null}
 
       {w.tasks.length ? (

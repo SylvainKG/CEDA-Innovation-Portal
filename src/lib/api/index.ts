@@ -1,6 +1,7 @@
 import type { AdminPort } from './admin'
 import type { ChatPort } from './chat'
 import type { MfaPort } from './mfa'
+import type { VersionsPort } from './versions'
 import type { ContentPort } from './content'
 import type { FeedbackPort } from './feedback'
 import type { OversightPort } from './oversight'
@@ -11,6 +12,7 @@ import type { SubmissionPort } from './submission'
 import { mockAdmin } from './mock/admin'
 import { mockChat } from './mock/chat'
 import { mockMfa } from './mock/mfa'
+import { mockVersions } from './mock/versions'
 import { mockContent } from './mock/content'
 import { mockFeedback } from './mock/feedback'
 import { mockOversight } from './mock/oversight'
@@ -22,6 +24,7 @@ import { createBrowserClient, readSupabaseConfig } from './supabase/client'
 import { createSupabaseAdmin } from './supabase/admin'
 import { createSupabaseChat } from './supabase/chat'
 import { createSupabaseMfa } from './supabase/mfa'
+import { createSupabaseVersions } from './supabase/versions'
 import { createSupabaseContent } from './supabase/content'
 import { createSupabaseFeedback } from './supabase/feedback'
 import { createSupabaseOversight } from './supabase/oversight'
@@ -56,8 +59,8 @@ export function resolveApiMode(raw: string | undefined, isDev: boolean): ApiMode
 
 export const apiMode: ApiMode = resolveApiMode(import.meta.env.VITE_API_MODE as string | undefined, import.meta.env.DEV)
 
-function buildApi(mode: ApiMode): { session: SessionPort; submission: SubmissionPort; content: ContentPort; staff: StaffPort; review: ReviewPort; feedback: FeedbackPort; oversight: OversightPort; chat: ChatPort; admin: AdminPort; mfa: MfaPort } {
-  if (mode === 'mock') return { session: mockSession, submission: mockSubmission, content: mockContent, staff: mockStaff, review: mockReview, feedback: mockFeedback, oversight: mockOversight, chat: mockChat, admin: mockAdmin, mfa: mockMfa }
+function buildApi(mode: ApiMode): { session: SessionPort; submission: SubmissionPort; content: ContentPort; staff: StaffPort; review: ReviewPort; feedback: FeedbackPort; oversight: OversightPort; chat: ChatPort; admin: AdminPort; mfa: MfaPort; versions: VersionsPort } {
+  if (mode === 'mock') return { session: mockSession, submission: mockSubmission, content: mockContent, staff: mockStaff, review: mockReview, feedback: mockFeedback, oversight: mockOversight, chat: mockChat, admin: mockAdmin, mfa: mockMfa, versions: mockVersions }
   // Fails fast at start-up when the URL or key is missing, rather than on the first request.
   const client = createBrowserClient(readSupabaseConfig(import.meta.env))
   return {
@@ -71,6 +74,7 @@ function buildApi(mode: ApiMode): { session: SessionPort; submission: Submission
     chat: createSupabaseChat(client),
     admin: createSupabaseAdmin(client),
     mfa: createSupabaseMfa(client),
+    versions: createSupabaseVersions(client),
   }
 }
 

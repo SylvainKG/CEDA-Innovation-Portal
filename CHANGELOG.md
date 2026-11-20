@@ -4,6 +4,10 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `feature` **INN-01: compare versions** (Provisional UI built from the written spec). On a revised case, staff get a **Compare versions** tab, and reviewers get **Compare with version N** in the version 2 scorecard, next to the roadmap tasks. Each form field of the two versions is shown side by side and marked Changed, Added, Removed or Unchanged ("Show only changes" is on by default), with the applicant's "What changed" note. Files are matched by document slot and marked added, removed or replaced, using the file fingerprint. Cases with more than two versions let you pick which two. New `VersionsPort` (`proposal_versions` and `attachments` through RLS `can_read_case`, explicit columns): staff who read all cases, declared reviewers and the owner; others see nothing. The mock keeps earlier versions when a revision is submitted.
+
+  Evidence: 5 new tests (field and file diff rules; staff tab; reviewer scorecard; undeclared reviewer and committee refused, owner allowed); 288 in total; lint, type-check and build pass.
+
 - `feature` **T02 staff two-step sign-in** (`/auth/mfa`, D-07), Provisional UI built from the written spec. Staff whose roles need a second step set up an authenticator app (QR code, or the key typed in) and enter the 6-digit code; a wrong code is refused and the field clears. Sign-in sends staff who need it to this step first, then on to where they were going. Seeded demo staff accounts skip it and see "MFA not required for demo accounts". The server is the control: it withholds staff permissions until the session has passed the second step (`private.mfa_satisfied`); the screen is only the way through. New `MfaPort` (`my_access().mfa_required`, Supabase Auth `mfa.listFactors`, `mfa.enroll`, `mfa.challengeAndVerify`).
 
   Evidence: 3 new tests (demo exemption, set-up with a wrong then right code and the onward redirect, signed-out and applicant states); 283 in total; lint, type-check and build pass. Not yet run against Supabase Auth.
