@@ -1,0 +1,44 @@
+# Supabase keep-alive (OPS-03; runbook §1 "Free-plan limits").
+# The hosted project is on the Supabase Free plan, which pauses a project after
+# about a week without activity. The portal must stay live until 3 Dec 2026, so
+# this workflow calls the public health check every two days.
+#
+# Needs two repository settings (Settings > Secrets and variables > Actions), set by
+# a repository admin:
+#   variable SUPABASE_URL              e.g. https://<project-ref>.supabase.co
+#   secret   SUPABASE_PUBLISHABLE_KEY  the project's publishable key (public by design;
+#                                      kept as a secret only so it is masked in logs)
+# Never the service-role or secret key: health() is callable signed out.
+name: Supabase keep-alive
+
+on:
+  schedule:
+    - cron: '17 6 */2 * *'   # 06:17 UTC (08:17 CAT) every second day
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Call public.health()
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+        run: |
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_PUBLISHABLE_KEY" ]; then
+            echo "::error::Set the SUPABASE_URL variable and the SUPABASE_PUBLISHABLE_KEY secret (see the header of this file)."
+            exit 1
+          fi
+          body=$(curl --silent --show-error --fail-with-body --retry 3 --retry-delay 10 --max-time 30 \
+            -X POST "$SUPABASE_URL/rest/v1/rpc/health" \
+            -H "apikey: $SUPABASE_PUBLISHABLE_KEY" \
+            -H "Content-Type: application/json" \
+            -d '{}')
+          echo "$body"
+          if ! echo "$body" | grep -q '"ok": *true'; then
+            echo "::error::The health check did not return ok: true. If the project is paused, restore it in the Supabase dashboard."
+            exit 1
+          fi
