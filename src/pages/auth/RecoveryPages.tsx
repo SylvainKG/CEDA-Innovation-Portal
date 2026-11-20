@@ -66,7 +66,7 @@ export function VerifyEmailPage() {
           Resend the link
         </Button>
         <p>
-          <Link to="/auth/sign-in">Go to sign in</Link>
+          <Link to="/auth/sign-in" className="inline-flex min-h-touch items-center">Go to sign in</Link>
         </p>
       </AuthCard>
     </div>
@@ -118,7 +118,7 @@ export function ForgotPasswordPage() {
           </Button>
         </form>
         <p>
-          <Link to="/auth/sign-in">Back to sign in</Link>
+          <Link to="/auth/sign-in" className="inline-flex min-h-touch items-center">Back to sign in</Link>
         </p>
       </AuthCard>
     </div>

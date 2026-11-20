@@ -4,6 +4,7 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `repair` T02 links are 44 px targets (spec §3.3; Sylvain's #47 review): "Forgot your password?", "Register", "Go to sign in" and "Back to sign in" stood alone at 20 px tall.
 - `feature` **T02 sign in, register, verify, forgot and reset**, built from the written spec (BCR-003; design review by Sandra pending). MFA stays a placeholder until the staff slice (demo staff skip it, D-07).
   - Centred card (max 440 px); error summary linking to each field; focus moves to the heading.
   - Messages never say which of email or password was wrong, nor whether an account exists: an existing address on register, and an unknown one on reset or resend, look like success.
