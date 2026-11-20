@@ -3,9 +3,9 @@ import { checkForm, isChallengeOpen, schemaKeys } from '@/lib/form-check'
 import { fromRpcError, rpcError } from '../errors'
 import { newRequestId } from '../request-key'
 import type { SubmissionPort } from '../submission'
-import type { AttachmentInfo, ChallengeForm, CommandOutcome, DraftData, SubmissionReceipt } from '../types'
+import type { AttachmentInfo, CaseEvent, CaseStatus, ChallengeForm, CommandOutcome, DraftData, MyCase, MyIdea, PublicStage, SubmissionReceipt } from '../types'
 import { mockSession } from './session'
-import { FIRST_DEMO_REFERENCE_NUMBER, MOCK_CHALLENGE_FORMS, MOCK_DECLARATION } from './fixtures'
+import { FIRST_DEMO_REFERENCE_NUMBER, MOCK_BRIEFS, MOCK_CHALLENGES, MOCK_CHALLENGE_FORMS, MOCK_DECLARATION, MOCK_SEEDED_IDEA } from './fixtures'
 
 /**
  * MOCK Slice 1 adapter: development and demo-preview only. It follows the contract's rules (§4, §4.1, §5) so
@@ -29,12 +29,19 @@ interface MockProposal {
   id: string
   ownerId: string
   challengeId: string
-  status: 'draft' | 'submitted'
+  status: CaseStatus
   data: DraftData
   savedAt: string
   files: AttachmentInfo[]
   receipt?: SubmissionReceipt
   clientRequestId?: string
+  submittedTitle?: string
+  /** Case events after submission (screening and later), oldest first. */
+  events: CaseEvent[]
+  updatedAt?: string
+  /** Current submitted version (1, then 2, 3 … after revisions) and when it was submitted. */
+  versionNo?: number
+  versionAt?: string
 }
 
 const state = {
@@ -42,12 +49,17 @@ const state = {
   nextReference: FIRST_DEMO_REFERENCE_NUMBER,
   latencyMs: import.meta.env.MODE === 'test' ? 0 : 250,
   loseNextSubmitReply: false,
+  /** Receipts of later versions (V2, V3 …) by "<case>:<version>", and their request keys. */
+  revisionReceipts: new Map<string, SubmissionReceipt>(),
+  revisionKeys: new Map<string, { caseId: string; versionNo: number }>(),
 }
 
 /** Test and demo helpers. Not part of the port; screens must never import these. */
 export const mockSubmissionControls = {
   reset() {
     state.proposals.clear()
+    state.revisionReceipts.clear()
+    state.revisionKeys.clear()
     state.nextReference = FIRST_DEMO_REFERENCE_NUMBER
     state.loseNextSubmitReply = false
   },
@@ -55,6 +67,61 @@ export const mockSubmissionControls = {
   loseNextSubmitReply() {
     state.loseNextSubmitReply = true
   },
+}
+
+/**
+ * Mock-only bridge for the mock staff adapter, so the demo journey works without a backend: an idea submitted
+ * here appears in the staff queue, and a screening result shows on the applicant's "My ideas".
+ */
+export interface MockSubmittedCase {
+  id: string
+  reference: string
+  title: string
+  status: CaseStatus
+  challengeId: string
+  submittedAt: string
+  updatedAt: string
+  data: DraftData
+  files: AttachmentInfo[]
+  formVersion: number
+  declarationVersion: string
+  events: CaseEvent[]
+  versionNo: number
+  versionAt: string
+}
+
+export function mockSubmittedCases(): MockSubmittedCase[] {
+  return [...state.proposals.values()]
+    .filter((p) => p.status !== 'draft' && p.receipt)
+    .map((p) => {
+      const r = p.receipt as SubmissionReceipt
+      return {
+        id: p.id,
+        reference: r.reference,
+        title: p.submittedTitle?.trim() || 'Untitled idea',
+        status: p.status,
+        challengeId: p.challengeId,
+        submittedAt: r.submitted_at,
+        updatedAt: p.updatedAt ?? r.submitted_at,
+        data: { ...p.data },
+        files: [...r.files],
+        formVersion: r.form_version,
+        versionNo: p.versionNo ?? 1,
+        versionAt: p.versionAt ?? r.submitted_at,
+        declarationVersion: r.declaration_version,
+        events: [{ from_status: 'draft', to_status: 'submitted', public_stage: 'submission', reason: null, at: r.submitted_at }, ...p.events],
+      }
+    })
+}
+
+/** Move a submitted mock case on (used by the mock staff adapter only). Returns false if it isn't here. */
+export function mockMoveCase(id: string, event: CaseEvent): boolean {
+  const p = state.proposals.get(id)
+  if (!p || p.status === 'draft') return false
+  p.status = event.to_status
+  p.events.push(event)
+  p.updatedAt = event.at
+  return true
 }
 
 const wait = () => new Promise<void>((resolve) => setTimeout(resolve, state.latencyMs))
@@ -80,7 +147,96 @@ function ownProposal(id: string, userId: string): MockProposal | undefined {
   return p && p.ownerId === userId ? p : undefined
 }
 
+/** The seeded earlier idea belongs to Demo Applicant A only. */
+const SEEDED_OWNER = 'demo-applicant-a'
+
+/** Mock-only: whether this mock user owns a submitted case (one submitted here, or the seeded idea). */
+export function mockOwnsCase(userId: string, caseId: string): boolean {
+  const p = ownProposal(caseId, userId)
+  return Boolean((p && p.status !== 'draft') || (userId === SEEDED_OWNER && caseId === MOCK_SEEDED_IDEA.id))
+}
+
+/**
+ * The staff mock holds case state (screening, decisions, awards). It imports this module, so it is loaded lazily
+ * here, at call time, to keep module start-up free of a circular import.
+ */
+async function staffCases() {
+  const { mockStaffInternals } = await import('./staff')
+  return mockStaffInternals.cases()
+}
+
+async function seededCaseNow() {
+  return (await staffCases()).find((c) => c.id === MOCK_SEEDED_IDEA.id)
+}
+
+/** First event per public stage, oldest first (as `list_my_ideas` does). */
+function firstStages(events: CaseEvent[]): { stage: PublicStage; at: string }[] {
+  const out: { stage: PublicStage; at: string }[] = []
+  for (const e of events) if (e.public_stage && !out.some((x) => x.stage === e.public_stage)) out.push({ stage: e.public_stage, at: e.at })
+  return out
+}
+
 export const mockSubmission: SubmissionPort = {
+  async listChallenges() {
+    await wait()
+    return MOCK_CHALLENGES.filter((c) => c.status !== 'unpublished')
+  },
+
+  templateUrl() {
+    // The mock has no file store: the brief hides its Downloads section rather than show a dead link.
+    return null
+  },
+
+  async getChallengeBrief(slug) {
+    await wait()
+    const challenge = MOCK_CHALLENGES.find((c) => c.slug === slug && c.status !== 'unpublished')
+    const brief = challenge ? MOCK_BRIEFS[challenge.id] : undefined
+    return challenge && brief ? { challenge, ...brief } : null
+  },
+
+  async listMyIdeas() {
+    await wait()
+    const userId = await currentApplicantId()
+    if (!userId) return []
+    const mine: MyIdea[] = [...state.proposals.values()]
+      .filter((p) => p.ownerId === userId)
+      .map((p) => {
+        const form = formFor(p.challengeId) as ChallengeForm
+        return {
+          id: p.id,
+          reference: p.receipt?.reference ?? null,
+          title: (p.receipt ? p.submittedTitle : p.data.title)?.trim() || 'Untitled idea',
+          status: p.status,
+          challenge: { id: form.challenge_id, title: form.title, closes_at: form.closes_at },
+          updated_at: p.updatedAt ?? p.receipt?.submitted_at ?? p.savedAt,
+          open_feedback: null as MyIdea['open_feedback'],
+          // First event per public stage, like list_my_ideas (migration 014).
+          stages: p.receipt
+            ? [
+                { stage: 'submission' as const, at: p.receipt.submitted_at },
+                ...p.events
+                  .filter((e) => e.public_stage && e.public_stage !== 'submission')
+                  .map((e) => ({ stage: e.public_stage as NonNullable<CaseEvent['public_stage']>, at: e.at }))
+                  .filter((s, i, all) => all.findIndex((x) => x.stage === s.stage) === i),
+              ]
+            : [],
+        }
+      })
+    const seeded = userId === SEEDED_OWNER ? await seededCaseNow() : undefined
+    const all: MyIdea[] =
+      userId !== SEEDED_OWNER
+        ? mine
+        : [
+            ...mine,
+            seeded
+              ? { ...MOCK_SEEDED_IDEA, status: seeded.status, updated_at: seeded.updated_at, stages: firstStages(seeded.events) }
+              : MOCK_SEEDED_IDEA,
+          ]
+    // An open or expired request while the case waits on the applicant (list_my_ideas, migration 014).
+    const { mockFeedbackInternals } = await import('./feedback')
+    return all.map((idea) => (idea.status === 'action_required' ? { ...idea, open_feedback: mockFeedbackInternals.openFor(idea.id) } : idea))
+  },
+
   async getChallengeForm(challengeId) {
     await wait()
     return formFor(challengeId) ?? null
@@ -133,7 +289,7 @@ export const mockSubmission: SubmissionPort = {
 
     const savedAt = new Date().toISOString()
     if (!p) {
-      p = { id: newRequestId(), ownerId: userId, challengeId: form.challenge_id, status: 'draft', data: kept, savedAt, files: [] }
+      p = { id: newRequestId(), ownerId: userId, challengeId: form.challenge_id, status: 'draft', data: kept, savedAt, files: [], events: [] }
       state.proposals.set(p.id, p)
     } else {
       p.data = kept
@@ -215,6 +371,7 @@ export const mockSubmission: SubmissionPort = {
     }
     p.status = 'submitted'
     p.receipt = receipt
+    p.submittedTitle = p.data.title
     p.clientRequestId = clientRequestId
 
     if (state.loseNextSubmitReply) {
@@ -228,11 +385,127 @@ export const mockSubmission: SubmissionPort = {
     await wait()
     const userId = await currentApplicantId()
     if (!userId) return { found: false }
+    // Later versions first: by key, or by case and version number (a key identifies one version, B9).
+    if ('clientRequestId' in query) {
+      const hit = state.revisionKeys.get(query.clientRequestId)
+      if (hit && mockOwnsCase(userId, hit.caseId)) {
+        const r = state.revisionReceipts.get(`${hit.caseId}:${hit.versionNo}`)
+        if (r) return { ...r, replayed: undefined, found: true }
+      }
+    } else if (query.versionNo !== undefined && query.versionNo > 1) {
+      const r = mockOwnsCase(userId, query.proposalId) ? state.revisionReceipts.get(`${query.proposalId}:${query.versionNo}`) : undefined
+      return r ? { ...r, replayed: undefined, found: true } : { found: false }
+    }
     const p =
       'proposalId' in query
         ? ownProposal(query.proposalId, userId)
         : [...state.proposals.values()].find((x) => x.ownerId === userId && x.clientRequestId === query.clientRequestId)
     if (!p?.receipt || (query.versionNo !== undefined && query.versionNo !== p.receipt.version_no)) return { found: false }
     return { ...p.receipt, replayed: undefined, found: true }
+  },
+
+  async getMyCase(proposalId) {
+    await wait()
+    const userId = await currentApplicantId()
+    if (!userId) return null
+    const own = ownProposal(proposalId, userId)
+    const isMine = (own && own.status !== 'draft') || (userId === SEEDED_OWNER && proposalId === MOCK_SEEDED_IDEA.id)
+    if (!isMine) return null
+    const c = (await staffCases()).find((x) => x.id === proposalId)
+    if (!c) return null
+    const published = c.decisions.find((d) => d.published_at && !d.superseded_at)
+    const result: MyCase = {
+      id: c.id,
+      reference: c.reference,
+      title: c.title,
+      status: c.status,
+      challenge: c.challenge,
+      submitted_at: c.submitted_at,
+      version: c.version ? { version_no: c.version.version_no, data: { ...c.version.data }, form_schema: c.form_schema, files: [...c.files] } : null,
+      stages: firstStages(c.events),
+      // Only the closure reason reaches the applicant; screening and other reasons stay with staff.
+      closed_reason: c.status === 'closed' ? ([...c.events].reverse().find((e) => e.to_status === 'closed')?.reason ?? null) : null,
+      decision: published ? { outcome: published.outcome, reason: published.reason, published_at: published.published_at! } : null,
+      award: c.award ? { amount_minor: c.award.amount_minor, description: c.award.description, recorded_at: c.award.recorded_at } : null,
+    }
+    return result
+  },
+
+  async submitRevision({ proposalId, clientRequestId, data, changeNote, taskResponses, declarationVersion }) {
+    await wait()
+    const userId = await currentApplicantId()
+    if (!userId || !mockOwnsCase(userId, proposalId)) return refused('FORBIDDEN', "You don't have access to this page.")
+    // Idempotent by request key (BCR-001 B9): the same key replays the receipt; a key used elsewhere conflicts.
+    const seen = state.revisionKeys.get(clientRequestId)
+    if (seen) {
+      if (seen.caseId !== proposalId) return refused('REQUEST_CONFLICT', 'This request key was already used for a different submission.')
+      return ok({ ...(state.revisionReceipts.get(`${seen.caseId}:${seen.versionNo}`) as SubmissionReceipt), replayed: true })
+    }
+    const { mockFeedbackInternals } = await import('./feedback')
+    const { mockStaffInternals } = await import('./staff')
+    const c = mockStaffInternals.cases().find((x) => x.id === proposalId)
+    const request = (mockFeedbackInternals.requests().get(proposalId) ?? []).find((r) => r.kind === 'revision' && r.status === 'open')
+    if (!c || !c.version || c.status !== 'action_required' || !request) return refused('INVALID_STATE', 'No revision is waiting for this idea.')
+    if (declarationVersion !== MOCK_DECLARATION.version)
+      return refused('VALIDATION', 'Accept the declaration to submit. Your changes are saved.', { declaration: 'Accept the current declaration' })
+    const note = changeNote.trim()
+    if (note.length < 1 || [...note].length > 2000) return refused('VALIDATION', 'Say what changed (up to 2,000 characters). Your changes are saved.', { change_note: 'Required' })
+    const taskErrors: Record<string, string> = {}
+    for (const t of request.tasks) {
+      const r = taskResponses.find((x) => x.task_id === t.task_id)
+      const expl = r?.explanation.trim() ?? ''
+      if (!r || (r.status !== 'addressed' && r.status !== 'not_addressed')) taskErrors[`task:${t.position}`] = 'Mark this task Addressed or Not addressed'
+      else if (expl.length < 1 || [...expl].length > 500) taskErrors[`task:${t.position}`] = 'Explain what you did (up to 500 characters)'
+    }
+    if (Object.keys(taskErrors).length) return refused('VALIDATION', 'Answer every task before submitting. Your changes are saved.', taskErrors)
+    const form = formFor(c.challenge.id) as ChallengeForm
+    const content = data ?? c.version.data
+    const errors = checkForm(form.form_schema, content, [], new Set())
+    if (Object.keys(errors).length) return refused('VALIDATION', 'Some answers need attention. Your changes are saved.', errors)
+
+    const now = new Date()
+    const versionNo = c.version.version_no + 1
+    const version = { version_no: versionNo, submitted_at: now.toISOString(), data: { ...content }, declaration_version: declarationVersion }
+    if (!mockStaffInternals.setSeededVersion(proposalId, version)) {
+      const p = state.proposals.get(proposalId)!
+      p.data = { ...content }
+      p.versionNo = versionNo
+      p.versionAt = version.submitted_at
+    }
+    // Task answers are locked on the new version; the request is answered; the case returns to its stage (D-10).
+    for (const t of request.tasks) {
+      const r = taskResponses.find((x) => x.task_id === t.task_id)!
+      t.applicant_status = r.status
+      t.applicant_explanation = r.explanation.trim()
+    }
+    request.status = 'answered'
+    request.answered_version_no = versionNo
+    mockFeedbackInternals.changeNotes().set(`${proposalId}:${versionNo}`, note)
+    request.summary = { ...request.summary, addressed: request.tasks.filter((t) => t.applicant_status === 'addressed').length }
+    const back = mockFeedbackInternals.returnTo().get(proposalId) ?? 'in_evaluation'
+    mockStaffInternals.moveCase(proposalId, { from_status: 'action_required', to_status: back, public_stage: mockStaffInternals.publicStage(back), reason: null, at: version.submitted_at })
+
+    const receipt: SubmissionReceipt = {
+      proposal_id: proposalId,
+      reference: c.reference,
+      status: back,
+      version_no: versionNo,
+      submitted_at: version.submitted_at,
+      submitted_at_display: formatDateTimeCAT(now),
+      timezone: 'Africa/Gaborone',
+      challenge: { id: c.challenge.id, title: c.challenge.title },
+      form_version: form.form_version,
+      declaration_version: declarationVersion,
+      declaration_accepted_at: version.submitted_at,
+      files: [...c.files],
+      replayed: false,
+    }
+    state.revisionReceipts.set(`${proposalId}:${versionNo}`, receipt)
+    state.revisionKeys.set(clientRequestId, { caseId: proposalId, versionNo })
+    if (state.loseNextSubmitReply) {
+      state.loseNextSubmitReply = false
+      return fromRpcError(new Error('network: reply lost'), clientRequestId)
+    }
+    return ok(receipt)
   },
 }
