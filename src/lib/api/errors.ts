@@ -54,6 +54,11 @@ function isKnownCode(value: unknown): value is ApiErrorCode {
   return typeof value === 'string' && (KNOWN_CODES as readonly string[]).includes(value)
 }
 
+/** True when the error carries a known code: a definite refusal, nothing changed on the server. */
+export function isRefusal(error: unknown): boolean {
+  return isKnownCode((error && typeof error === 'object' ? (error as RpcErrorBody) : {}).message)
+}
+
 /** Map an RPC error to a refusal, or to an unknown outcome when a request key is in play. */
 export function fromRpcError(error: unknown, requestKey?: string): CommandOutcome<never> {
   const body = (error && typeof error === 'object' ? error : {}) as RpcErrorBody

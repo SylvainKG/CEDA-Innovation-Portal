@@ -7,8 +7,30 @@ import { StaffShell } from '@/layouts/StaffShell'
 import { NotFoundState } from '@/components/states/States'
 import { STAFF_ROLES, type Role } from '@/lib/api/types'
 import { NotBuiltYet } from '@/pages/NotBuiltYet'
-import { SignInPlaceholder } from '@/pages/SignInPlaceholder'
+import { SignInPage } from '@/pages/auth/SignInPage'
+import { RegisterPage } from '@/pages/auth/RegisterPage'
+import { ContactsPage, FaqPage, PrivacyPage, SupportPage } from '@/pages/help/HelpPages'
+import { DecisionQueuePage } from '@/pages/review/DecisionQueuePage'
+import { MyReviewsPage } from '@/pages/review/MyReviewsPage'
+import { PanelPage } from '@/pages/review/PanelPage'
+import { ScorePage } from '@/pages/review/ScorePage'
+import { AllCasesPage } from '@/pages/staff/AllCasesPage'
+import { AuditPage } from '@/pages/oversight/AuditPage'
+import { NotificationsPage } from '@/pages/oversight/NotificationsPage'
+import { ReportsPage } from '@/pages/oversight/ReportsPage'
+import { ApplicantChatPage } from '@/pages/support/ApplicantChatPage'
+import { SupportInboxPage } from '@/pages/support/SupportInboxPage'
+import { ScreeningQueuePage } from '@/pages/staff/ScreeningQueuePage'
+import { StaffCasePage } from '@/pages/staff/StaffCasePage'
+import { ForgotPasswordPage, ResetPasswordPage, VerifyEmailPage } from '@/pages/auth/RecoveryPages'
 import { ComponentGalleryRoute } from '@/pages/ComponentGalleryRoute'
+import { ProposalFormPage } from '@/pages/applicant/ProposalForm'
+import { ReceiptPage } from '@/pages/applicant/ReceiptPage'
+import { MyIdeasPage } from '@/pages/applicant/MyIdeasPage'
+import { ApplicantCasePage } from '@/pages/applicant/ApplicantCasePage'
+import { RevisePage } from '@/pages/applicant/RevisePage'
+import { ChallengesPage, PublicHome } from '@/pages/public/PublicHome'
+import { ChallengeBriefPage } from '@/pages/public/ChallengeBriefPage'
 import { apiMode } from '@/lib/api'
 import { RequireRole } from './guards'
 
@@ -20,19 +42,19 @@ export const routes: RouteObject[] = [
   {
     element: <PublicShell />,
     children: [
-      { path: '/', element: nb('T01', 'Innovation challenges', 'Public home') },
-      { path: '/challenges', element: nb('T01', 'Challenges') },
-      { path: '/challenges/:slug', element: nb('T03', 'Challenge brief') },
-      { path: '/auth/sign-in', element: <SignInPlaceholder /> },
-      { path: '/auth/register', element: nb('T02', 'Register') },
-      { path: '/auth/verify', element: nb('T02', 'Verify your email') },
-      { path: '/auth/forgot', element: nb('T02', 'Forgot password') },
-      { path: '/auth/reset', element: nb('T02', 'Reset password') },
+      { path: '/', element: <PublicHome /> },
+      { path: '/challenges', element: <ChallengesPage /> },
+      { path: '/challenges/:slug', element: <ChallengeBriefPage /> },
+      { path: '/auth/sign-in', element: <SignInPage /> },
+      { path: '/auth/register', element: <RegisterPage /> },
+      { path: '/auth/verify', element: <VerifyEmailPage /> },
+      { path: '/auth/forgot', element: <ForgotPasswordPage /> },
+      { path: '/auth/reset', element: <ResetPasswordPage /> },
       { path: '/auth/mfa', element: nb('T02', 'Two-step sign-in') },
-      { path: '/help/faqs', element: nb('T03', 'FAQs') },
-      { path: '/help/contacts', element: nb('T03', 'Regulatory contacts') },
-      { path: '/help/support', element: nb('T03', 'Fault support') },
-      { path: '/privacy', element: nb('T03', 'Privacy notice') },
+      { path: '/help/faqs', element: <FaqPage /> },
+      { path: '/help/contacts', element: <ContactsPage /> },
+      { path: '/help/support', element: <SupportPage /> },
+      { path: '/privacy', element: <PrivacyPage /> },
       // Development-only component gallery: only registered in mock mode, never with a real backend.
       ...(apiMode === 'mock'
         ? [
@@ -47,28 +69,30 @@ export const routes: RouteObject[] = [
   {
     element: <ApplicantShell />,
     children: [
-      { path: '/ideas', element: guard(['applicant'], nb('T06', 'My ideas', 'Applicant')) },
-      { path: '/ideas/new', element: guard(['applicant'], nb('T04', 'New idea')) },
-      { path: '/ideas/:id', element: guard(['applicant'], nb('T08', 'Idea', 'Applicant case view')) },
-      { path: '/ideas/:id/edit', element: guard(['applicant'], nb('T04', 'Edit draft')) },
-      { path: '/ideas/:id/revise', element: guard(['applicant'], nb('T04', 'Revise your idea', 'V2 revise mode')) },
-      { path: '/ideas/:id/receipt', element: guard(['applicant'], nb('T05', 'Receipt')) },
+      { path: '/ideas', element: guard(['applicant'], <MyIdeasPage />) },
+      { path: '/ideas/new', element: guard(['applicant'], <ProposalFormPage />) },
+      { path: '/ideas/:id', element: guard(['applicant'], <ApplicantCasePage />) },
+      { path: '/ideas/:id/edit', element: guard(['applicant'], <ProposalFormPage />) },
+      { path: '/ideas/:id/revise', element: guard(['applicant'], <RevisePage />) },
+      { path: '/ideas/:id/receipt', element: guard(['applicant'], <ReceiptPage />) },
+      { path: '/support/chat', element: guard(['applicant'], <ApplicantChatPage />) },
     ],
   },
   {
     element: <StaffShell />,
     children: [
       { path: '/staff', element: guard(STAFF_ROLES, nb('T06', 'Home', 'Staff')) },
-      { path: '/staff/queue/screening', element: guard(['screening_officer', 'admin'], nb('T07', 'Screening queue')) },
-      { path: '/staff/reviews', element: guard(['reviewer'], nb('T07', 'My reviews', 'Reviewer assignments')) },
-      { path: '/staff/queue/decision', element: guard(['adjudicator', 'admin'], nb('T07', 'Ready for decision')) },
-      { path: '/staff/cases', element: guard(['admin', 'committee_member'], nb('T07', 'All cases')) },
-      { path: '/staff/cases/:id', element: guard(STAFF_ROLES, nb('T08', 'Case workspace', 'Staff')) },
-      { path: '/staff/cases/:id/score', element: guard(['reviewer'], nb('T09', 'Scorecard')) },
-      { path: '/staff/cases/:id/panel', element: guard(['adjudicator', 'admin'], nb('T09', 'Panel comparison')) },
-      { path: '/reports', element: guard(['adjudicator', 'admin', 'support_lead', 'committee_member'], nb('T13', 'Reports')) },
-      { path: '/audit', element: guard(['admin', 'auditor'], nb('T14', 'Audit log')) },
-      { path: '/support/inbox', element: guard(['support_consultant', 'support_lead'], nb('T15', 'Support inbox')) },
+      { path: '/staff/queue/screening', element: guard(['screening_officer', 'admin'], <ScreeningQueuePage />) },
+      { path: '/staff/reviews', element: guard(['reviewer'], <MyReviewsPage />) },
+      { path: '/staff/queue/decision', element: guard(['adjudicator', 'admin'], <DecisionQueuePage />) },
+      { path: '/staff/cases', element: guard(['admin', 'committee_member'], <AllCasesPage />) },
+      { path: '/staff/cases/:id', element: guard(STAFF_ROLES, <StaffCasePage />) },
+      { path: '/staff/cases/:id/score', element: guard(['reviewer'], <ScorePage />) },
+      // Reviewers too: the server shows them the panel only after they have submitted their own scorecard.
+      { path: '/staff/cases/:id/panel', element: guard(['adjudicator', 'admin', 'reviewer'], <PanelPage />) },
+      { path: '/reports', element: guard(['adjudicator', 'admin', 'support_lead', 'committee_member'], <ReportsPage />) },
+      { path: '/audit', element: guard(['admin', 'auditor'], <AuditPage />) },
+      { path: '/support/inbox', element: guard(['support_consultant', 'support_lead'], <SupportInboxPage />) },
       { path: '/admin/challenges', element: guard(['admin'], nb('T12', 'Challenges', 'Admin')) },
       { path: '/admin/challenges/:id', element: guard(['admin'], nb('T12', 'Challenge editor')) },
       { path: '/admin/rubrics/:id', element: guard(['admin'], nb('T12', 'Rubric editor')) },
@@ -80,7 +104,7 @@ export const routes: RouteObject[] = [
   },
   {
     element: <RoleShell />,
-    children: [{ path: '/notifications', element: guard([...STAFF_ROLES, 'applicant'], nb('T11', 'Notifications')) }],
+    children: [{ path: '/notifications', element: guard([...STAFF_ROLES, 'applicant'], <NotificationsPage />) }],
   },
   { element: <PublicShell />, children: [{ path: '*', element: <NotFoundState /> }] },
 ]

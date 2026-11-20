@@ -22,7 +22,9 @@ export type TextFieldProps = InputProps | AreaProps
  * Input text is 16 px so mobile browsers do not zoom.
  */
 export function TextField(props: TextFieldProps) {
-  const id = useId()
+  const generatedId = useId()
+  // A caller may pass an id (e.g. so an error summary can focus the field); the label follows it.
+  const id = props.id ?? generatedId
   const helpId = `${id}-help`
   const errorId = `${id}-error`
   const countId = `${id}-count`

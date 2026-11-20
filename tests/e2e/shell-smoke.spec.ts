@@ -21,7 +21,7 @@ async function horizontalOverflow(page: Page) {
 }
 
 const pages: { name: string; role?: string; path: string; heading: string | RegExp }[] = [
-  { name: 'public home', path: '/', heading: 'Innovation challenges' },
+  { name: 'public home', path: '/', heading: 'Submit your innovation to CEDA' }, // T01 built from spec (was the placeholder title)
   { name: 'sign-in', path: '/auth/sign-in', heading: 'Sign in' },
   { name: 'applicant home', role: 'applicant', path: '/ideas', heading: 'My ideas' },
   { name: 'staff home', role: 'admin', path: '/staff', heading: 'Home' },
