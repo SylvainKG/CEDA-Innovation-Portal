@@ -15,6 +15,11 @@ import { MyReviewsPage } from '@/pages/review/MyReviewsPage'
 import { PanelPage } from '@/pages/review/PanelPage'
 import { ScorePage } from '@/pages/review/ScorePage'
 import { AllCasesPage } from '@/pages/staff/AllCasesPage'
+import { AuditPage } from '@/pages/oversight/AuditPage'
+import { NotificationsPage } from '@/pages/oversight/NotificationsPage'
+import { ReportsPage } from '@/pages/oversight/ReportsPage'
+import { ApplicantChatPage } from '@/pages/support/ApplicantChatPage'
+import { SupportInboxPage } from '@/pages/support/SupportInboxPage'
 import { ScreeningQueuePage } from '@/pages/staff/ScreeningQueuePage'
 import { StaffCasePage } from '@/pages/staff/StaffCasePage'
 import { ForgotPasswordPage, ResetPasswordPage, VerifyEmailPage } from '@/pages/auth/RecoveryPages'
@@ -70,6 +75,7 @@ export const routes: RouteObject[] = [
       { path: '/ideas/:id/edit', element: guard(['applicant'], <ProposalFormPage />) },
       { path: '/ideas/:id/revise', element: guard(['applicant'], <RevisePage />) },
       { path: '/ideas/:id/receipt', element: guard(['applicant'], <ReceiptPage />) },
+      { path: '/support/chat', element: guard(['applicant'], <ApplicantChatPage />) },
     ],
   },
   {
@@ -84,9 +90,9 @@ export const routes: RouteObject[] = [
       { path: '/staff/cases/:id/score', element: guard(['reviewer'], <ScorePage />) },
       // Reviewers too: the server shows them the panel only after they have submitted their own scorecard.
       { path: '/staff/cases/:id/panel', element: guard(['adjudicator', 'admin', 'reviewer'], <PanelPage />) },
-      { path: '/reports', element: guard(['adjudicator', 'admin', 'support_lead', 'committee_member'], nb('T13', 'Reports')) },
-      { path: '/audit', element: guard(['admin', 'auditor'], nb('T14', 'Audit log')) },
-      { path: '/support/inbox', element: guard(['support_consultant', 'support_lead'], nb('T15', 'Support inbox')) },
+      { path: '/reports', element: guard(['adjudicator', 'admin', 'support_lead', 'committee_member'], <ReportsPage />) },
+      { path: '/audit', element: guard(['admin', 'auditor'], <AuditPage />) },
+      { path: '/support/inbox', element: guard(['support_consultant', 'support_lead'], <SupportInboxPage />) },
       { path: '/admin/challenges', element: guard(['admin'], nb('T12', 'Challenges', 'Admin')) },
       { path: '/admin/challenges/:id', element: guard(['admin'], nb('T12', 'Challenge editor')) },
       { path: '/admin/rubrics/:id', element: guard(['admin'], nb('T12', 'Rubric editor')) },
@@ -98,7 +104,7 @@ export const routes: RouteObject[] = [
   },
   {
     element: <RoleShell />,
-    children: [{ path: '/notifications', element: guard([...STAFF_ROLES, 'applicant'], nb('T11', 'Notifications')) }],
+    children: [{ path: '/notifications', element: guard([...STAFF_ROLES, 'applicant'], <NotificationsPage />) }],
   },
   { element: <PublicShell />, children: [{ path: '*', element: <NotFoundState /> }] },
 ]
