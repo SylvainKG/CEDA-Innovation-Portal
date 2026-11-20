@@ -1,6 +1,6 @@
 import { useCallback, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { Banner, Button, Dialog, ReferencePill, StageTimeline, StatusBadge, TextField } from '@/components'
+import { Banner, Button, ButtonLink, Dialog, ReferencePill, StageTimeline, StatusBadge, TextField } from '@/components'
 import { ErrorState, LoadingState, NotFoundState } from '@/components/states/States'
 import { stagesFor } from '@/features/ideas/idea-view'
 import { eventLabel } from '@/features/staff/case-view'
@@ -43,6 +43,8 @@ export function StaffCasePage() {
   const canScreen = Boolean(user?.roles.includes('screening_officer'))
   // case.assign is the admin's permission (contract §2); the server checks it again.
   const canAssign = Boolean(user?.roles.includes('admin'))
+  // scorecard.read_panel (contract §2): adjudicators and admins.
+  const canPanel = Boolean(user?.roles.some((r) => r === 'adjudicator' || r === 'admin'))
   // case.note (contract §2): screening officers, reviewers, adjudicators and admins. Never applicants.
   const canNote = Boolean(user?.roles.some((r) => r === 'screening_officer' || r === 'reviewer' || r === 'adjudicator' || r === 'admin'))
   const stages = stagesFor({
@@ -78,7 +80,14 @@ export function StaffCasePage() {
         <StageTimeline stages={stages} compact />
         {closedReason ? <Banner kind="info" title="Closed">{closedReason}</Banner> : null}
         {notice ? <Banner kind="success">{notice}</Banner> : null}
-        <PrimaryAction c={c} canScreen={canScreen} canAssign={canAssign} onScreen={() => setScreeningOpen(true)} onAssign={() => setAssignOpen(true)} />
+        <PrimaryAction
+          c={c}
+          canScreen={canScreen}
+          canAssign={canAssign}
+          canPanel={canPanel}
+          onScreen={() => setScreeningOpen(true)}
+          onAssign={() => setAssignOpen(true)}
+        />
       </header>
 
       <Tabs
@@ -137,12 +146,14 @@ function PrimaryAction({
   c,
   canScreen,
   canAssign,
+  canPanel,
   onScreen,
   onAssign,
 }: {
   c: StaffCase
   canScreen: boolean
   canAssign: boolean
+  canPanel: boolean
   onScreen: () => void
   onAssign: () => void
 }) {
@@ -151,6 +162,14 @@ function PrimaryAction({
     return (
       <div>
         <Button onClick={onScreen}>Record screening</Button>
+      </div>
+    )
+  }
+  if (c.status === 'in_adjudication' && canPanel) {
+    return (
+      <div className="flex flex-wrap items-center gap-3">
+        <ButtonLink to={`/staff/cases/${c.id}/panel`}>Open score panel</ButtonLink>
+        <span className="text-ink-muted">All reviews are in. Recording a decision comes with the decision step.</span>
       </div>
     )
   }

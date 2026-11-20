@@ -1,7 +1,7 @@
 import { fromRpcError, rpcError } from '../errors'
 import type { ReviewPort } from '../review'
-import type { CaseAssignment, CommandOutcome, MyReviewStatus, MyScorecard, ReviewQueueRow, RubricCriterion, ScoreItem, ScorecardResult, StaffCase } from '../types'
-import { weightedScore as weighted } from '@/lib/scoring'
+import type { CaseAssignment, CommandOutcome, MyReviewStatus, MyScorecard, ReviewQueueRow, RubricCriterion, ScoreItem, ScorecardResult, ScorePanel, StaffCase } from '../types'
+import { round2, weightedScore as weighted } from '@/lib/scoring'
 import { mockSession } from './session'
 import { mockStaffInternals } from './staff'
 
@@ -265,6 +265,66 @@ export const mockReview: ReviewPort = {
     return {
       kind: 'ok',
       data: { scorecard_id: card.id, status: 'submitted', submitted_at: card.submitted_at, weighted_score: weighted(card.items, MOCK_RUBRIC), submitted_count: submitted, quorum: QUORUM, quorum_reached: reached, replayed: false },
+    }
+  },
+
+  async getPanel(proposalId) {
+    await wait()
+    const user = await mockSession.getSession()
+    const c = mockStaffInternals.cases().find((x) => x.id === proposalId)
+    if (!user || !c || !c.version) return null
+    const assignments = mockStaffInternals.assignments().get(c.id) ?? []
+    const reviewer = user.roles.includes('reviewer') ? mockStaffInternals.seedReviewerId(user.id) : undefined
+    // scorecard.read_panel (adjudicator, admin), or a cleared reviewer after submitting their own (contract §4.3).
+    const panelRole = user.roles.some((r) => r === 'adjudicator' || r === 'admin')
+    const ownSubmitted = assignments.some((a) => a.reviewer_id === reviewer && !a.revoked_at && state.scorecards.get(a.id)?.status === 'submitted')
+    if (!panelRole && !ownSubmitted) return null
+
+    const cards = assignments
+      .filter((a) => !a.revoked_at && state.scorecards.get(a.id)?.status === 'submitted')
+      .map((a) => {
+        const card = state.scorecards.get(a.id)!
+        return {
+          scorecard_id: card.id,
+          assignment_id: a.id,
+          reviewer_id: a.reviewer_id,
+          reviewer_name: a.reviewer_name,
+          submitted_at: card.submitted_at ?? '',
+          overall_comment: card.overall_comment,
+          weighted_score: weighted(card.items, MOCK_RUBRIC),
+          items: card.items.map((i) => ({ ...i })),
+        }
+      })
+    const summary = MOCK_RUBRIC.flatMap((crit) => {
+      const scores = cards.flatMap((k) => k.items.filter((i) => i.criterion_id === crit.id).map((i) => i.score))
+      if (scores.length === 0) return []
+      const min = Math.min(...scores)
+      const max = Math.max(...scores)
+      const mean = round2(scores.reduce((a, b) => a + b, 0) / scores.length)
+      return [{ criterion_id: crit.id, key: crit.key, mean, min, max, spread: max - min, flagged: max - min >= 2 }]
+    })
+    const ws = cards.map((k) => k.weighted_score).filter((x): x is number => x !== null)
+    const aggregate: ScorePanel['aggregate'] = ws.length
+      ? {
+          mean_weighted: round2(ws.reduce((a, b) => a + b, 0) / ws.length),
+          min_weighted: Math.min(...ws),
+          max_weighted: Math.max(...ws),
+          spread: round2(Math.max(...ws) - Math.min(...ws)),
+          flagged: Math.max(...ws) - Math.min(...ws) >= 2,
+        }
+      : null
+    return {
+      proposal_id: c.id,
+      reference: c.reference,
+      version_id: `${c.id}-v${c.version.version_no}`,
+      version_no: c.version.version_no,
+      criteria: MOCK_RUBRIC.map((x) => ({ criterion_id: x.id, key: x.key, label: x.label, weight: x.weight, anchors: x.anchors })),
+      scorecards: cards,
+      criteria_summary: summary,
+      aggregate,
+      submitted_count: cards.length,
+      quorum: QUORUM,
+      spread_flag_threshold: 2,
     }
   },
 }
