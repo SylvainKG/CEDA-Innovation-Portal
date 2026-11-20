@@ -16,7 +16,7 @@ Items marked **[confirm at release]** are filled in or checked on the release bu
 
 ### Demo accounts
 
-All addresses end in `@demo.ceda-portal.test`. Each account sees only what its role allows. Staff accounts open on **Home**, which is still a placeholder in this version: use the menu to go to the "Start here" screen.
+All addresses end in `@demo.ceda-portal.test`. Each account sees only what its role allows. Staff accounts open on **Home**: a welcome, counts for your role and a list of what to do next, each linked. The "Start here" column names the screen to open from there or from the menu.
 
 | Account | Role | Start here | Look at |
 |---|---|---|---|
@@ -26,12 +26,12 @@ All addresses end in `@demo.ceda-portal.test`. Each account sees only what its r
 | `reviewer.1`, `reviewer.2` | Reviewers | My reviews | Declare no conflict, then score against the rubric |
 | `reviewer.3` | Reviewer, not assigned to the demo case | My reviews | Sees nothing of cases they aren't assigned to |
 | `adjudicator` | Adjudicator | Ready for decision | Compare scores, record and publish a decision |
-| `admin` | Administrator and auditor | All cases | Assign reviewers, record an award, Reports (CSV export), Audit log. The admin settings screens are not built in this version |
+| `admin` | Administrator and auditor | All cases | Assign reviewers, record an award, Reports (CSV export), Audit log; the admin screens: Users and roles, Roles, Challenges and rubrics, Content, Chat settings |
 | `consultant` | Support consultant and lead | Support inbox | Take and answer chats; chat statistics under Reports. Can't see proposals or scores |
-| `committee.ext` | External committee member | All cases **[confirm at release]** | Reference and stage only (D-08); this view is still being built |
+| `committee.ext` | External committee member | Home, then All cases | Counts by stage, and each case's reference, challenge, stage and last update only. No proposal text, scores or notes (D-08) |
 | `applicant.c`, `.d`, `.e` | Applicants | My ideas | Owners of the background cases |
 
-**Staff two-step sign-in:** staff permissions normally require a second factor. The seeded demo staff accounts are exempt so that judges can sign in directly (D-07). The exemption is a setting, and it is switched off for any real use.
+**Staff two-step sign-in:** staff permissions normally require a second factor. The seeded demo staff accounts are exempt so that judges can sign in directly (D-07). The exemption is a setting, and it is switched off for any real use. The **Two-step sign-in** screen (`/auth/mfa`) shows a demo account that it is exempt; a staff account without the exemption sets up an authenticator app there and enters its 6-digit code.
 
 ## 2. The main journey in about 15 minutes
 
@@ -50,9 +50,11 @@ The demo data holds eight earlier cases (`CEDA-2026-0001` to `0008`), so **your 
 Every step above runs through the screens. Each step was also verified against the hosted backend through the API (claim C-15); the browser run against the hosted backend is **[confirm at release]**.
 
 Also worth trying:
-- **Revision and roadmap:** as `screening`, ask for a revision with tasks on a case. The applicant answers each task in version 2, each reviewer verifies each task, and version 1's scores stay with version 1 (C-13).
+- **Revision and roadmap:** as `screening`, ask for a revision with tasks on a case. The applicant answers each task in version 2, each reviewer verifies each task, and version 1's scores stay with version 1 (C-13). Staff can put the two versions side by side on the case page (**Compare versions**), with each change named.
 - **Reports and audit:** as `admin`, open **Reports** (participation, outcomes, time in stage; CSV export) and the **Audit log** (filter by case, action and date).
 - **Live chat:** as `applicant.a`, open **Chat** (09:00–16:00 CAT on working days; outside those hours it says it is closed); as `consultant`, answer it in the **Support inbox**.
+- **Administration:** as `admin`, open **Users and roles** (grant or remove a role with a reason; invite staff by email, which is Simulated), **Challenges** (edit a challenge, its application form and its rubric; weights must total 100%), **Content** (FAQs, contacts, notices; only published pages are public) and **Chat settings** (opening hours and closures). Every change is recorded in the audit log.
+- **Notifications:** the bell in the header shows unread notifications; **Notifications** lists them, and the email alerts setting there is stored, but emails are Simulated.
 - **Clarification:** case `CEDA-2026-0003` has an open question for `applicant.e`. A reply returns the case to its stage without creating a new version.
 
 ## 3. Access control you can check yourself
@@ -66,7 +68,7 @@ These are refused **by the server**, not only hidden in the screens.
 | As `reviewer.3`, look for the demo case | Not listed; no proposal and no files (N3) |
 | As `reviewer.1`, open an assigned case **before** declaring | No proposal and no files until the declaration (N10) |
 | As `consultant`, look for proposals or scores | None (N7) |
-| As `admin`, try to give yourself another role (the users screen is not built in this version; the refusal is proven at the database layer, N8) | Refused, and the attempt is audited |
+| As `admin`, open **Users and roles** and find your own row | The role controls are disabled: "You can't change your own roles." The server also refuses the change if it is sent directly, and records the attempt (N8, proven at the database layer) |
 | As `applicant.a`, look for a decision before it is published | Nothing (N4) |
 
 Evidence for each: the negative suite in `docs/testing/test-plan.md` §2 and the run records in `artifacts/phase-00/hosted-supabase.md`.
