@@ -3,10 +3,12 @@ import { Link, useParams } from 'react-router-dom'
 import { Banner, Button, ButtonLink, Dialog, ReferencePill, StageTimeline, StatusBadge, TextField } from '@/components'
 import { ErrorState, LoadingState, NotFoundState } from '@/components/states/States'
 import { stagesFor } from '@/features/ideas/idea-view'
-import { eventLabel } from '@/features/staff/case-view'
+import { activeDecision, eventLabel } from '@/features/staff/case-view'
 import { useRecordScreening, useStaffCase } from '@/features/staff/queries'
 import { AssignReviewersDialog, RemoveReviewerDialog } from './AssignmentDialogs'
 import { NotesTab } from './NotesTab'
+import { CloseCaseDialog, DecisionTab, PublishDecisionDialog, RecordAwardDialog, RecordDecisionDialog } from './DecisionActions'
+import { formatBWP } from '@/lib/money'
 import type { CaseAssignment, ScreeningResult, StaffCase } from '@/lib/api/types'
 import { formatBytes, formatDateCAT, formatDateTimeCAT } from '@/lib/format'
 import { useSession } from '@/lib/session'
@@ -24,6 +26,7 @@ export function StaffCasePage() {
   const [screeningOpen, setScreeningOpen] = useState(false)
   const [assignOpen, setAssignOpen] = useState(false)
   const [removing, setRemoving] = useState<{ assignment: CaseAssignment; name: string } | null>(null)
+  const [dialog, setDialog] = useState<'decide' | 'publish' | 'award' | 'close' | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
   const onScreened = useCallback((result: ScreeningResult) => {
@@ -47,6 +50,13 @@ export function StaffCasePage() {
   const canPanel = Boolean(user?.roles.some((r) => r === 'adjudicator' || r === 'admin'))
   // case.note (contract §2): screening officers, reviewers, adjudicators and admins. Never applicants.
   const canNote = Boolean(user?.roles.some((r) => r === 'screening_officer' || r === 'reviewer' || r === 'adjudicator' || r === 'admin'))
+  // decision.record / decision.publish: adjudicator. award.record: admin (D-05). case.close: screening officer, adjudicator.
+  const canDecide = Boolean(user?.roles.includes('adjudicator'))
+  const canAward = Boolean(user?.roles.includes('admin'))
+  const canClose = Boolean(user?.roles.some((r) => r === 'screening_officer' || r === 'adjudicator')) && !['approved', 'awarded', 'draft', 'closed'].includes(c.status)
+  // case.read_all holders see decisions, drafts included (contract §3).
+  const canSeeDecision = Boolean(user?.roles.some((r) => r === 'screening_officer' || r === 'adjudicator' || r === 'admin'))
+  const closeDialog = (open: boolean) => setDialog(open ? dialog : null)
   const stages = stagesFor({
     status: c.status,
     stages: c.events
@@ -63,6 +73,8 @@ export function StaffCasePage() {
           <Link to="/staff/queue/screening">← Screening queue</Link>
         ) : canAssign ? (
           <Link to="/staff/cases">← All cases</Link>
+        ) : user?.roles.includes('adjudicator') ? (
+          <Link to="/staff/queue/decision">← Ready for decision</Link>
         ) : (
           <Link to="/staff">← Staff home</Link>
         )}
@@ -71,7 +83,7 @@ export function StaffCasePage() {
       <header className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2">
           <ReferencePill reference={c.reference} copyable />
-          <StatusBadge status={c.status} audience="staff" />
+          <StatusBadge status={c.status} audience="staff" context={{ decisionDrafted: Boolean(activeDecision(c) && !activeDecision(c)?.published_at) }} />
         </div>
         <h1 className="text-h1 font-semibold">{c.title}</h1>
         <p className="text-ink-muted">
@@ -85,9 +97,19 @@ export function StaffCasePage() {
           canScreen={canScreen}
           canAssign={canAssign}
           canPanel={canPanel}
+          canDecide={canDecide}
+          canAward={canAward}
           onScreen={() => setScreeningOpen(true)}
           onAssign={() => setAssignOpen(true)}
+          onDialog={setDialog}
         />
+        {canClose ? (
+          <div>
+            <Button variant="secondary" size="sm" onClick={() => setDialog('close')}>
+              Close case
+            </Button>
+          </div>
+        ) : null}
       </header>
 
       <Tabs
@@ -100,6 +122,7 @@ export function StaffCasePage() {
             label: 'Reviewers',
             content: <ReviewersTab assignments={c.assignments} onRemove={canAssign ? (assignment, name) => setRemoving({ assignment, name }) : undefined} />,
           },
+          ...(canSeeDecision ? [{ id: 'decision', label: 'Decision', content: <DecisionTab c={c} /> }] : []),
           ...(canNote ? [{ id: 'notes', label: 'Internal notes', content: <NotesTab proposalId={c.id} /> }] : []),
         ]}
       />
@@ -110,6 +133,50 @@ export function StaffCasePage() {
           open={screeningOpen}
           onOpenChange={setScreeningOpen}
           onDone={onScreened}
+        />
+      ) : null}
+      {canDecide ? (
+        <>
+          <RecordDecisionDialog
+            c={c}
+            open={dialog === 'decide'}
+            onOpenChange={closeDialog}
+            onDone={(outcome) => {
+              setDialog(null)
+              setNotice(`Decision saved as ${outcome === 'approved' ? 'Approved' : 'Not approved'}. It is not published: the applicant can't see it yet.`)
+            }}
+          />
+          <PublishDecisionDialog
+            c={c}
+            open={dialog === 'publish'}
+            onOpenChange={closeDialog}
+            onDone={() => {
+              setDialog(null)
+              setNotice('Decision published. The applicant is notified.')
+            }}
+          />
+        </>
+      ) : null}
+      {canAward ? (
+        <RecordAwardDialog
+          c={c}
+          open={dialog === 'award'}
+          onOpenChange={closeDialog}
+          onDone={(minor) => {
+            setDialog(null)
+            setNotice(`Award of ${formatBWP(minor)} recorded. The applicant is notified.`)
+          }}
+        />
+      ) : null}
+      {canClose || dialog === 'close' ? (
+        <CloseCaseDialog
+          c={c}
+          open={dialog === 'close'}
+          onOpenChange={closeDialog}
+          onDone={() => {
+            setDialog(null)
+            setNotice('Case closed. The applicant is notified and sees the reason.')
+          }}
         />
       ) : null}
       {canAssign ? (
@@ -147,16 +214,54 @@ function PrimaryAction({
   canScreen,
   canAssign,
   canPanel,
+  canDecide,
+  canAward,
   onScreen,
   onAssign,
+  onDialog,
 }: {
   c: StaffCase
   canScreen: boolean
   canAssign: boolean
   canPanel: boolean
+  canDecide: boolean
+  canAward: boolean
   onScreen: () => void
   onAssign: () => void
+  onDialog: (d: 'decide' | 'publish' | 'award') => void
 }) {
+  const decision = activeDecision(c)
+  if (c.status === 'in_adjudication' && canDecide) {
+    const publishable = decision && !decision.published_at && decision.on_current_version
+    return (
+      <div className="flex flex-wrap items-center gap-3">
+        {publishable ? (
+          <>
+            <Button onClick={() => onDialog('publish')}>Publish decision</Button>
+            <Button variant="secondary" onClick={() => onDialog('decide')}>
+              Change decision
+            </Button>
+          </>
+        ) : (
+          <Button onClick={() => onDialog('decide')}>Record decision</Button>
+        )}
+        <ButtonLink to={`/staff/cases/${c.id}/panel`} variant="secondary">
+          Open score panel
+        </ButtonLink>
+      </div>
+    )
+  }
+  if (c.status === 'approved') {
+    if (canAward && !c.award)
+      return (
+        <div className="flex flex-wrap items-center gap-3">
+          <Button onClick={() => onDialog('award')}>Record award</Button>
+          <span className="text-ink-muted">The approval is published.</span>
+        </div>
+      )
+    return <p className="text-ink-muted">Approved and published. The administrator records the award.</p>
+  }
+  if (c.status === 'awarded' && c.award) return <p className="text-ink-muted">Awarded {formatBWP(c.award.amount_minor)}.</p>
   if (c.status === 'submitted') {
     if (!canScreen) return <p className="text-ink-muted">Waiting for a screening officer to record eligibility.</p>
     return (
@@ -169,7 +274,7 @@ function PrimaryAction({
     return (
       <div className="flex flex-wrap items-center gap-3">
         <ButtonLink to={`/staff/cases/${c.id}/panel`}>Open score panel</ButtonLink>
-        <span className="text-ink-muted">All reviews are in. Recording a decision comes with the decision step.</span>
+        <span className="text-ink-muted">All reviews are in. The adjudicator records and publishes the decision.</span>
       </div>
     )
   }

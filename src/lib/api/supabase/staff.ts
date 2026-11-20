@@ -4,6 +4,8 @@ import type { StaffPort } from '../staff'
 import type {
   AssignReviewersResult,
   AttachmentInfo,
+  CaseAward,
+  CaseDecision,
   CaseAssignment,
   CaseEvent,
   CaseStatus,
@@ -86,7 +88,7 @@ export function createSupabaseStaff(client: SupabaseClient): StaffPort {
         challenge_versions: (CaseRowRaw['challenge_versions'] & { form_schema: FormSchema; required_docs: RequiredDoc[] }) | null
       }
 
-      const [version, files, events, assignments] = await Promise.all([
+      const [version, files, events, assignments, decisions, award] = await Promise.all([
         raw.current_version_id
           ? client
               .from('proposal_versions')
@@ -111,8 +113,22 @@ export function createSupabaseStaff(client: SupabaseClient): StaffPort {
           .select('id, reviewer_id, assigned_at, due_at, declared_at, has_conflict, revoked_at')
           .eq('proposal_id', proposalId)
           .order('assigned_at', { ascending: true }),
+        // Staff with case.read_all see drafts and superseded ones too (RLS); others see none of the unpublished.
+        client
+          .from('decisions')
+          .select('id, outcome, reason, recorded_at, published_at, superseded_at, version_id')
+          .eq('proposal_id', proposalId)
+          .order('recorded_at', { ascending: false }),
+        client.from('awards').select('id, amount_minor, currency, description, recorded_at').eq('proposal_id', proposalId).maybeSingle(),
       ])
-      for (const [what, res] of [['the submitted version', version], ['files', files], ['the timeline', events], ['reviewers', assignments]] as const)
+      for (const [what, res] of [
+        ['the submitted version', version],
+        ['files', files],
+        ['the timeline', events],
+        ['reviewers', assignments],
+        ['the decision', decisions],
+        ['the award', award],
+      ] as const)
         if (res.error) readFailed(what, res.error)
 
       const assignmentRows = (assignments.data ?? []) as Omit<CaseAssignment, 'reviewer_name'>[]
@@ -149,6 +165,17 @@ export function createSupabaseStaff(client: SupabaseClient): StaffPort {
           }),
         ),
         assignments: assignmentRows.map((a) => ({ ...a, reviewer_name: names.get(a.reviewer_id) ?? null })),
+        decisions: ((decisions.data ?? []) as (Omit<CaseDecision, 'on_current_version'> & { version_id: string })[]).map(({ version_id, ...d }) => ({
+          ...d,
+          on_current_version: version_id === raw.current_version_id,
+        })),
+        award: award.data
+          ? (() => {
+              const a = award.data as Omit<CaseAward, 'amount_minor'> & { amount_minor: number | string }
+              // bigint can arrive as text; amounts are well below 2^53.
+              return { ...a, amount_minor: Number(a.amount_minor), currency: 'BWP' as const }
+            })()
+          : null,
       }
     },
 
@@ -206,6 +233,31 @@ export function createSupabaseStaff(client: SupabaseClient): StaffPort {
       const { data, error } = await client.rpc('add_internal_note', { p_proposal_id: proposalId, p_body: body })
       if (error) return fromRpcError(error)
       return { kind: 'ok', data: data as { id: string; created_at: string } }
+    },
+
+    async recordDecision({ proposalId, outcome, reason }) {
+      const { data, error } = await client.rpc('record_decision', { p_proposal_id: proposalId, p_outcome: outcome, p_reason: reason })
+      if (error) return fromRpcError(error)
+      return { kind: 'ok', data: data as { decision_id: string; outcome: 'approved' | 'not_approved'; published: false; case_status: CaseStatus } }
+    },
+
+    async publishDecision({ decisionId }) {
+      const { data, error } = await client.rpc('publish_decision', { p_decision_id: decisionId })
+      if (error) return fromRpcError(error)
+      return { kind: 'ok', data: data as { decision_id: string; outcome: 'approved' | 'not_approved'; published_at: string; case_status: CaseStatus } }
+    },
+
+    async recordAward({ proposalId, amountMinor, description }) {
+      const { data, error } = await client.rpc('record_award', { p_proposal_id: proposalId, p_amount_minor: amountMinor, p_description: description })
+      if (error) return fromRpcError(error)
+      const d = data as { award_id: string; amount_minor: number | string; currency: 'BWP'; case_status: CaseStatus; replayed: boolean }
+      return { kind: 'ok', data: { ...d, amount_minor: Number(d.amount_minor) } }
+    },
+
+    async closeCase({ proposalId, reason }) {
+      const { data, error } = await client.rpc('close_case', { p_proposal_id: proposalId, p_reason: reason })
+      if (error) return fromRpcError(error)
+      return { kind: 'ok', data: data as { proposal_id: string; case_status: CaseStatus } }
     },
 
     async recordScreening({ proposalId, result, reason }) {

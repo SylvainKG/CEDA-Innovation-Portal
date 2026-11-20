@@ -328,6 +328,9 @@ export interface StaffCase extends StaffCaseRow {
   files: AttachmentInfo[]
   events: CaseEvent[]
   assignments: CaseAssignment[]
+  /** Newest first: the active decision (draft or published) and any superseded drafts. Staff with case.read_all. */
+  decisions: CaseDecision[]
+  award: CaseAward | null
 }
 
 export type ScreeningResult = 'eligible' | 'ineligible'
@@ -463,4 +466,31 @@ export interface ScorePanel {
   submitted_count: number
   quorum: number
   spread_flag_threshold: number
+}
+
+// ---------------------------------------------------------------------------------------------------
+// Slice 5: decision, award, closure (contract §4.5; DEC-01, DEC-02, D-05, N4, N5).
+// ---------------------------------------------------------------------------------------------------
+
+export type DecisionOutcome = 'approved' | 'not_approved'
+
+/** A recorded decision. Unpublished ones are staff-only; superseded drafts are kept for the record. */
+export interface CaseDecision {
+  id: string
+  outcome: DecisionOutcome
+  reason: string
+  recorded_at: string
+  published_at: string | null
+  superseded_at: string | null
+  /** Recorded on the case's current version (a draft on an earlier version cannot be published). */
+  on_current_version: boolean
+}
+
+/** The award (append-only), in thebe: BWP 1.00 = 100. */
+export interface CaseAward {
+  id: string
+  amount_minor: number
+  currency: 'BWP'
+  description: string
+  recorded_at: string
 }
