@@ -10,6 +10,8 @@ import { NotBuiltYet } from '@/pages/NotBuiltYet'
 import { SignInPage } from '@/pages/auth/SignInPage'
 import { RegisterPage } from '@/pages/auth/RegisterPage'
 import { ContactsPage, FaqPage, PrivacyPage, SupportPage } from '@/pages/help/HelpPages'
+import { ScreeningQueuePage } from '@/pages/staff/ScreeningQueuePage'
+import { StaffCasePage } from '@/pages/staff/StaffCasePage'
 import { ForgotPasswordPage, ResetPasswordPage, VerifyEmailPage } from '@/pages/auth/RecoveryPages'
 import { ComponentGalleryRoute } from '@/pages/ComponentGalleryRoute'
 import { ProposalFormPage } from '@/pages/applicant/ProposalForm'
@@ -67,11 +69,11 @@ export const routes: RouteObject[] = [
     element: <StaffShell />,
     children: [
       { path: '/staff', element: guard(STAFF_ROLES, nb('T06', 'Home', 'Staff')) },
-      { path: '/staff/queue/screening', element: guard(['screening_officer', 'admin'], nb('T07', 'Screening queue')) },
+      { path: '/staff/queue/screening', element: guard(['screening_officer', 'admin'], <ScreeningQueuePage />) },
       { path: '/staff/reviews', element: guard(['reviewer'], nb('T07', 'My reviews', 'Reviewer assignments')) },
       { path: '/staff/queue/decision', element: guard(['adjudicator', 'admin'], nb('T07', 'Ready for decision')) },
       { path: '/staff/cases', element: guard(['admin', 'committee_member'], nb('T07', 'All cases')) },
-      { path: '/staff/cases/:id', element: guard(STAFF_ROLES, nb('T08', 'Case workspace', 'Staff')) },
+      { path: '/staff/cases/:id', element: guard(STAFF_ROLES, <StaffCasePage />) },
       { path: '/staff/cases/:id/score', element: guard(['reviewer'], nb('T09', 'Scorecard')) },
       { path: '/staff/cases/:id/panel', element: guard(['adjudicator', 'admin'], nb('T09', 'Panel comparison')) },
       { path: '/reports', element: guard(['adjudicator', 'admin', 'support_lead', 'committee_member'], nb('T13', 'Reports')) },

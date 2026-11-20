@@ -279,3 +279,60 @@ export interface ContentPage {
   /** Sample wording awaiting CEDA's confirmation; the page labels it. */
   is_sample: boolean
 }
+
+// ---------------------------------------------------------------------------------------------------
+// Slice 2 staff reads and screening (contract §3, §4.2; REV-01). Staff with `case.read_all` read submitted
+// cases directly (never drafts); `record_screening` needs `case.screen`.
+// ---------------------------------------------------------------------------------------------------
+
+/** One row of a staff work queue (T07). */
+export interface StaffCaseRow {
+  id: string
+  reference: string
+  title: string
+  status: CaseStatus
+  challenge: { id: string; title: string }
+  submitted_at: string
+  updated_at: string
+}
+
+/** A row of `case_events` (append-only). Staff see the reason; applicants only the public stage. */
+export interface CaseEvent {
+  from_status: CaseStatus | null
+  to_status: CaseStatus
+  public_stage: PublicStage | null
+  reason: string | null
+  at: string
+}
+
+/** A reviewer assignment as staff see it (no scores here). */
+export interface CaseAssignment {
+  id: string
+  reviewer_id: string
+  /** From `profiles` where the reader may see it (admins); otherwise null and the UI says "Reviewer". */
+  reviewer_name: string | null
+  assigned_at: string
+  due_at: string | null
+  declared_at: string | null
+  has_conflict: boolean | null
+  revoked_at: string | null
+}
+
+/** The staff case workspace (T08): the case, its current submitted version and what happened to it. */
+export interface StaffCase extends StaffCaseRow {
+  version: { version_no: number; submitted_at: string; data: DraftData; declaration_version: string } | null
+  form_schema: FormSchema
+  required_docs: RequiredDoc[]
+  files: AttachmentInfo[]
+  events: CaseEvent[]
+  assignments: CaseAssignment[]
+}
+
+export type ScreeningResult = 'eligible' | 'ineligible'
+
+/** `record_screening` (contract §4.2). */
+export interface ScreeningOutcome {
+  proposal_id: string
+  status: CaseStatus
+  result: ScreeningResult
+}

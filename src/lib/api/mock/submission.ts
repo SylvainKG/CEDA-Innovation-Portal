@@ -3,7 +3,7 @@ import { checkForm, isChallengeOpen, schemaKeys } from '@/lib/form-check'
 import { fromRpcError, rpcError } from '../errors'
 import { newRequestId } from '../request-key'
 import type { SubmissionPort } from '../submission'
-import type { AttachmentInfo, ChallengeForm, CommandOutcome, DraftData, MyIdea, SubmissionReceipt } from '../types'
+import type { AttachmentInfo, CaseEvent, CaseStatus, ChallengeForm, CommandOutcome, DraftData, MyIdea, SubmissionReceipt } from '../types'
 import { mockSession } from './session'
 import { FIRST_DEMO_REFERENCE_NUMBER, MOCK_BRIEFS, MOCK_CHALLENGES, MOCK_CHALLENGE_FORMS, MOCK_DECLARATION, MOCK_SEEDED_IDEA } from './fixtures'
 
@@ -29,13 +29,16 @@ interface MockProposal {
   id: string
   ownerId: string
   challengeId: string
-  status: 'draft' | 'submitted'
+  status: CaseStatus
   data: DraftData
   savedAt: string
   files: AttachmentInfo[]
   receipt?: SubmissionReceipt
   clientRequestId?: string
   submittedTitle?: string
+  /** Case events after submission (screening and later), oldest first. */
+  events: CaseEvent[]
+  updatedAt?: string
 }
 
 const state = {
@@ -56,6 +59,57 @@ export const mockSubmissionControls = {
   loseNextSubmitReply() {
     state.loseNextSubmitReply = true
   },
+}
+
+/**
+ * Mock-only bridge for the mock staff adapter, so the demo journey works without a backend: an idea submitted
+ * here appears in the staff queue, and a screening result shows on the applicant's "My ideas".
+ */
+export interface MockSubmittedCase {
+  id: string
+  reference: string
+  title: string
+  status: CaseStatus
+  challengeId: string
+  submittedAt: string
+  updatedAt: string
+  data: DraftData
+  files: AttachmentInfo[]
+  formVersion: number
+  declarationVersion: string
+  events: CaseEvent[]
+}
+
+export function mockSubmittedCases(): MockSubmittedCase[] {
+  return [...state.proposals.values()]
+    .filter((p) => p.status !== 'draft' && p.receipt)
+    .map((p) => {
+      const r = p.receipt as SubmissionReceipt
+      return {
+        id: p.id,
+        reference: r.reference,
+        title: p.submittedTitle?.trim() || 'Untitled idea',
+        status: p.status,
+        challengeId: p.challengeId,
+        submittedAt: r.submitted_at,
+        updatedAt: p.updatedAt ?? r.submitted_at,
+        data: { ...p.data },
+        files: [...r.files],
+        formVersion: r.form_version,
+        declarationVersion: r.declaration_version,
+        events: [{ from_status: 'draft', to_status: 'submitted', public_stage: 'submission', reason: null, at: r.submitted_at }, ...p.events],
+      }
+    })
+}
+
+/** Move a submitted mock case on (used by the mock staff adapter only). Returns false if it isn't here. */
+export function mockMoveCase(id: string, event: CaseEvent): boolean {
+  const p = state.proposals.get(id)
+  if (!p || p.status === 'draft') return false
+  p.status = event.to_status
+  p.events.push(event)
+  p.updatedAt = event.at
+  return true
 }
 
 const wait = () => new Promise<void>((resolve) => setTimeout(resolve, state.latencyMs))
@@ -116,9 +170,18 @@ export const mockSubmission: SubmissionPort = {
           title: (p.receipt ? p.submittedTitle : p.data.title)?.trim() || 'Untitled idea',
           status: p.status,
           challenge: { id: form.challenge_id, title: form.title, closes_at: form.closes_at },
-          updated_at: p.receipt?.submitted_at ?? p.savedAt,
+          updated_at: p.updatedAt ?? p.receipt?.submitted_at ?? p.savedAt,
           open_feedback: null,
-          stages: p.receipt ? [{ stage: 'submission' as const, at: p.receipt.submitted_at }] : [],
+          // First event per public stage, like list_my_ideas (migration 014).
+          stages: p.receipt
+            ? [
+                { stage: 'submission' as const, at: p.receipt.submitted_at },
+                ...p.events
+                  .filter((e) => e.public_stage && e.public_stage !== 'submission')
+                  .map((e) => ({ stage: e.public_stage as NonNullable<CaseEvent['public_stage']>, at: e.at }))
+                  .filter((s, i, all) => all.findIndex((x) => x.stage === s.stage) === i),
+              ]
+            : [],
         }
       })
     return userId === SEEDED_OWNER ? [...mine, MOCK_SEEDED_IDEA] : mine
@@ -176,7 +239,7 @@ export const mockSubmission: SubmissionPort = {
 
     const savedAt = new Date().toISOString()
     if (!p) {
-      p = { id: newRequestId(), ownerId: userId, challengeId: form.challenge_id, status: 'draft', data: kept, savedAt, files: [] }
+      p = { id: newRequestId(), ownerId: userId, challengeId: form.challenge_id, status: 'draft', data: kept, savedAt, files: [], events: [] }
       state.proposals.set(p.id, p)
     } else {
       p.data = kept

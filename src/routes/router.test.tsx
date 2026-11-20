@@ -62,8 +62,9 @@ describe('routing and role shells (UI convenience; the server enforces access)',
   })
 
   it('labels unbuilt screens honestly instead of faking them', async () => {
-    renderAt('/staff/queue/screening', 'screening_officer')
-    expect(await screen.findByText('Not built yet: T07')).toBeInTheDocument()
+    renderAt('/staff/reviews', 'reviewer')
+    expect(await screen.findByRole('heading', { level: 1, name: 'My reviews' })).toBeInTheDocument()
+    expect(document.body.textContent).toContain('Not built yet: T07')
   })
 
   it('gives applicants the applicant shell on shared pages', async () => {
