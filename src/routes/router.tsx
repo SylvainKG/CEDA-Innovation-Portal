@@ -25,6 +25,8 @@ import { ScreeningQueuePage } from '@/pages/staff/ScreeningQueuePage'
 import { StaffHomePage } from '@/pages/staff/StaffHomePage'
 import { AdminUsersPage } from '@/pages/admin/AdminUsersPage'
 import { ChatSettingsPage } from '@/pages/admin/ChatSettingsPage'
+import { ChallengeEditorPage } from '@/pages/admin/ChallengeEditorPage'
+import { ChallengesPage as AdminChallengesPage } from '@/pages/admin/ChallengesPage'
 import { StaffCasePage } from '@/pages/staff/StaffCasePage'
 import { ForgotPasswordPage, ResetPasswordPage, VerifyEmailPage } from '@/pages/auth/RecoveryPages'
 import { ComponentGalleryRoute } from '@/pages/ComponentGalleryRoute'
@@ -97,8 +99,8 @@ export const routes: RouteObject[] = [
       { path: '/reports', element: guard(['adjudicator', 'admin', 'support_lead', 'committee_member'], <ReportsPage />) },
       { path: '/audit', element: guard(['admin', 'auditor'], <AuditPage />) },
       { path: '/support/inbox', element: guard(['support_consultant', 'support_lead'], <SupportInboxPage />) },
-      { path: '/admin/challenges', element: guard(['admin'], nb('T12', 'Challenges', 'Admin')) },
-      { path: '/admin/challenges/:id', element: guard(['admin'], nb('T12', 'Challenge editor')) },
+      { path: '/admin/challenges', element: guard(['admin'], <AdminChallengesPage />) },
+      { path: '/admin/challenges/:id', element: guard(['admin'], <ChallengeEditorPage />) },
       { path: '/admin/rubrics/:id', element: guard(['admin'], nb('T12', 'Rubric editor')) },
       { path: '/admin/users', element: guard(['admin'], <AdminUsersPage />) },
       { path: '/admin/content', element: guard(['admin'], nb('T12', 'Content')) },

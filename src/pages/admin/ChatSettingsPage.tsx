@@ -21,6 +21,8 @@ export function ChatSettingsPage() {
   const closures = useQuery({ queryKey: ['chat', 'closures'], queryFn: () => api.chat.closures() })
   const [msg, setMsg] = useState<Msg>(null)
   const [busy, setBusy] = useState(false)
+  /** The switch choice being saved: shown at once, then replaced by what the server holds. */
+  const [pending, setPending] = useState<'open' | 'closed' | null | undefined>(undefined)
 
   if (status.isPending || closures.isPending) return <LoadingState what="chat settings" />
   if (status.isError || closures.isError) return <ErrorState level="h1" message="We couldn't load chat settings." onRetry={() => void Promise.all([status.refetch(), closures.refetch()])} />
@@ -61,7 +63,18 @@ export function ChatSettingsPage() {
           ] as const
         ).map(([m, label]) => (
           <label key={label} className="flex min-h-touch items-center gap-2">
-            <input type="radio" name="chat-mode" className="h-5 w-5" checked={mode === m} disabled={busy} onChange={() => void act(() => api.chat.setOverride(m), `Chat set to: ${label.toLowerCase()}.`)} />
+            <input
+              type="radio"
+              name="chat-mode"
+              className="h-5 w-5"
+              checked={(pending === undefined ? mode : pending) === m}
+              disabled={busy}
+              onChange={async () => {
+                setPending(m)
+                await act(() => api.chat.setOverride(m), `Chat set to: ${label.toLowerCase()}.`)
+                setPending(undefined)
+              }}
+            />
             {label}
           </label>
         ))}
