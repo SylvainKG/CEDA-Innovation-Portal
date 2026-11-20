@@ -29,7 +29,7 @@ export default {
       error: { DEFAULT: v('feedback-error'), fill: v('feedback-error-fill'), subtle: v('feedback-error-subtle') },
       success: { DEFAULT: v('feedback-success'), subtle: v('feedback-success-subtle') },
       warning: { DEFAULT: v('feedback-warning'), subtle: v('feedback-warning-subtle') },
-      demo: { DEFAULT: v('demo'), subtle: v('demo-subtle') },
+      demo: { DEFAULT: v('demo'), on: v('demo-on'), subtle: v('demo-subtle'), border: v('demo-border') },
       status: {
         'draft-bg': v('status-draft-bg'), 'draft-fg': v('status-draft-fg'),
         'submitted-bg': v('status-submitted-bg'), 'submitted-fg': v('status-submitted-fg'),
