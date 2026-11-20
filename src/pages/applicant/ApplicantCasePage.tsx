@@ -1,12 +1,15 @@
+import { useId, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
-import { Banner, ReferencePill, StageTimeline, StatusBadge } from '@/components'
+import { Banner, Button, ButtonLink, ReferencePill, StageTimeline, StatusBadge, TextField } from '@/components'
 import { NextStepsPanel } from '@/components/NextStepsPanel'
 import { Tabs } from '@/components/Tabs'
 import { ErrorState, LoadingState, NotFoundState } from '@/components/states/States'
-import { stagesFor } from '@/features/ideas/idea-view'
+import { EXPIRED_NOTICE, stagesFor } from '@/features/ideas/idea-view'
+import { useRespondClarification, useRoadmap } from '@/features/feedback/queries'
+import { FeedbackList } from '@/pages/feedback/FeedbackList'
 import { api } from '@/lib/api'
-import type { MyCase, PublicStage } from '@/lib/api/types'
+import type { FeedbackRequest, MyCase, PublicStage } from '@/lib/api/types'
 import { formatBytes, formatDateTimeCAT } from '@/lib/format'
 import { formatBWP } from '@/lib/money'
 
@@ -27,11 +30,14 @@ const STAGE_TEXT: Record<PublicStage, string> = {
 export function ApplicantCasePage() {
   const { id } = useParams()
   const kase = useQuery({ queryKey: ['my-case', id], queryFn: () => api.submission.getMyCase(id as string), enabled: Boolean(id) })
+  const roadmap = useRoadmap(id)
 
-  if (kase.isPending) return <LoadingState what="your idea" />
+  if (kase.isPending || roadmap.isPending) return <LoadingState what="your idea" />
   if (kase.isError) return <ErrorState level="h1" message="We couldn't load your idea." onRetry={() => void kase.refetch()} />
   if (!kase.data) return <NotFoundState home="/ideas" />
   const c = kase.data
+  const requests = roadmap.data ?? []
+  const waiting = requests.find((r) => r.status !== 'answered' && c.status === 'action_required')
 
   return (
     <div className="flex flex-col gap-6">
@@ -49,6 +55,11 @@ export function ApplicantCasePage() {
         </p>
         <StageTimeline stages={stagesFor({ status: c.status, stages: c.stages })} compact />
         <p className="text-sm text-ink-muted">Only you and the CEDA staff assigned to your case can see this idea.</p>
+        {waiting ? (
+          <Banner kind="action" title={waiting.kind === 'clarification' ? 'CEDA has a question for you' : 'CEDA asks you to revise your idea'}>
+            {waiting.status === 'expired' ? EXPIRED_NOTICE : `Please respond by ${formatDateTimeCAT(waiting.due_at)}. See the Feedback tab.`}
+          </Banner>
+        ) : null}
         {c.status === 'closed' && c.closed_reason ? (
           <Banner kind="info" title="This idea was not taken forward">
             {c.closed_reason}
@@ -58,14 +69,83 @@ export function ApplicantCasePage() {
 
       <Tabs
         label="Your idea"
-        initial={c.decision ? 'decision' : 'proposal'}
+        initial={waiting ? 'feedback' : c.decision ? 'decision' : 'proposal'}
         tabs={[
           { id: 'proposal', label: 'Proposal', content: <ProposalTab c={c} /> },
           { id: 'timeline', label: 'Timeline', content: <TimelineTab c={c} /> },
+          {
+            id: 'feedback',
+            label: 'Feedback',
+            content: <FeedbackList requests={requests} renderAction={(r) => <ApplicantAction c={c} r={r} />} />,
+          },
           { id: 'decision', label: 'Decision', content: <DecisionTab c={c} /> },
         ]}
       />
     </div>
+  )
+}
+
+/** What the applicant can do on an open request (spec T08 Feedback tab, T04 V2 mode). */
+function ApplicantAction({ c, r }: { c: MyCase; r: FeedbackRequest }) {
+  if (r.status === 'expired' && c.status === 'action_required') return <p className="text-sm font-semibold">{EXPIRED_NOTICE}</p>
+  if (r.status !== 'open') return null
+  if (r.kind === 'revision')
+    return (
+      <div>
+        <ButtonLink to={`/ideas/${c.id}/revise`}>Revise your idea</ButtonLink>
+      </div>
+    )
+  return <ClarificationReply proposalId={c.id} requestId={r.feedback_request_id} />
+}
+
+/** Clarification reply (spec T08): required, 10–1,000 characters; no new version (D-21). */
+function ClarificationReply({ proposalId, requestId }: { proposalId: string; requestId: string }) {
+  const command = useRespondClarification(proposalId)
+  const [text, setText] = useState('')
+  const [error, setError] = useState<string | undefined>()
+  const id = useId()
+  async function send() {
+    const n = [...text.trim()].length
+    if (n < 10) {
+      setError(n === 0 ? 'Write your reply' : 'Write at least 10 characters')
+      return
+    }
+    setError(undefined)
+    await command.run({ feedbackRequestId: requestId, text: text.trim() })
+  }
+  const s = command.state
+  return (
+    <form
+      className="flex flex-col gap-3"
+      onSubmit={(e) => {
+        e.preventDefault()
+        void send()
+      }}
+    >
+      {s.kind === 'refused' ? <Banner kind="error">{s.message ?? 'Your reply was not sent.'}</Banner> : null}
+      {s.kind === 'unconfirmed' ? (
+        <Banner kind="warning" title="Not confirmed yet">
+          We couldn't confirm your reply was sent. Check your connection and try again: a question can only be answered once.
+        </Banner>
+      ) : null}
+      <TextField
+        multiline
+        rows={4}
+        id={`${id}-reply`}
+        label="Your reply"
+        required
+        maxLength={1000}
+        help="10 to 1,000 characters. Your reply doesn't change your submitted idea."
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        error={error ?? (s.kind === 'refused' ? s.fields?.response : undefined)}
+      />
+      <div>
+        <Button type="submit" loading={s.kind === 'saving'} loadingLabel="Sending…">
+          Send reply
+        </Button>
+      </div>
+    </form>
   )
 }
 

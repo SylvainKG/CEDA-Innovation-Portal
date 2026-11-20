@@ -8,6 +8,9 @@ import { activeDecision, eventLabel } from '@/features/staff/case-view'
 import { useRecordScreening, useStaffCase } from '@/features/staff/queries'
 import { AssignReviewersDialog, RemoveReviewerDialog } from './AssignmentDialogs'
 import { NotesTab } from './NotesTab'
+import { RequestFeedbackDialog } from './RequestFeedbackDialog'
+import { FeedbackList } from '@/pages/feedback/FeedbackList'
+import { useRoadmap } from '@/features/feedback/queries'
 import { CloseCaseDialog, DecisionTab, PublishDecisionDialog, RecordAwardDialog, RecordDecisionDialog } from './DecisionActions'
 import { formatBWP } from '@/lib/money'
 import type { CaseAssignment, ScreeningResult, StaffCase } from '@/lib/api/types'
@@ -27,7 +30,7 @@ export function StaffCasePage() {
   const [screeningOpen, setScreeningOpen] = useState(false)
   const [assignOpen, setAssignOpen] = useState(false)
   const [removing, setRemoving] = useState<{ assignment: CaseAssignment; name: string } | null>(null)
-  const [dialog, setDialog] = useState<'decide' | 'publish' | 'award' | 'close' | null>(null)
+  const [dialog, setDialog] = useState<'decide' | 'publish' | 'award' | 'close' | 'clarify' | 'revise' | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
 
   const onScreened = useCallback((result: ScreeningResult) => {
@@ -57,6 +60,8 @@ export function StaffCasePage() {
   const canClose = Boolean(user?.roles.some((r) => r === 'screening_officer' || r === 'adjudicator')) && !['approved', 'awarded', 'draft', 'closed'].includes(c.status)
   // case.read_all holders see decisions, drafts included (contract §3).
   const canSeeDecision = Boolean(user?.roles.some((r) => r === 'screening_officer' || r === 'adjudicator' || r === 'admin'))
+  // case.request_feedback + case.read_all (contract §2, §4.4): screening officers and adjudicators, while the case is being reviewed.
+  const canAsk = Boolean(user?.roles.some((r) => r === 'screening_officer' || r === 'adjudicator')) && ['submitted', 'in_evaluation', 'in_adjudication'].includes(c.status)
   const closeDialog = (open: boolean) => setDialog(open ? dialog : null)
   const stages = stagesFor({
     status: c.status,
@@ -104,11 +109,23 @@ export function StaffCasePage() {
           onAssign={() => setAssignOpen(true)}
           onDialog={setDialog}
         />
-        {canClose ? (
-          <div>
-            <Button variant="secondary" size="sm" onClick={() => setDialog('close')}>
-              Close case
-            </Button>
+        {canAsk || canClose ? (
+          <div className="flex flex-wrap gap-2">
+            {canAsk ? (
+              <>
+                <Button variant="secondary" size="sm" onClick={() => setDialog('clarify')}>
+                  Request clarification
+                </Button>
+                <Button variant="secondary" size="sm" onClick={() => setDialog('revise')}>
+                  Request revision
+                </Button>
+              </>
+            ) : null}
+            {canClose ? (
+              <Button variant="secondary" size="sm" onClick={() => setDialog('close')}>
+                Close case
+              </Button>
+            ) : null}
           </div>
         ) : null}
       </header>
@@ -123,6 +140,7 @@ export function StaffCasePage() {
             label: 'Reviewers',
             content: <ReviewersTab assignments={c.assignments} onRemove={canAssign ? (assignment, name) => setRemoving({ assignment, name }) : undefined} />,
           },
+          ...(canSeeDecision ? [{ id: 'feedback', label: 'Feedback', content: <StaffFeedbackTab proposalId={c.id} /> }] : []),
           ...(canSeeDecision ? [{ id: 'decision', label: 'Decision', content: <DecisionTab c={c} /> }] : []),
           ...(canNote ? [{ id: 'notes', label: 'Internal notes', content: <NotesTab proposalId={c.id} /> }] : []),
         ]}
@@ -180,6 +198,30 @@ export function StaffCasePage() {
           }}
         />
       ) : null}
+      {canAsk || dialog === 'clarify' || dialog === 'revise' ? (
+        <>
+          <RequestFeedbackDialog
+            c={c}
+            kind="clarification"
+            open={dialog === 'clarify'}
+            onOpenChange={closeDialog}
+            onDone={() => {
+              setDialog(null)
+              setNotice('Question sent. The case now waits on the applicant, who must reply in writing.')
+            }}
+          />
+          <RequestFeedbackDialog
+            c={c}
+            kind="revision"
+            open={dialog === 'revise'}
+            onOpenChange={closeDialog}
+            onDone={() => {
+              setDialog(null)
+              setNotice('Revision request sent. The case now waits on the applicant to submit a new version.')
+            }}
+          />
+        </>
+      ) : null}
       {canAssign ? (
         <>
           <AssignReviewersDialog
@@ -207,6 +249,13 @@ export function StaffCasePage() {
       ) : null}
     </div>
   )
+}
+
+function StaffFeedbackTab({ proposalId }: { proposalId: string }) {
+  const roadmap = useRoadmap(proposalId)
+  if (roadmap.isPending) return <p className="text-ink-muted">Loading feedback…</p>
+  if (roadmap.isError || !roadmap.data) return <p className="text-error">We couldn't load the feedback.</p>
+  return <FeedbackList requests={roadmap.data} />
 }
 
 /** The single primary action for this role and state (spec T08 header). */

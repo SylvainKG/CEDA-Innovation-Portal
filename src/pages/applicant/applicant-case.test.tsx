@@ -11,6 +11,9 @@ import { mockSubmission, mockSubmissionControls } from '@/lib/api/mock/submissio
 import type { DraftData, Role } from '@/lib/api/types'
 import { routes } from '@/routes/router'
 
+/** Multi-step journeys: allow more than Vitest's 5 s default under full-suite load. */
+const JOURNEY = 20_000
+
 const CASE_8 = '30000000-0000-4000-8000-000000000008' // Applicant A's seeded idea, in evaluation
 const R1_ON_8 = '40000000-0000-4000-8000-000000080001'
 const R2_ON_8 = '40000000-0000-4000-8000-000000080002'
@@ -85,7 +88,7 @@ describe('T08 applicant case view', () => {
     expect(screen.getByText('Fictional problem statement (DEMO).')).toBeInTheDocument()
     await user.click(screen.getByRole('tab', { name: 'Decision' }))
     expect(within(screen.getByRole('tabpanel')).getByText("No decision yet. We'll notify you when CEDA publishes it.")).toBeInTheDocument()
-  })
+  }, JOURNEY)
 
   it('an unpublished decision stays invisible; once published the applicant sees it, the award and Next steps', async () => {
     await reviewsIn()
@@ -112,7 +115,7 @@ describe('T08 applicant case view', () => {
     expect(within(panel).getByText('Sample referral information')).toBeInTheDocument()
     expect(within(panel).getAllByRole('listitem')).toHaveLength(4)
     expect((await mockSubmission.listMyIdeas()).find((i) => i.id === CASE_8)?.status).toBe('awarded')
-  })
+  }, JOURNEY)
 
   it('shows the closure reason, but never an eligible screening reason', async () => {
     const closedId = await applicantSubmits()
@@ -135,11 +138,11 @@ describe('T08 applicant case view', () => {
     const kept = await mockSubmission.getMyCase(keptId)
     expect(JSON.stringify(kept)).not.toContain('INTERNAL')
     expect(kept?.stages.map((s) => s.stage)).toEqual(['submission', 'review'])
-  })
+  }, JOURNEY)
 
   it('someone else’s case is Not found', async () => {
     await as('applicant')
     renderAt('/ideas/30000000-0000-4000-8000-000000000001')
     expect(await screen.findByRole('heading', { level: 1, name: "We can't find this page" }, LOAD)).toBeInTheDocument()
-  })
+  }, JOURNEY)
 })

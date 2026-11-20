@@ -513,3 +513,33 @@ export interface MyCase {
   decision: { outcome: DecisionOutcome; reason: string; published_at: string } | null
   award: { amount_minor: number; description: string; recorded_at: string } | null
 }
+
+// ---------------------------------------------------------------------------------------------------
+// Slice 4: feedback requests and the roadmap (contract §4.4; REV-04, APP-04, INN-02, D-21).
+// ---------------------------------------------------------------------------------------------------
+
+export interface RoadmapTask {
+  task_id: string
+  position: number
+  text: string
+  applicant_status: 'addressed' | 'not_addressed' | null
+  applicant_explanation: string | null
+  /** Reviewers' checks. `null` for the applicant until the decision is published (BCR-001 B6). */
+  verifications: { reviewer_name: string | null; result: 'verified' | 'not_verified'; note: string | null; verified_at: string }[] | null
+}
+
+/** A row of `get_roadmap()`: one clarification or revision request on the case. */
+export interface FeedbackRequest {
+  feedback_request_id: string
+  kind: FeedbackKind
+  status: 'open' | 'answered' | 'expired'
+  message: string
+  due_at: string
+  created_at: string
+  version_no: number
+  answered_version_no: number | null
+  response_text: string | null
+  responded_at: string | null
+  tasks: RoadmapTask[]
+  summary: { tasks: number; addressed: number; verified: number | null; not_verified: number | null }
+}
