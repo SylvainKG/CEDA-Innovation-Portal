@@ -110,10 +110,10 @@ export function SignInPage() {
           </Button>
         </form>
         <p>
-          <Link to="/auth/forgot">Forgot your password?</Link>
+          <Link to="/auth/forgot" className="inline-flex min-h-touch items-center">Forgot your password?</Link>
         </p>
         <p>
-          New here? <Link to="/auth/register">Register</Link>
+          New here? <Link to="/auth/register" className="inline-flex min-h-touch items-center">Register</Link>
         </p>
       </AuthCard>
       {apiMode === 'mock' ? <MockSessionPicker next={next} /> : null}
