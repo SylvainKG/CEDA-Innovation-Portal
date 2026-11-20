@@ -642,3 +642,51 @@ export interface AuditQuery {
   limit?: number
   beforeId?: number
 }
+
+// ---------------------------------------------------------------------------------------------------
+// Slice 6b: live chat (contract §4.6; CHT-01 chat, CHT-02 hours, CHT-03 statistics). D-13: registered users only.
+// ---------------------------------------------------------------------------------------------------
+
+export interface ChatStatus {
+  open: boolean
+  mode: 'calendar' | 'demo_override_open' | 'demo_override_closed'
+  server_time_display: string
+  hours: { weekday: number; is_working: boolean; opens_at: string; closes_at: string }[]
+}
+
+export type ChatSessionStatus = 'queued' | 'active' | 'closed' | 'missed'
+
+export interface ChatSession {
+  id: string
+  status: ChatSessionStatus
+  queued_at: string
+  accepted_at: string | null
+  closed_at: string | null
+}
+
+export interface ChatMessage {
+  id: string
+  sender_id: string
+  body: string
+  created_at: string
+}
+
+/** `my_chat_inbox`: the queue (everyone's waiting chats) and the consultant's own active chats. */
+export interface ChatInboxRow {
+  session_id: string
+  status: 'queued' | 'active'
+  applicant_name: string | null
+  queued_at: string
+  waiting_seconds: number | null
+  last_message_at: string | null
+  last_message: string | null
+}
+
+export interface ChatStatistics {
+  volume: number
+  handled: number
+  missed: number
+  waiting_now: number
+  average_wait_seconds: number | null
+  by_day: { day: string; volume: number; missed: number }[]
+}

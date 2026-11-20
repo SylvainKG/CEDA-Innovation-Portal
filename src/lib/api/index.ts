@@ -1,3 +1,4 @@
+import type { ChatPort } from './chat'
 import type { ContentPort } from './content'
 import type { FeedbackPort } from './feedback'
 import type { OversightPort } from './oversight'
@@ -5,6 +6,7 @@ import type { ReviewPort } from './review'
 import type { SessionPort } from './session'
 import type { StaffPort } from './staff'
 import type { SubmissionPort } from './submission'
+import { mockChat } from './mock/chat'
 import { mockContent } from './mock/content'
 import { mockFeedback } from './mock/feedback'
 import { mockOversight } from './mock/oversight'
@@ -13,6 +15,7 @@ import { mockSession } from './mock/session'
 import { mockStaff } from './mock/staff'
 import { mockSubmission } from './mock/submission'
 import { createBrowserClient, readSupabaseConfig } from './supabase/client'
+import { createSupabaseChat } from './supabase/chat'
 import { createSupabaseContent } from './supabase/content'
 import { createSupabaseFeedback } from './supabase/feedback'
 import { createSupabaseOversight } from './supabase/oversight'
@@ -47,8 +50,8 @@ export function resolveApiMode(raw: string | undefined, isDev: boolean): ApiMode
 
 export const apiMode: ApiMode = resolveApiMode(import.meta.env.VITE_API_MODE as string | undefined, import.meta.env.DEV)
 
-function buildApi(mode: ApiMode): { session: SessionPort; submission: SubmissionPort; content: ContentPort; staff: StaffPort; review: ReviewPort; feedback: FeedbackPort; oversight: OversightPort } {
-  if (mode === 'mock') return { session: mockSession, submission: mockSubmission, content: mockContent, staff: mockStaff, review: mockReview, feedback: mockFeedback, oversight: mockOversight }
+function buildApi(mode: ApiMode): { session: SessionPort; submission: SubmissionPort; content: ContentPort; staff: StaffPort; review: ReviewPort; feedback: FeedbackPort; oversight: OversightPort; chat: ChatPort } {
+  if (mode === 'mock') return { session: mockSession, submission: mockSubmission, content: mockContent, staff: mockStaff, review: mockReview, feedback: mockFeedback, oversight: mockOversight, chat: mockChat }
   // Fails fast at start-up when the URL or key is missing, rather than on the first request.
   const client = createBrowserClient(readSupabaseConfig(import.meta.env))
   return {
@@ -59,6 +62,7 @@ function buildApi(mode: ApiMode): { session: SessionPort; submission: Submission
     review: createSupabaseReview(client),
     feedback: createSupabaseFeedback(client),
     oversight: createSupabaseOversight(client),
+    chat: createSupabaseChat(client),
   }
 }
 
