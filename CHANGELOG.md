@@ -4,6 +4,10 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `feature` **Help and privacy pages** (T03 content variants, HLP-01), built from the written spec (BCR-003; design review pending). Routes `/help/faqs`, `/help/contacts`, `/help/support`, `/privacy`, which the footer, the Help navigation and the Chat link already pointed to. FAQs: native disclosures with a search over questions and answers, a live match count and a no-match state. Contacts: regulatory offices and referral programmes ("listed for information only") as cards. Support and privacy: the server's text; the privacy notice with its version. Sample wording is labelled. **Not done:** the severity and response-time table spec T03 lists for fault support; the seed has no times, so none are invented. New `ContentPort` (`api.content.list(kind)`): published `content_pages` of one kind, explicit columns, in position order; the mock mirrors the seed.
+
+  Evidence: 6 page tests and 1 adapter test (171 in total); headless Chromium at 360 and 1280 px: one h1 and no horizontal scroll on all four pages.
+
 - `feature` **CEDA logo everywhere it belongs**: header of every shell (logo alone below 768 px), the T02 auth card above the title (spec T02), and the printed receipt (the header is not printed; the DEMO line stays). Browser tab and home-screen icons (`favicon.ico`, `favicon-32.png`, `apple-touch-icon.png`) made from the logo's arc, since the wordmark is unreadable at 16 px. Source: the supplied 447 px PNG, upscaled 4x; replace with CEDA's vector logo when available.
 
 - `repair` T02 links are 44 px targets (spec §3.3; Sylvain's #47 review): "Forgot your password?", "Register", "Go to sign in" and "Back to sign in" stood alone at 20 px tall.
