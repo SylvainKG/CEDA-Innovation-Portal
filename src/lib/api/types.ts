@@ -354,3 +354,15 @@ export interface AssignReviewersResult {
   already_assigned: { assignment_id: string; reviewer_id: string }[]
   active_reviewers: number
 }
+
+/** An internal staff note on a case (contract §3, §4.2). Never readable by the applicant. */
+export interface InternalNote {
+  id: string
+  author_id: string
+  /** From `profiles` where the reader may see it (admins); otherwise null. */
+  author_name: string | null
+  /** Written by the person reading. */
+  mine: boolean
+  body: string
+  created_at: string
+}
