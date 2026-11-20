@@ -61,10 +61,16 @@ describe('routing and role shells (UI convenience; the server enforces access)',
     expect(within(nav).queryByRole('link', { name: 'Audit log' })).not.toBeInTheDocument()
   })
 
-  it('labels unbuilt screens honestly instead of faking them', async () => {
-    renderAt('/admin/content', 'admin')
-    expect(await screen.findByRole('heading', { level: 1, name: 'Content' })).toBeInTheDocument()
-    expect(document.body.textContent).toContain('Not built yet: T12')
+  it.each([
+    ['/admin/content', 'Content'],
+    ['/admin/settings/roles', 'Roles'],
+    ['/admin/settings/chat', 'Chat settings'],
+    ['/admin/challenges', 'Challenges'],
+    ['/admin/users', 'Users and roles'],
+  ])('builds every admin screen: %s', async (path, heading) => {
+    renderAt(path, 'admin')
+    expect(await screen.findByRole('heading', { level: 1, name: heading })).toBeInTheDocument()
+    expect(document.body.textContent).not.toContain('Not built yet')
   })
 
   it('gives applicants the applicant shell on shared pages', async () => {
