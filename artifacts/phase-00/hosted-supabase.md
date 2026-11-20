@@ -113,6 +113,8 @@ Option A agreed with Stacey: run on two new cases only, then remove exactly what
 
 **Demo-data note:** the seeded clarification on `CEDA-2026-0003` (due 20 Nov 16:00 CAT) was expired by the 14:00 UTC maintenance run, as designed, before the snapshot.
 
+**0003 reopened (20 Nov, 14:06 UTC):** through the normal staff path, `extend_feedback_deadline` called as `screening@demo…` via the REST API, not a direct data edit. Before: `expired`, due 20 Nov 14:00 UTC. After: `open`, due **4 Dec 2026, 14:00 UTC (16:00 CAT)**; the case stays `action_required`, and Applicant E's `list_my_ideas` shows the open clarification. As designed, the call wrote a case event, an audit entry and a notification (snapshots after this show 259 rows instead of 257). The seed uses the same date since #67.
+
 ## 3d. C-02 link expiry and C-16 live-update isolation (20 Nov 2026, 14:46–14:48 UTC)
 
 Run as the demo accounts with supabase-js 2.119.0 (the browser client), under a snapshot and the verified reset (`tools/pglite-db-tests/staging-reset.mjs`, #68).
