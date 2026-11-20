@@ -21,12 +21,20 @@
 // and delete it afterwards.
 //
 // Rules: staging only. Never against the judging project after code freeze (22 Nov 2026, 18:00 CAT).
+// Enforced, not only written down:
+//   * STAGING_PROJECT_REF is required and must match the project in SUPABASE_DB_URL (and SUPABASE_URL
+//     if set); a ref listed in JUDGING_PROJECT_REFS (comma-separated) is refused outright;
+//   * `reset` refuses after code freeze unless `--after-freeze-override` is given, which is logged.
 import pg from 'pg'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const [mode, file, flag] = process.argv.slice(2)
+const args = process.argv.slice(2)
+const [mode, file] = args
+const flag = args.includes('--confirm') ? '--confirm' : undefined
+const overrideFreeze = args.includes('--after-freeze-override')
+const CODE_FREEZE = new Date('2026-11-22T16:00:00Z') // 22 Nov 2026, 18:00 CAT
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 if (!['snapshot', 'reset'].includes(mode) || !file) {
   console.error('usage: staging-reset.mjs snapshot <file> | reset <file> --confirm')
@@ -41,6 +49,31 @@ if (!url || !caPath || !fs.existsSync(caPath)) {
   console.error('Set SUPABASE_DB_URL and SUPABASE_CA_CERT (see run-hosted.mjs).')
   process.exit(2)
 }
+// Which project this is: pooler URLs carry it in the user name (postgres.<ref>), direct URLs in the host (db.<ref>.supabase.co).
+const ref = process.env.STAGING_PROJECT_REF?.trim()
+const urlRef = (url.match(/\/\/postgres\.([a-z0-9]+)[:@]/) ?? url.match(/@db\.([a-z0-9]+)\.supabase\.co/))?.[1]
+const apiRef = process.env.SUPABASE_URL?.match(/^https:\/\/([a-z0-9]+)\.supabase\.co/)?.[1]
+const judging = (process.env.JUDGING_PROJECT_REFS ?? '').split(',').map((r) => r.trim()).filter(Boolean)
+if (!ref) {
+  console.error('Set STAGING_PROJECT_REF to the staging project ref; this tool refuses to guess which project it is on.')
+  process.exit(2)
+}
+if (urlRef !== ref || (process.env.SUPABASE_URL && apiRef !== ref)) {
+  console.error(`Project mismatch: STAGING_PROJECT_REF=${ref}, SUPABASE_DB_URL is ${urlRef ?? 'unknown'}, SUPABASE_URL is ${apiRef ?? 'not set'}.`)
+  process.exit(2)
+}
+if (judging.includes(ref)) {
+  console.error(`${ref} is listed in JUDGING_PROJECT_REFS: this tool never runs against the judging project.`)
+  process.exit(2)
+}
+if (mode === 'reset' && new Date() >= CODE_FREEZE) {
+  if (!overrideFreeze) {
+    console.error('Code freeze (22 Nov 2026, 18:00 CAT) has passed: reset refuses. Add --after-freeze-override only if this is certainly not the judging project.')
+    process.exit(2)
+  }
+  console.log(`AFTER-FREEZE OVERRIDE used at ${new Date().toISOString()} on project ${ref}: record this in the run record.`)
+}
+console.log(`project ${ref} (staging)`)
 const db = new pg.Client({ connectionString: url, ssl: { ca: fs.readFileSync(caPath, 'utf8'), rejectUnauthorized: true } })
 await db.connect()
 const byCode = (a, b) => (a < b ? -1 : a > b ? 1 : 0)
@@ -93,6 +126,8 @@ if (mode === 'reset') {
   console.log(`rows not in the snapshot: ${JSON.stringify(extra)}; sequence ${seqNow} (snapshot ${snap.seq.last_value})`)
 
   if (Object.keys(extra).length || seqNow !== snap.seq.last_value) {
+    // Protective triggers are found by name. If a future one is named differently, it stays on, the
+    // delete it blocks fails, and the whole reset rolls back: safe, but it would need adding here.
     const guarded = (await db.query(`select tgrelid::regclass::text t, tgname from pg_trigger where not tgisinternal
         and tgrelid in (select oid from pg_class where relnamespace = 'public'::regnamespace)
         and tgname ~ '(append_only|no_truncate|_guard|require_approval)$'`)).rows

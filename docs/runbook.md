@@ -77,7 +77,7 @@ Run from a clean checkout of the release commit. Each step's output goes into th
 | Send queued email now | Invoke `email-relay` with header `x-relay-secret`, or `select private.trigger_email_relay();` |
 | Show chat as open/closed for a demo | Admin: `set_chat_override('open' / 'closed' / null)` |
 | Demo staff without MFA | `app_settings.demo_mfa_exempt = true` (default for the demo). **Set to false for any real use** |
-| Run tests that write real data on staging, then put the demo data back | `tools/pglite-db-tests/staging-reset.mjs snapshot <file>` before, `reset <file> --confirm` after: removes only what the run created, commits only if every table equals the snapshot, sequence back so the demo starts at `CEDA-2026-0009`. Staging only; not after code freeze |
+| Run tests that write real data on staging, then put the demo data back | `tools/pglite-db-tests/staging-reset.mjs snapshot <file>` before, `reset <file> --confirm` after: removes only what the run created, commits only if every table equals the snapshot, sequence back so the demo starts at `CEDA-2026-0009`. Needs `STAGING_PROJECT_REF` matching the database URL; refuses refs in `JUDGING_PROJECT_REFS`, and refuses after code freeze without `--after-freeze-override`. **On the judging project, nobody pauses triggers or deletes rows, by any means.** The append-only and guard triggers stay on; if judges' test data must go, it stays and is explained, not removed |
 | Stuck outbox row | Rows with `attempts = email_max_attempts` become `rejected` with the reason; fix the cause, then reset the row to `pending` with `attempts = 0` (service role) |
 
 ## 6. Backup and restore (OPS-01)
