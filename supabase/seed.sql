@@ -308,11 +308,13 @@ begin
   b := seed_helpers.demo_assign(c2, r2, true);
 
   -- 0003 Action required: clarification from screening
+  -- Due after results day (3 Dec 2026), so the open question survives judging; the scheduled
+  -- maintenance job expires overdue requests (migration 009).
   c3 := seed_helpers.demo_case('00000000-0000-4000-8000-0000000000a5', 'Soil-moisture SMS alerts', 'action_required', '2026-11-05T14:00:00+02:00', 'submitted');
   select current_version_id into v from public.proposals where id = c3;
   insert into public.feedback_requests (proposal_id, version_id, requested_by, from_stage, kind, message, due_at, created_at)
   values (c3, v, '00000000-0000-4000-8000-0000000000b1', 'submitted', 'clarification',
-          'Please confirm the district of your pilot farms (DEMO).', '2026-11-20T16:00:00+02:00', '2026-11-07T14:00:00+02:00');
+          'Please confirm the district of your pilot farms (DEMO).', '2026-12-04T16:00:00+02:00', '2026-11-07T14:00:00+02:00');
 
   -- 0004 In adjudication, both scorecards in
   c4 := seed_helpers.demo_case('00000000-0000-4000-8000-0000000000a3', 'Fog-net water harvesting', 'in_adjudication', '2026-10-20T09:00:00+02:00');
