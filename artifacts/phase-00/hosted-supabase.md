@@ -82,7 +82,36 @@ Signed in as the demo accounts (Auth password grant, publishable key), calling t
 | N-g Applicant C reads decisions on 0004 (in adjudication) | **Passed:** 0 rows |
 | N-h Applicant D reads history of 0002 (screened eligible) | **Passed:** no reasons |
 | N-i Second clarification on 0003 while one is open | **Passed:** 409 `INVALID_STATE` |
-| Main journey (rows 1–9), N-k (network loss in the browser) | **Not run** (changes demo data / needs the browser build) |
+| N-k in the browser (network loss) | **Not run** (needs the browser build) |
+
+## 3c. Issue #61 main journey through the REST API, then an exact reset (20 Nov 2026, 14:01–14:04 UTC)
+
+Option A agreed with Stacey: run on two new cases only, then remove exactly what they created.
+
+| Row | Result |
+|---|---|
+| 1 Register a new address | **Not run**: no SMTP; Supabase's built-in sender mails only project team addresses |
+| 2 Applicant A: draft, PDF upload (Storage 200), `register_attachment`, submit | **Passed:** receipt `CEDA-2026-0009`, "20 Nov 2026, 16:01 CAT", 1 file. Same key again: `replayed: true`, same reference |
+| 2 `list_my_ideas` | **Passed:** 0009 (submitted) and 0008 (in evaluation) |
+| 3 Record screening: Eligible | **Passed:** `in_evaluation`; screener's text in a staff internal note |
+| 3 / N-h live | Check mis-specified: it expected no reason, while 013 writes the fixed label `Screened: eligible` to the applicant-visible history by design. The free text staying hidden is asserted by pgTAP `003` on hosted (61/61, 20 Nov) |
+| 4 Assign Reviewers 1 and 2 | **Passed:** both undeclared |
+| 5 / N-j live: draft with a score and no reason | **Passed:** saved as `draft`, weighted score null |
+| 5 Declare, score and submit ×2 | **Passed:** `in_adjudication` after the second (quorum 2) |
+| 6 / N-g live: recorded, unpublished decision | **Passed:** applicant sees 0 decisions, `in_adjudication` |
+| 6 Publish | **Passed:** applicant sees `approved` with the reason |
+| 7 Award 25000050 | **Passed:** `awarded`, amount visible to the applicant |
+| 8 Clarification on Applicant B's 0010, then reply | **Passed:** back to `submitted`, still 1 version |
+| 9 Revision with 2 tasks | **Passed:** `action_required`; roadmap shows 2 tasks |
+
+**Reset:**
+- A consistent snapshot (33 tables, 257 rows, sequence 8, 1 storage object) was taken just before the journey.
+- In one transaction: 19 protective triggers paused; exactly the 67 rows not in the snapshot deleted (14 tables); sequence set to 8; triggers re-enabled; **all 33 tables compared row by row with the snapshot: identical**; then commit.
+- The two test PDFs were removed through the Storage API with the service-role key. The `sb_secret_` key is refused by Storage ("Invalid Compact JWS"), so the first attempt failed and was redone.
+- Re-check at 14:04 UTC: no table differs from the snapshot, sequence 8, no trigger disabled, Storage back to the demo template only.
+- The snapshot files were deleted (they held account e-mails).
+
+**Demo-data note:** the seeded clarification on `CEDA-2026-0003` (due 20 Nov 16:00 CAT) was expired by the 14:00 UTC maintenance run, as designed, before the snapshot.
 
 ## 4. Not done or not run
 
