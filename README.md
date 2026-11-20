@@ -5,6 +5,22 @@ A demonstration prototype for the CEDA Innovation Portal Hackathon (Botswana). I
 
 Planning documents: `docs/blueprint/` (MVP blueprint, UI/UX specification) and `docs/design/figma-handoff/`.
 
+## Start here
+
+| If you want to | Read or run |
+|---|---|
+| Try the portal as a judge | [`docs/submission/judge-guide.md`](docs/submission/judge-guide.md) (demo accounts, the main journey, access checks) |
+| Understand the design and evidence | [`docs/submission/technical-proposal.md`](docs/submission/technical-proposal.md) and [`docs/testing/claim-register.md`](docs/testing/claim-register.md) |
+| Install and run it locally | `scripts/install.sh --serve` (below) |
+| Deploy or operate it | [`docs/runbook.md`](docs/runbook.md) and [`docs/process/hosting-aws-amplify.md`](docs/process/hosting-aws-amplify.md) |
+| Read the data-handling note | [`docs/submission/data-handling-note.md`](docs/submission/data-handling-note.md) |
+
+**Quick install** (Node.js 20.19 or later, npm 10 or later; no backend, Docker or credentials needed):
+
+```bash
+scripts/install.sh --serve   # npm ci, lint, type-check, tests, demo build, then http://localhost:4173
+```
+
 ## Frontend
 
 React 18 + TypeScript + Vite, Tailwind CSS, Radix UI, React Router 7, TanStack Query, Vitest. Architecture decisions are in [`docs/adr/ADR-001-frontend-architecture.md`](docs/adr/ADR-001-frontend-architecture.md).
@@ -28,6 +44,7 @@ npm run dev             # http://localhost:5173
 | `npm run typecheck` | TypeScript check only |
 | `npm run lint` | ESLint (including the rule that only `src/lib/api/` may import Supabase) |
 | `npm run test` | Unit and component tests (Vitest) |
+| `npm run test:e2e -- --trace off` | Browser tests (Playwright, 360 and 1280 px) against a local mock build, or a deployed site with `E2E_BASE_URL` |
 
 ### Environment variables (names only)
 | Name | Purpose |
@@ -59,7 +76,7 @@ Postgres schema, row-level security, workflow functions and the demo seed live i
 supabase/
   migrations/       one numbered sequence (owner: backend lead)
   seed.sql          fictional demo data: one account per role, 8 cases (demo case becomes CEDA-2026-0009)
-  tests/database/   pgTAP tests (access isolation, negatives N1–N10, idempotency, append-only history)
+  tests/database/   pgTAP tests (access isolation, negatives N1–N11, idempotency, append-only history)
   functions/        Edge Functions (attachment-url: 60-second download links; email-relay: outbox sender; invite-staff)
 scripts/            set-demo-passwords.mjs (sets DEMO_PASSWORD on seeded accounts through the Auth admin API)
 tools/pglite-db-tests/  runs migrations + seed + pgTAP without Docker (stand-in, not the Supabase stack)
@@ -75,7 +92,7 @@ node --env-file=.env scripts/set-demo-passwords.mjs   # needs SUPABASE_URL, SUPA
 
 ### Without Docker
 ```bash
-cd tools/pglite-db-tests && npm install && npm test
+cd tools/pglite-db-tests && npm ci && npm test   # npm ci keeps the committed lockfile unchanged
 ```
 
 ### Backend environment variables (names only)
