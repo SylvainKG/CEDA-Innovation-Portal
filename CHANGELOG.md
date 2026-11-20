@@ -4,6 +4,10 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `feature` **Notification bell with the unread count** (NTF-01, spec T11). The bell in every signed-in header shows how many notifications are unread (a badge, "9+" above nine), and its accessible name says it: "Notifications, 3 unread". The count refreshes every 30 seconds and when you return to the tab, and drops as soon as notifications are marked read. Not built: the popover with the 10 latest (the bell opens the full page), Realtime instead of polling, and the email alert opt-in (NTF-02): the database has `profiles.alerts_opt_in` but no way for a person to change their own setting yet, which needs a backend function and the backend owner's approval.
+
+  Evidence: 2 new tests (applicant count drops after Mark all as read; staff see only their own count); 290 in total; lint, type-check and build pass.
+
 - `feature` **INN-01: compare versions** (Provisional UI built from the written spec). On a revised case, staff get a **Compare versions** tab, and reviewers get **Compare with version N** in the version 2 scorecard, next to the roadmap tasks. Each form field of the two versions is shown side by side and marked Changed, Added, Removed or Unchanged ("Show only changes" is on by default), with the applicant's "What changed" note. Files are matched by document slot and marked added, removed or replaced, using the file fingerprint. Cases with more than two versions let you pick which two. New `VersionsPort` (`proposal_versions` and `attachments` through RLS `can_read_case`, explicit columns): staff who read all cases, declared reviewers and the owner; others see nothing. The mock keeps earlier versions when a revision is submitted.
 
   Evidence: 5 new tests (field and file diff rules; staff tab; reviewer scorecard; undeclared reviewer and committee refused, owner allowed); 288 in total; lint, type-check and build pass.
