@@ -35,7 +35,10 @@ The code token names are fixed so implementation can start now. Only values chan
 | `feedback-error-subtle` *(new)* | `--red-pale` | `#FFF0EF` | Figma (Make CSS) | Error badge background |
 | `feedback-success` | — (literal) | `#3F7650` text / `#5A9B6E` dot | Figma (Make CSS) | Completed / available |
 | `feedback-warning` | — | `#B54708` | placeholder | Make has no warning colour distinct from orange |
-| `demo` | — | `#6941C6` | placeholder | DEMO badge, Sample labels (none in Make) |
+| `demo` | — | `#333333` | **decided** (Sandra, #47 review, 20 Nov) | DEMO pill background; Sample label text. Replaces placeholder purple `#6941C6`, which is not a brand colour |
+| `demo-on` | — | `#FFFFFF` | **decided** | Text on the DEMO pill (12.63:1) |
+| `demo-subtle` | — | `#F3F2EF` | **decided** | Sample label and demo banner background |
+| `demo-border` | — | `#8A8580` | **decided** | Sample label 1 px dashed border |
 
 **Status colours.** Make draws badges as a pill with a coloured dot + text (no icon). It defines four tones only, and several blueprint statuses have no tone yet.
 
