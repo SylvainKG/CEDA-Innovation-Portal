@@ -10,7 +10,7 @@ import { api } from '@/lib/api'
 import type { Role } from '@/lib/api/types'
 import { formatDateCAT } from '@/lib/format'
 import { useSession } from '@/lib/session'
-import { NotBuiltYet } from '@/pages/NotBuiltYet'
+import { CommitteeHome } from './CommitteeView'
 
 const READ_ALL: readonly Role[] = ['screening_officer', 'adjudicator', 'admin']
 const HANDLE: readonly Role[] = ['support_consultant', 'support_lead']
@@ -44,7 +44,7 @@ export function StaffHomePage() {
   const inbox = useQuery({ queryKey: chatKeys.inbox, queryFn: () => api.chat.inbox(), enabled: support, refetchInterval: 15_000 })
   const notes = useQuery({ queryKey: oversightKeys.notifications, queryFn: () => api.oversight.listNotifications() })
 
-  if (user && roles.length === 1 && roles[0] === 'committee_member') return <NotBuiltYet template="T06" title="Home" variant="Committee" />
+  if (user && roles.length === 1 && roles[0] === 'committee_member') return <CommitteeHome />
   const pending = [readAll && cases, reviewer && queue, support && inbox, notes].filter((q) => q && q.isPending)
   if (!user || pending.length) return <LoadingState what="your home page" />
   const failed = [readAll && cases, reviewer && queue, support && inbox].find((q) => q && q.isError)

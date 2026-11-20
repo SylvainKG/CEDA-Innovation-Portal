@@ -730,3 +730,14 @@ export interface VersionSnapshot {
   data: DraftData
   files: VersionFile[]
 }
+
+// ---------------------------------------------------------------------------------------------------
+// D-08 committee view: status only (list_case_status, case_stage_counts). No proposal text, scores or notes.
+// ---------------------------------------------------------------------------------------------------
+
+export interface CaseStatusRow {
+  reference: string
+  challenge_title: string
+  public_stage: string
+  last_update: string
+}
