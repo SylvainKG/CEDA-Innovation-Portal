@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react'
+import cedaLogo from '@/assets/ceda-logo.png'
 
 /**
  * Shared pieces of the T02 auth card (spec T02, built from the written spec under BCR-003; design review by
@@ -13,6 +14,8 @@ export function AuthCard({ title, children, intro }: { title: string; intro?: Re
   useEffect(() => heading.current?.focus(), [title])
   return (
     <div className="mx-auto flex w-full max-w-[440px] flex-col gap-4 rounded-md bg-surface-card p-6 shadow-1">
+      {/* Spec T02: logo above the title. Decorative here: the header's logo link already names CEDA. */}
+      <img src={cedaLogo} alt="" width={1432} height={900} className="h-14 w-auto self-start" />
       <h1 ref={heading} tabIndex={-1} className="text-h1 font-semibold outline-none">
         {title}
       </h1>
