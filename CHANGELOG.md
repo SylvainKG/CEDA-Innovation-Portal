@@ -4,6 +4,7 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `feature` Hosted pgTAP runner and run record: `tools/pglite-db-tests/run-hosted.mjs` runs every pgTAP file against the hosted database without Docker (each file rolls back; the reference sequence is restored), and `artifacts/phase-00/hosted-supabase.md` records the hosted schema, test, account and Edge Function results with commits and times, including the Auth URL configuration and the 10-character password minimum set on 17 Nov.
 - `feature` Slice 1 behaviour hooks (APP-01, APP-03; no screens yet), in `src/features/submission/`:
   - `useSubmitIdea`: one request key per draft, reused on every retry; a lost reply is "Not confirmed yet" with a status check by key; opening the page with a pending key checks before allowing another submit;
   - `useAutosave`: debounced, one save at a time, every change also kept on the device; lost updates retried with back-off; the first (unkeyed) save and refusals are never retried blindly;
