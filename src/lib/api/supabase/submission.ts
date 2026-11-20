@@ -9,6 +9,7 @@ import type {
   CommandOutcome,
   DraftData,
   FormSchema,
+  MyCase,
   MyIdea,
   ReceiptLookup,
   RequiredDoc,
@@ -231,6 +232,68 @@ export function createSupabaseSubmission(client: SupabaseClient): SubmissionPort
       const { data, error } = await client.rpc('list_my_ideas')
       if (error) readFailed('your ideas', error)
       return (Array.isArray(data) ? data : []) as MyIdea[]
+    },
+
+    async getMyCase(proposalId) {
+      const head = await client
+        .from('proposals')
+        .select('id, reference, title, status, submitted_at, current_version_id, challenge_versions(challenge_id, form_schema, challenges(id, title))')
+        .eq('id', proposalId)
+        .neq('status', 'draft')
+        .maybeSingle()
+      if (head.error) readFailed('your idea', head.error)
+      const h = head.data as {
+        id: string
+        reference: string | null
+        title: string
+        status: MyCase['status']
+        submitted_at: string | null
+        current_version_id: string | null
+        challenge_versions: { challenge_id: string; form_schema: FormSchema; challenges: { id: string; title: string } | null } | null
+      } | null
+      if (!h) return null
+      const vid = h.current_version_id
+      const [version, files, events, closed, decision, award] = await Promise.all([
+        vid ? client.from('proposal_versions').select('version_no, data').eq('id', vid).maybeSingle() : Promise.resolve({ data: null, error: null }),
+        vid
+          ? client.from('attachments').select(ATTACHMENT_COLUMNS).eq('proposal_id', proposalId).eq('version_id', vid).is('deleted_at', null).order('created_at', { ascending: true })
+          : Promise.resolve({ data: [], error: null }),
+        // No `reason` here: only the closure reason is promised to the applicant (contract §4.5); other reasons are staff notes.
+        client.from('case_events').select('public_stage, at').eq('proposal_id', proposalId).not('public_stage', 'is', null).order('at', { ascending: true }),
+        client.from('case_events').select('reason, at').eq('proposal_id', proposalId).eq('to_status', 'closed').order('at', { ascending: false }).limit(1).maybeSingle(),
+        // RLS returns the applicant only a published, current decision (N4); the filter says so explicitly too.
+        client.from('decisions').select('outcome, reason, published_at').eq('proposal_id', proposalId).not('published_at', 'is', null).is('superseded_at', null).maybeSingle(),
+        client.from('awards').select('amount_minor, description, recorded_at').eq('proposal_id', proposalId).maybeSingle(),
+      ])
+      for (const [what, res] of [['your idea', version], ['files', files], ['the timeline', events], ['the timeline', closed], ['the decision', decision], ['the award', award]] as const)
+        if (res.error) readFailed(what, res.error)
+
+      const v = version.data as { version_no: number; data: unknown } | null
+      const firstPerStage: MyCase['stages'] = []
+      for (const e of (events.data ?? []) as { public_stage: MyCase['stages'][number]['stage']; at: string }[])
+        if (!firstPerStage.some((x) => x.stage === e.public_stage)) firstPerStage.push({ stage: e.public_stage, at: e.at })
+      const aw = award.data as { amount_minor: number | string; description: string; recorded_at: string } | null
+      return {
+        id: h.id,
+        reference: h.reference ?? '',
+        title: h.title,
+        status: h.status,
+        challenge: { id: h.challenge_versions?.challenges?.id ?? h.challenge_versions?.challenge_id ?? '', title: h.challenge_versions?.challenges?.title ?? '' },
+        submitted_at: h.submitted_at ?? '',
+        version:
+          v && h.challenge_versions
+            ? {
+                version_no: v.version_no,
+                data: toDraftData(v.data),
+                form_schema: h.challenge_versions.form_schema,
+                files: ((files.data ?? []) as Record<string, unknown>[]).map((f) => toAttachment(f)),
+              }
+            : null,
+        stages: firstPerStage,
+        closed_reason: h.status === 'closed' ? ((closed.data as { reason: string | null } | null)?.reason ?? null) : null,
+        decision: (decision.data as MyCase['decision']) ?? null,
+        award: aw ? { ...aw, amount_minor: Number(aw.amount_minor) } : null,
+      }
     },
 
     async saveDraft({ data, proposalId, challengeId }) {
