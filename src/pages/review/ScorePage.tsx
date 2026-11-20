@@ -2,9 +2,9 @@ import { useId, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Banner, Button, Dialog, ReferencePill, TextField } from '@/components'
 import { ErrorState, LoadingState, NotFoundState } from '@/components/states/States'
-import { useDeclare, useReviewQueue, useSaveScorecard, useSubmitScorecard, useWorkspace } from '@/features/review/queries'
+import { useDeclare, useReviewQueue, useSaveScorecard, useSubmitScorecard, useVerifyTask, useWorkspace } from '@/features/review/queries'
 import type { ReviewActionState } from '@/features/review/queries'
-import type { ReviewWorkspace, RubricCriterion, ScoreItem } from '@/lib/api/types'
+import type { ReviewWorkspace, RubricCriterion, ScoreItem, TaskToVerify } from '@/lib/api/types'
 import { cn } from '@/lib/cn'
 import { formatBytes, formatDateCAT, formatDateTimeCAT } from '@/lib/format'
 import { anchorFor, MIN_REASON, weightedScore } from '@/lib/scoring'
@@ -299,6 +299,8 @@ function ScorecardForm({ w }: { w: ReviewWorkspace }) {
       if (!d.score) found[c.key] = 'Choose a score from 1 to 5'
       else if ([...d.reason.trim()].length < MIN_REASON) found[c.key] = `Give a reason of at least ${MIN_REASON} characters`
     }
+    // INN-02: every roadmap task answered in this version must be verified before submitting.
+    for (const t of w.tasks) if (!t.my_result) found[`task:${t.position}`] = 'Verify this task'
     setErrors(found)
     if (Object.keys(found).length) {
       setTimeout(() => document.getElementById(`${id}-errors`)?.focus(), 0)
@@ -339,14 +341,39 @@ function ScorecardForm({ w }: { w: ReviewWorkspace }) {
           <ul className="list-disc pl-6">
             {errorList.map(([key, msg]) => {
               const c = w.criteria.find((x) => x.key === key)
+              const task = key.startsWith('task:') ? key.split(':')[1] : null
               return (
                 <li key={key}>
-                  <a href={`#${id}-${key}`}>{c ? `${c.label}: ${msg}` : msg}</a>
+                  <a href={task ? `#${id}-task-${task}` : `#${id}-${key}`}>{c ? `${c.label}: ${msg}` : task ? `Task ${task}: ${msg}` : msg}</a>
                 </li>
               )
             })}
           </ul>
         </div>
+      ) : null}
+
+      {w.change_note ? (
+        <div className="rounded-md border border-line p-3">
+          <p className="text-sm font-semibold">What changed in version {w.proposal?.version_no}</p>
+          <p className="whitespace-pre-wrap break-words">{w.change_note}</p>
+        </div>
+      ) : null}
+
+      {w.tasks.length ? (
+        <section aria-labelledby={`${id}-verify`} className="flex flex-col gap-3 border-t border-line pt-4">
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <h3 id={`${id}-verify`} className="text-h3 font-semibold">
+              Roadmap verification
+            </h3>
+            <p className="font-semibold" aria-live="polite">
+              {w.tasks.filter((t) => t.my_result).length} of {w.tasks.length} tasks verified
+            </p>
+          </div>
+          <p className="text-sm text-ink-muted">Check each task against version {w.proposal?.version_no}. You can change a check until you submit your scorecard.</p>
+          {w.tasks.map((t) => (
+            <TaskCheck key={t.task_id} base={id} assignmentId={w.row.assignment_id} t={t} error={errors[`task:${t.position}`]} />
+          ))}
+        </section>
       ) : null}
 
       {w.criteria.map((c) => (
@@ -392,6 +419,71 @@ function ScorecardForm({ w }: { w: ReviewWorkspace }) {
         {submit.state.kind === 'unconfirmed' ? <ActionBanner state={submit.state} failed="" /> : null}
       </Dialog>
     </section>
+  )
+}
+
+/** One TaskVerification control (spec T09 verification block): Verified, or Not verified with a note. */
+function TaskCheck({ base, assignmentId, t, error }: { base: string; assignmentId: string; t: TaskToVerify; error?: string }) {
+  const verify = useVerifyTask(assignmentId)
+  const [result, setResult] = useState<'verified' | 'not_verified' | null>(t.my_result)
+  const [note, setNote] = useState(t.my_note ?? '')
+  const [noteError, setNoteError] = useState<string | undefined>()
+  const changed = result !== t.my_result || (result === 'not_verified' && note.trim() !== (t.my_note ?? ''))
+
+  async function save() {
+    if (!result) return
+    if (result === 'not_verified' && !note.trim()) {
+      setNoteError('Explain why the task is not verified')
+      return
+    }
+    setNoteError(undefined)
+    await verify.run({ taskId: t.task_id, result, note: result === 'not_verified' ? note.trim() : '' })
+  }
+
+  return (
+    <fieldset id={`${base}-task-${t.position}`} className="flex flex-col gap-2 rounded-md border border-line p-3" aria-describedby={error ? `${base}-task-${t.position}-err` : undefined}>
+      <legend className="font-semibold">
+        Task {t.position}: {t.text}
+      </legend>
+      <p className="text-sm">
+        <span className="font-semibold">Applicant: {t.applicant_status === 'addressed' ? 'Addressed' : t.applicant_status === 'not_addressed' ? 'Not addressed' : 'No answer'}</span>
+        {t.applicant_explanation ? ` · ${t.applicant_explanation}` : ''}
+      </p>
+      <div className="flex flex-wrap gap-4">
+        {(['verified', 'not_verified'] as const).map((r) => (
+          <label key={r} className="flex min-h-touch items-center gap-2">
+            <input type="radio" className="h-5 w-5" name={`${base}-t${t.position}-check`} checked={result === r} onChange={() => setResult(r)} />
+            {r === 'verified' ? 'Verified' : 'Not verified'}
+          </label>
+        ))}
+      </div>
+      {result === 'not_verified' ? (
+        <TextField
+          multiline
+          rows={2}
+          id={`${base}-t${t.position}-note`}
+          label="Why isn't it verified?"
+          required
+          maxLength={1000}
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          error={noteError ?? (verify.state.kind === 'refused' ? verify.state.fields?.note : undefined)}
+        />
+      ) : null}
+      {verify.state.kind === 'refused' && !verify.state.fields ? <Banner kind="error">{verify.state.message ?? 'Your check was not saved.'}</Banner> : null}
+      {verify.state.kind === 'unconfirmed' ? <p className="text-sm text-warning">Not confirmed yet. Try again: saving the same check twice is safe.</p> : null}
+      <div className="flex flex-wrap items-center gap-3">
+        <Button variant="secondary" size="sm" disabled={!result || !changed} disabledReason={!result ? 'Choose Verified or Not verified' : 'Saved'} loading={verify.state.kind === 'saving'} loadingLabel="Saving…" onClick={() => void save()}>
+          Save check
+        </Button>
+        {t.my_result && !changed ? <span className="text-sm text-ink-muted">Saved: {t.my_result === 'verified' ? 'Verified' : 'Not verified'}</span> : null}
+      </div>
+      {error ? (
+        <p id={`${base}-task-${t.position}-err`} className="text-sm text-error">
+          {error}
+        </p>
+      ) : null}
+    </fieldset>
   )
 }
 

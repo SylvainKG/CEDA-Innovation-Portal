@@ -1,6 +1,6 @@
 import { fromRpcError, rpcError } from '../errors'
 import type { ReviewPort } from '../review'
-import type { CaseAssignment, CommandOutcome, MyReviewStatus, MyScorecard, ReviewQueueRow, RubricCriterion, ScoreItem, ScorecardResult, ScorePanel, StaffCase } from '../types'
+import type { CaseAssignment, CommandOutcome, MyReviewStatus, MyScorecard, ReviewQueueRow, RubricCriterion, ScoreItem, ScorecardResult, ScorePanel, StaffCase, TaskToVerify } from '../types'
 import { round2, weightedScore as weighted } from '@/lib/scoring'
 import { mockSession } from './session'
 import { mockStaffInternals } from './staff'
@@ -46,17 +46,51 @@ const SEED_SCORES: Record<number, [number[] | null, number[] | null]> = {
 }
 
 const state = {
+  /** Scorecards per assignment and version ("<assignment>@v<n>"): V1 scores stay with V1 (D-10, APP-04). */
   scorecards: new Map<string, MyScorecard>(),
+  /** Each reviewer's check on a task ("<task>|<assignment>"), changeable until they submit. */
+  checks: new Map<string, { result: 'verified' | 'not_verified'; note: string; verified_at: string }>(),
   latencyMs: import.meta.env.MODE === 'test' ? 0 : 200,
+}
+
+/** The version currently being scored on the assignment's case. */
+function versionNow(assignmentId: string): number {
+  for (const c of mockStaffInternals.cases()) if ((mockStaffInternals.assignments().get(c.id) ?? []).some((a) => a.id === assignmentId)) return c.version?.version_no ?? 1
+  return 1
+}
+function cardNow(assignmentId: string): MyScorecard | undefined {
+  return state.scorecards.get(`${assignmentId}@v${versionNow(assignmentId)}`)
+}
+function setNow(assignmentId: string, card: MyScorecard) {
+  state.scorecards.set(`${assignmentId}@v${versionNow(assignmentId)}`, card)
+}
+
+/** The roadmap tasks answered in the case's current version, with this assignment's checks. */
+async function tasksFor(c: StaffCase, assignmentId: string): Promise<TaskToVerify[]> {
+  const { mockFeedbackInternals } = await import('./feedback')
+  const request = (mockFeedbackInternals.requests().get(c.id) ?? []).find((r) => r.kind === 'revision' && r.answered_version_no === c.version?.version_no)
+  return (request?.tasks ?? []).map((t) => {
+    const check = state.checks.get(`${t.task_id}|${assignmentId}`)
+    return {
+      task_id: t.task_id,
+      position: t.position,
+      text: t.text,
+      applicant_status: t.applicant_status,
+      applicant_explanation: t.applicant_explanation,
+      my_result: check?.result ?? null,
+      my_note: check?.note ?? null,
+    }
+  })
 }
 
 function reset() {
   state.scorecards.clear()
+  state.checks.clear()
   for (const [n, pair] of Object.entries(SEED_SCORES)) {
     pair.forEach((scores, i) => {
       if (!scores) return
       const assignmentId = `40000000-0000-4000-8000-0000000${n}000${i + 1}`
-      state.scorecards.set(assignmentId, {
+      state.scorecards.set(`${assignmentId}@v1`, {
         id: `50000000-0000-4000-8000-0000000${n}000${i + 1}`,
         status: 'submitted',
         overall_comment: '',
@@ -78,7 +112,7 @@ export const mockReviewControls = {
       a.declared_at = new Date().toISOString()
       a.has_conflict = false
     }
-    state.scorecards.set(assignmentId, {
+    setNow(assignmentId, {
       id: crypto.randomUUID(),
       status: 'submitted',
       overall_comment: '',
@@ -106,7 +140,7 @@ function find(assignmentId: string): { a: CaseAssignment; c: StaffCase } | undef
 
 function statusOf(a: CaseAssignment): MyReviewStatus {
   if (a.declared_at === null) return 'declaration_needed'
-  const card = state.scorecards.get(a.id)
+  const card = cardNow(a.id)
   if (card?.status === 'submitted') return 'submitted'
   return card ? 'in_progress' : 'not_started'
 }
@@ -151,10 +185,10 @@ function checkItems(items: ScoreItem[]): CommandOutcome<never> | null {
 }
 
 function write(assignmentId: string, items: ScoreItem[], overallComment: string): MyScorecard {
-  const card = state.scorecards.get(assignmentId) ?? { id: crypto.randomUUID(), status: 'draft' as const, overall_comment: '', submitted_at: null, items: [] }
+  const card = cardNow(assignmentId) ?? { id: crypto.randomUUID(), status: 'draft' as const, overall_comment: '', submitted_at: null, items: [] }
   card.items = items.map((i) => ({ ...i, reason: i.reason }))
   card.overall_comment = overallComment
-  state.scorecards.set(assignmentId, card)
+  setNow(assignmentId, card)
   return card
 }
 
@@ -175,13 +209,16 @@ export const mockReview: ReviewPort = {
     const hit = find(assignmentId)
     if (!reviewer || !hit || hit.a.reviewer_id !== reviewer || hit.a.revoked_at) return null
     const row = rowFor(hit.a, hit.c)
-    if (row.my_status === 'declaration_needed' || !hit.c.version) return { row, proposal: null, criteria: [], scorecard: null }
-    const card = state.scorecards.get(assignmentId)
+    if (row.my_status === 'declaration_needed' || !hit.c.version) return { row, proposal: null, criteria: [], scorecard: null, tasks: [] }
+    const card = cardNow(assignmentId)
+    const { mockFeedbackInternals } = await import('./feedback')
     return {
       row,
       proposal: { version_no: hit.c.version.version_no, data: hit.c.version.data, form_schema: hit.c.form_schema, files: hit.c.files },
       criteria: MOCK_RUBRIC,
       scorecard: card ? { ...card, items: card.items.map((i) => ({ ...i })) } : null,
+      tasks: await tasksFor(hit.c, assignmentId),
+      change_note: mockFeedbackInternals.changeNotes().get(`${hit.c.id}:${hit.c.version.version_no}`) ?? null,
     }
   },
 
@@ -215,7 +252,7 @@ export const mockReview: ReviewPort = {
     await wait()
     const hit = await scoringTarget(assignmentId)
     if ('kind' in hit) return hit
-    if (state.scorecards.get(assignmentId)?.status === 'submitted') return refused('INVALID_STATE', 'You have already submitted your scores for this version.')
+    if (cardNow(assignmentId)?.status === 'submitted') return refused('INVALID_STATE', 'You have already submitted your scores for this version.')
     const bad = checkItems(items)
     if (bad) return bad
     const card = write(assignmentId, items, overallComment)
@@ -225,11 +262,11 @@ export const mockReview: ReviewPort = {
 
   async submitScorecard({ assignmentId, items, overallComment }) {
     await wait()
-    const existing = state.scorecards.get(assignmentId)
+    const existing = cardNow(assignmentId)
     const hitForReplay = find(assignmentId)
     if (existing?.status === 'submitted' && hitForReplay) {
       // A retry returns the recorded result and changes nothing.
-      const submitted = (mockStaffInternals.assignments().get(hitForReplay.c.id) ?? []).filter((x) => !x.revoked_at && state.scorecards.get(x.id)?.status === 'submitted').length
+      const submitted = (mockStaffInternals.assignments().get(hitForReplay.c.id) ?? []).filter((x) => !x.revoked_at && cardNow(x.id)?.status === 'submitted').length
       return {
         kind: 'ok',
         data: { scorecard_id: existing.id, status: 'submitted', submitted_at: existing.submitted_at ?? undefined, weighted_score: weighted(existing.items, MOCK_RUBRIC), submitted_count: submitted, quorum: QUORUM, quorum_reached: submitted >= QUORUM, replayed: true },
@@ -247,11 +284,18 @@ export const mockReview: ReviewPort = {
       else if ([...item.reason.trim()].length < 20) fields[crit.key] = 'Give a reason of at least 20 characters'
     }
     if (Object.keys(fields).length) return refused('VALIDATION', 'Score every criterion and give a reason for each. Your scores are saved.', fields)
+    const unchecked = (await tasksFor(hit.c, assignmentId)).filter((t) => !t.my_result)
+    if (unchecked.length)
+      return refused(
+        'VALIDATION',
+        'Verify every roadmap task before submitting. Your scores are saved.',
+        Object.fromEntries(unchecked.map((t) => [`task:${t.position}`, 'Verify this task'])),
+      )
 
     card.status = 'submitted'
     card.submitted_at = new Date().toISOString()
     const active = (mockStaffInternals.assignments().get(hit.c.id) ?? []).filter((x) => !x.revoked_at)
-    const submitted = active.filter((x) => state.scorecards.get(x.id)?.status === 'submitted').length
+    const submitted = active.filter((x) => cardNow(x.id)?.status === 'submitted').length
     const reached = submitted >= QUORUM
     if (reached && hit.c.status === 'in_evaluation') {
       mockStaffInternals.moveCase(hit.c.id, {
@@ -277,13 +321,13 @@ export const mockReview: ReviewPort = {
     const reviewer = user.roles.includes('reviewer') ? mockStaffInternals.seedReviewerId(user.id) : undefined
     // scorecard.read_panel (adjudicator, admin), or a cleared reviewer after submitting their own (contract §4.3).
     const panelRole = user.roles.some((r) => r === 'adjudicator' || r === 'admin')
-    const ownSubmitted = assignments.some((a) => a.reviewer_id === reviewer && !a.revoked_at && state.scorecards.get(a.id)?.status === 'submitted')
+    const ownSubmitted = assignments.some((a) => a.reviewer_id === reviewer && !a.revoked_at && cardNow(a.id)?.status === 'submitted')
     if (!panelRole && !ownSubmitted) return null
 
     const cards = assignments
-      .filter((a) => !a.revoked_at && state.scorecards.get(a.id)?.status === 'submitted')
+      .filter((a) => !a.revoked_at && cardNow(a.id)?.status === 'submitted')
       .map((a) => {
-        const card = state.scorecards.get(a.id)!
+        const card = cardNow(a.id)!
         return {
           scorecard_id: card.id,
           assignment_id: a.id,
@@ -326,5 +370,28 @@ export const mockReview: ReviewPort = {
       quorum: QUORUM,
       spread_flag_threshold: 2,
     }
+  },
+
+  async verifyTask({ taskId, assignmentId, result, note }) {
+    await wait()
+    const reviewer = await me()
+    const hit = find(assignmentId)
+    if (!reviewer || !hit || hit.a.reviewer_id !== reviewer || hit.a.revoked_at || hit.a.declared_at === null || hit.a.has_conflict)
+      return refused('FORBIDDEN', 'Complete the declaration first.')
+    const tasks = await tasksFor(hit.c, assignmentId)
+    const { mockFeedbackInternals } = await import('./feedback')
+    const anywhere = [...mockFeedbackInternals.requests().values()].flat().some((r) => r.tasks.some((t) => t.task_id === taskId))
+    if (!anywhere) return refused('FORBIDDEN', "You don't have access to this action.")
+    if (hit.c.status !== 'in_evaluation') return refused('INVALID_STATE', 'Scoring is closed for this case.')
+    if (!tasks.some((t) => t.task_id === taskId)) return refused('INVALID_STATE', 'This task belongs to an earlier version.')
+    if (cardNow(assignmentId)?.status === 'submitted') return refused('INVALID_STATE', 'Your scorecard for this version is submitted; verifications are locked.')
+    if (result !== 'verified' && result !== 'not_verified') return refused('VALIDATION', 'Choose Verified or Not verified.', { result: 'Required' })
+    const text = note.trim()
+    if ([...text].length > 1000 || (result === 'not_verified' && !text))
+      return refused('VALIDATION', 'Explain why the task is not verified (up to 1,000 characters).', { note: 'Required' })
+    const at = new Date().toISOString()
+    state.checks.set(`${taskId}|${assignmentId}`, { result, note: text, verified_at: at })
+    mockFeedbackInternals.recordCheck(taskId, hit.a.reviewer_name, result, text, at)
+    return { kind: 'ok', data: { task_id: taskId, result, verified_at: at } }
   },
 }

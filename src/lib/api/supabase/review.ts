@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { ApiError, fromRpcError, isRefusal } from '../errors'
 import type { ReviewPort } from '../review'
-import type { AttachmentInfo, DraftData, FormSchema, MyScorecard, ReviewQueueRow, RubricCriterion, ScorecardResult, ScorePanel } from '../types'
+import type { AttachmentInfo, DraftData, FeedbackRequest, FormSchema, MyScorecard, ReviewQueueRow, RubricCriterion, ScorecardResult, ScorePanel, TaskToVerify } from '../types'
 
 /**
  * Supabase reviewer adapter (Slice 3). Explicit columns only. Proposal text, files and the rubric are read only
@@ -30,7 +30,7 @@ export function createSupabaseReview(client: SupabaseClient): ReviewPort {
     async getWorkspace(assignmentId) {
       const row = (await myQueue()).find((r) => r.assignment_id === assignmentId)
       if (!row) return null
-      if (row.my_status === 'declaration_needed') return { row, proposal: null, criteria: [], scorecard: null }
+      if (row.my_status === 'declaration_needed') return { row, proposal: null, criteria: [], scorecard: null, tasks: [] }
 
       const head = await client
         .from('proposals')
@@ -39,10 +39,10 @@ export function createSupabaseReview(client: SupabaseClient): ReviewPort {
         .maybeSingle()
       if (head.error) readFailed('the proposal', head.error)
       const h = head.data as { current_version_id: string | null; challenge_versions: { form_schema: FormSchema; rubric_version_id: string } | null } | null
-      if (!h?.current_version_id || !h.challenge_versions) return { row, proposal: null, criteria: [], scorecard: null }
+      if (!h?.current_version_id || !h.challenge_versions) return { row, proposal: null, criteria: [], scorecard: null, tasks: [] }
 
-      const [version, files, criteria, cards] = await Promise.all([
-        client.from('proposal_versions').select('version_no, data').eq('id', h.current_version_id).maybeSingle(),
+      const [version, files, criteria, cards, roadmap, checks] = await Promise.all([
+        client.from('proposal_versions').select('version_no, data, change_note').eq('id', h.current_version_id).maybeSingle(),
         client
           .from('attachments')
           .select('id, filename, size_bytes, mime, doc_key')
@@ -61,11 +61,32 @@ export function createSupabaseReview(client: SupabaseClient): ReviewPort {
           .eq('assignment_id', assignmentId)
           .eq('version_id', h.current_version_id)
           .maybeSingle(),
+        // INN-02: the tasks answered in this version, and this reviewer's own checks on them.
+        client.rpc('get_roadmap', { p_proposal_id: row.proposal_id }),
+        client.from('task_verifications').select('feedback_task_id, result, note').eq('assignment_id', assignmentId),
       ])
-      for (const [what, res] of [['the proposal', version], ['files', files], ['the rubric', criteria], ['your scorecard', cards]] as const)
+      for (const [what, res] of [
+        ['the proposal', version],
+        ['files', files],
+        ['the rubric', criteria],
+        ['your scorecard', cards],
+        ['the roadmap', roadmap],
+        ['your task checks', checks],
+      ] as const)
         if (res.error) readFailed(what, res.error)
 
-      const v = version.data as { version_no: number; data: unknown } | null
+      const v = version.data as { version_no: number; data: unknown; change_note: string | null } | null
+      const mine = new Map(((checks.data ?? []) as { feedback_task_id: string; result: 'verified' | 'not_verified'; note: string }[]).map((x) => [x.feedback_task_id, x]))
+      const answered = ((roadmap.data ?? []) as FeedbackRequest[]).find((r) => v && r.answered_version_no === v.version_no)
+      const tasks: TaskToVerify[] = (answered?.tasks ?? []).map((t) => ({
+        task_id: t.task_id,
+        position: t.position,
+        text: t.text,
+        applicant_status: t.applicant_status,
+        applicant_explanation: t.applicant_explanation,
+        my_result: mine.get(t.task_id)?.result ?? null,
+        my_note: mine.get(t.task_id)?.note ?? null,
+      }))
       const card = cards.data as (Omit<MyScorecard, 'items'> & { scorecard_items: MyScorecard['items'] | null }) | null
       return {
         row,
@@ -104,6 +125,8 @@ export function createSupabaseReview(client: SupabaseClient): ReviewPort {
               items: (card.scorecard_items ?? []).map((i) => ({ criterion_id: i.criterion_id, score: Number(i.score), reason: i.reason })),
             }
           : null,
+        tasks,
+        change_note: v?.change_note ?? null,
       }
     },
 
@@ -121,6 +144,12 @@ export function createSupabaseReview(client: SupabaseClient): ReviewPort {
       const { data, error } = await client.rpc('save_scorecard', { p_assignment_id: assignmentId, p_items: items, p_overall_comment: overallComment })
       if (error) return fromRpcError(error)
       return { kind: 'ok', data: data as ScorecardResult }
+    },
+
+    async verifyTask({ taskId, assignmentId, result, note }) {
+      const { data, error } = await client.rpc('verify_feedback_task', { p_task_id: taskId, p_assignment_id: assignmentId, p_result: result, p_note: note })
+      if (error) return fromRpcError(error)
+      return { kind: 'ok', data: data as { task_id: string; result: 'verified' | 'not_verified'; verified_at: string } }
     },
 
     async getPanel(proposalId) {

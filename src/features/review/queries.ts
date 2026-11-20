@@ -96,6 +96,20 @@ export function useSaveScorecard(assignmentId: string) {
   return useReviewAction<ScoreInput, ScorecardResult>(assignmentId, send, landed)
 }
 
+/** Verify one roadmap task (contract §4.4). The same answer again just replaces it, so a retry is safe. */
+export function useVerifyTask(assignmentId: string) {
+  const send = useCallback(
+    (input: { taskId: string; result: 'verified' | 'not_verified'; note: string }) => api.review.verifyTask({ assignmentId, ...input }),
+    [assignmentId],
+  )
+  const landed = useCallback(
+    (fresh: ReviewWorkspace | null, input: { taskId: string; result: 'verified' | 'not_verified' }) =>
+      Boolean(fresh?.tasks.some((t) => t.task_id === input.taskId && t.my_result === input.result)),
+    [],
+  )
+  return useReviewAction(assignmentId, send, landed)
+}
+
 export function usePanel(proposalId: string | undefined) {
   return useQuery({
     queryKey: [...reviewKeys.all, 'panel', proposalId ?? ''],

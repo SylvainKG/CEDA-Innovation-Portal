@@ -480,6 +480,7 @@ export const mockSubmission: SubmissionPort = {
     }
     request.status = 'answered'
     request.answered_version_no = versionNo
+    mockFeedbackInternals.changeNotes().set(`${proposalId}:${versionNo}`, note)
     request.summary = { ...request.summary, addressed: request.tasks.filter((t) => t.applicant_status === 'addressed').length }
     const back = mockFeedbackInternals.returnTo().get(proposalId) ?? 'in_evaluation'
     mockStaffInternals.moveCase(proposalId, { from_status: 'action_required', to_status: back, public_stage: mockStaffInternals.publicStage(back), reason: null, at: version.submitted_at })
