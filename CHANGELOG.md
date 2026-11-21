@@ -4,6 +4,10 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `design` **Revise idea laid out to Sandra's 21 Nov frames** (T04 V2, #100). "REVISE YOUR IDEA" over the idea's title; "CEDA's message" with the deadline; "Your roadmap" with segmented Addressed / Not addressed and an Explanation per task; then two steps: the Version N form and "Review changes" ("What changed?", the declaration, Back and Submit Version N, disabled with the reason until every task is answered). Autosave is not built (roadmap answers need a migration; see #100).
+
+  Evidence: revise tests and the hosted journey's step 10 updated; 331 tests pass; lint and type-check pass; browser smoke suite 20 passed; a mock-mode browser run with the journey's step 10 selectors submits Version 2 at 1280 and 360 px with no sideways scroll.
+
 - `design` **Shared error summary and REQUIRED tag, laid out to Sandra's 21 Nov frames** (#100). One `ErrorSummary` box (red left edge, light red background, "There is a problem", linked messages; an alert that takes focus) for the auth forms, the proposal form, the revise page and the scorecard; "REQUIRED" in small capitals at the right of labels in `TextField`, `Select`, `FileUpload` and the staff dialogs. No wording changes.
 
   Evidence: 331 tests pass; lint and type-check pass; browser smoke suite 20 passed at 360 and 1280 px; register with empty fields checked at both widths (focus on the summary, no sideways scroll).
