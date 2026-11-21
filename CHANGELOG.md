@@ -4,6 +4,9 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `repair` **Keyboard-log layout fixes** (QA-01, `artifacts/phase-07/browser-keyboard-log.md` §3). Two-step sign-in no longer scrolls sideways at 1280 px (a signed-in person doesn't see "Sign in" / "Submit an innovation" on public pages; long names truncate in the account button); Reports no longer scrolls sideways at 360 px; the Notifications filter buttons and the small text links (case references in staff tables, back links, "All notifications", challenge and rubric links, "Read the FAQs") are at least 44 px.
+
+  Evidence: a measuring script over the log's 28 pages at 360 and 1280 px finds no sideways scroll and no control under 44 px; 334 tests pass; lint and type-check pass; browser smoke suite 20 passed.
 - `design` **My ideas laid out to Sandra's 21 Nov frame** (T06, #100). "MY IDEAS" above "Welcome, <name>"; a red "An idea needs your response" banner with the earliest deadline and that idea's action; two-column cards with the status pill and reference, the five-step stepper, "Updated … ago" with the deadline, and the one action; a red top edge on cards that need a response. The page's h1 is now "Welcome, <name>" (tests updated, including the hosted journey and the smoke suite).
 
   Evidence: 325 tests pass; lint and type-check pass; browser smoke suite 20 passed at 360 and 1280 px; no sideways scroll.
