@@ -23,6 +23,8 @@ reset role;
 select ok(has_function_privilege('service_role', 'public.run_maintenance()', 'execute'), 'the service role (scheduler) may run maintenance');
 
 -- ============================================================ run_maintenance
+-- Counts below only include rows created in this transaction (stamped now(), which is constant
+-- within it), so the suite also holds on a live project whose history already has such rows.
 set local role service_role;
 insert into ids select 'm', public.run_maintenance()::text;
 reset role;
@@ -33,9 +35,9 @@ select is((select status from public.feedback_requests where id = (select v::uui
 select is((select status from public.proposals where id = (select v::uuid from ids where k = 'c3')), 'action_required',
   'the case itself is unchanged: staff decide what happens next');
 select is((select count(*)::int from public.notifications where proposal_id = (select v::uuid from ids where k = 'c3')
-           and type = 'feedback.expired' and user_id = '00000000-0000-4000-8000-0000000000b1'), 1,
+           and type = 'feedback.expired' and user_id = '00000000-0000-4000-8000-0000000000b1' and created_at >= now()), 1,
   'the screening officer who asked is told the deadline passed');
-select is((select count(*)::int from public.audit_events where action = 'feedback.expired' and actor_role = 'system'), 1,
+select is((select count(*)::int from public.audit_events where action = 'feedback.expired' and actor_role = 'system' and at >= now()), 1,
   'the expiry is audited as a system action');
 set local role service_role;
 select is((public.run_maintenance() ->> 'expired_requests')::int, 0, 'running again changes nothing');
@@ -61,7 +63,7 @@ select is(public.extend_feedback_deadline((select v::uuid from ids where k = 'q'
 
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-0000000000a5","role":"authenticated"}', true);
 select is((select count(*)::int from public.notifications where proposal_id = (select v::uuid from ids where k = 'c3')
-           and type = 'feedback.extended'), 1, 'the applicant is told the new deadline');
+           and type = 'feedback.extended' and created_at >= now()), 1, 'the applicant is told the new deadline');
 select is(public.respond_clarification((select v::uuid from ids where k = 'q'), 'The pilot farms are in Kasane (test).') ->> 'case_status',
   'submitted', 'the applicant can answer again and the case returns to screening');
 
