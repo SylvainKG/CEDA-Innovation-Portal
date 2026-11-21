@@ -23,6 +23,7 @@ Functionality follows the blueprint until the team decides. Source for every row
 | 13 | 16 Nov | `AdminView` overview | Donut chart | No pie charts (spec T13) | Replace with horizontal bars | |
 | 14 | 16 Nov | Roles | Public, applicant, evaluator, adjudicator, admin | Also screening officer, support consultant, committee member, auditor (§2.2) | Design the missing role variants from the shared shell and table | |
 | 15 | 16 Nov | Demo data | `CEDA-2025-NNNN`, 2025 dates, personas Amantle Moyo, Kabelo Ndlovu, M. Olebile, Thato Molefe | `CEDA-2026-NNNN`, seed personas (Demo Applicant A — Lesedi Agro Demo, Water-Smart Agriculture Challenge 2026) (§3.1) | Use blueprint seed data in all new frames and snapshots | |
+| 17 | 21 Nov | T02 Create account (Sandra's "ceda site create account" export, #100) | Privacy summary only; no counters under Full name and Email; error "Full name is required"; the signed-in header | Consent is recorded against the versioned notice (handle_new_user); the fields keep their length limits; the public header on auth pages | Summary kept as in the frame, plus "Read the full privacy notice" with the versioned text. Counters stay while the fields have limits. Error wording stays "Enter your full name" (the frame's is placeholder data, #100 decision 5). Public header kept, as #100 asks | |
 
 ## Handoff log
 

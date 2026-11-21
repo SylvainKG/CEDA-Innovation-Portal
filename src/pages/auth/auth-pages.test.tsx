@@ -93,29 +93,49 @@ describe('T02 sign in', () => {
 })
 
 describe('T02 register', () => {
-  it('shows the privacy notice with its Sample label and requires consent and a 12-character password', async () => {
+  it('shows the compact privacy panel with its Sample label and requires consent and a 12-character password', async () => {
     renderAt('/auth/register')
-    expect(await screen.findByRole('heading', { name: 'Privacy notice' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Create your account' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'How we use your information' })).toBeInTheDocument()
     expect(screen.getByText('Sample: awaiting CEDA confirmation')).toBeInTheDocument()
     type(/Full name/, 'Demo Person')
     type(/Email address/, 'person@example.test')
     type(/^Password/, 'short-pass1')
-    press(/^Register$/)
+    press(/^Create account$/)
     const summary = await screen.findByRole('alert')
     expect(within(summary).getByText('Use at least 12 characters for your password')).toBeInTheDocument()
     expect(within(summary).getByText('Accept the privacy notice to register')).toBeInTheDocument()
     expect(within(summary).queryByText(/full name/)).not.toBeInTheDocument()
   })
 
+  it('ticks off "At least 12 characters" as the password grows, and links the rule to the field', async () => {
+    renderAt('/auth/register')
+    await screen.findByRole('heading', { name: 'How we use your information' })
+    const rule = screen.getByText(/At least 12 characters/)
+    expect(rule).toHaveTextContent('At least 12 characters: not yet')
+    type(/^Password/, 'eleven-char')
+    expect(rule).toHaveTextContent('At least 12 characters: not yet')
+    type(/^Password/, 'twelve-chars')
+    expect(rule).toHaveTextContent('At least 12 characters: done')
+    expect(screen.getByLabelText(/^Password/).getAttribute('aria-describedby')).toContain('reg-password-rules')
+  })
+
+  it('keeps the full, versioned privacy notice one tap away', async () => {
+    renderAt('/auth/register')
+    await screen.findByRole('heading', { name: 'How we use your information' })
+    expect(screen.getByText('Read the full privacy notice')).toBeInTheDocument()
+    expect(screen.getByText(/This demonstration portal stores the details you enter/)).toBeInTheDocument()
+  })
+
   it('sends the notice version with the registration and goes to "Check your email" (address not in the URL)', async () => {
     const register = vi.spyOn(mockSession, 'register')
     renderAt('/auth/register')
-    await screen.findByRole('heading', { name: 'Privacy notice' })
+    await screen.findByRole('heading', { name: 'How we use your information' })
     type(/Full name/, 'Demo Person')
     type(/Email address/, 'person@example.test')
     type(/^Password/, 'a long enough password')
-    fireEvent.click(screen.getByLabelText(/I have read the privacy notice/))
-    press(/^Register$/)
+    fireEvent.click(screen.getByLabelText(/I agree to the privacy notice/))
+    press(/^Create account$/)
     expect(await screen.findByRole('heading', { level: 1, name: 'Check your email' })).toBeInTheDocument()
     expect(register).toHaveBeenCalledWith(expect.objectContaining({ email: 'person@example.test', consentVersion: 'sample-2026-11-v1' }))
     expect(screen.getByText('person@example.test')).toBeInTheDocument()
@@ -153,9 +173,9 @@ describe('T02 verify, forgot and reset', () => {
 
   it('makes the whole consent row the target', async () => {
     renderAt('/auth/register')
-    await screen.findByRole('heading', { name: 'Privacy notice' })
-    fireEvent.click(screen.getByText(/I have read the privacy notice/))
-    expect(screen.getByRole('checkbox', { name: /I have read the privacy notice/ })).toBeChecked()
+    await screen.findByRole('heading', { name: 'How we use your information' })
+    fireEvent.click(screen.getByText(/I agree to the privacy notice/))
+    expect(screen.getByRole('checkbox', { name: /I agree to the privacy notice/ })).toBeChecked()
   })
 
   it('answers a reset request neutrally', async () => {
