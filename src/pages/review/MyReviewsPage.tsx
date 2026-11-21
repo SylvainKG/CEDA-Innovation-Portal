@@ -40,7 +40,7 @@ export function MyReviewsPage() {
       header: 'Reference',
       primary: true,
       cell: (r) => (
-        <Link to={`/staff/cases/${r.proposal_id}/score`} className="whitespace-nowrap font-mono">
+        <Link to={`/staff/cases/${r.proposal_id}/score`} className="inline-flex min-h-touch items-center whitespace-nowrap font-mono">
           {r.reference}
         </Link>
       ),
