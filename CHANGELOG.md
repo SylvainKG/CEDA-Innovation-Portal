@@ -4,6 +4,9 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `design` **Staff home laid out to Sandra's 21 Nov role dashboards** (screening officer, reviewer, adjudicator, administrator). "<ROLE> PORTAL" and "Good morning/afternoon/evening, <name>" (CAT); the role's figure cards; "Your next tasks" (up to five, a red dot when due) beside "Recent activity"; "Cases by stage" bars for administrators. Figures the roles can't read are replaced by the nearest real figure, never invented. The h1 changes from "Welcome, <name>" (tests updated, including the smoke suite).
+
+  Evidence: 334 tests pass; lint and type-check pass; browser smoke suite 20 passed; four role dashboards checked at 1280 px and two at 360 px (no sideways scroll, no control under 44 px).
 - `repair` **Keyboard-log layout fixes** (QA-01, `artifacts/phase-07/browser-keyboard-log.md` §3). Two-step sign-in no longer scrolls sideways at 1280 px (a signed-in person doesn't see "Sign in" / "Submit an innovation" on public pages; long names truncate in the account button); Reports no longer scrolls sideways at 360 px; the Notifications filter buttons and the small text links (case references in staff tables, back links, "All notifications", challenge and rubric links, "Read the FAQs") are at least 44 px.
 
   Evidence: a measuring script over the log's 28 pages at 360 and 1280 px finds no sideways scroll and no control under 44 px; 334 tests pass; lint and type-check pass; browser smoke suite 20 passed.
