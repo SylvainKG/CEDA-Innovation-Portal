@@ -53,7 +53,17 @@ describe('shared shell, laid out to Sandra\'s 21 Nov frames', () => {
     expect(account).toHaveFocus()
 
     expect(screen.getByRole('link', { name: 'Chat with CEDA' })).toHaveAttribute('href', '/support/chat')
-    expect(within(screen.getByRole('contentinfo')).getByText(/^CEDA Innovation Portal · Demo prototype/)).toBeInTheDocument()
+    // Footer: Peolwane is a CEDA product, with CEDA's website, head office and offices.
+    const footer = within(screen.getByRole('contentinfo'))
+    expect(footer.getByText(/· Demo prototype with fictional data$/)).toBeInTheDocument()
+    expect(footer.getByRole('heading', { name: /a CEDA product$/ })).toBeInTheDocument()
+    const site = footer.getByRole('link', { name: /Visit CEDA's main website/ })
+    expect(site).toHaveAttribute('href', 'https://www.ceda.co.bw')
+    expect(site).toHaveAttribute('target', '_blank')
+    expect(site).toHaveAttribute('rel', 'noopener noreferrer')
+    expect(footer.getByText('Four Thirty Square, Plot 54350')).toBeInTheDocument()
+    expect(footer.getByRole('link', { name: 'Tel +267 317 0895' })).toHaveAttribute('href', 'tel:+2673170895')
+    expect(footer.getByRole('link', { name: /Addresses and phone numbers on ceda.co.bw/ })).toHaveAttribute('href', 'https://www.ceda.co.bw/contact-us')
   })
 
   it('hides the chat button on the chat page itself', async () => {
