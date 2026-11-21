@@ -4,6 +4,10 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `design` **Ready for decision laid out to Sandra's 21 Nov adjudicator work-queue frame** (#119 screen D; `ceda adjudicator work cases.pdf`). The same pattern as the screening queue (#118): "WORK QUEUE" over the title and "Filter cases and open the score panel to decide.", the shared filter card (search by reference or title, challenge) with removable chips, and the table: reference (to the score panel), idea, challenge, submitted, waiting, the panel average with the spread flag and "2/2 reviews", and the status badge. Cards at 360 px.
+
+  Evidence: 21 review and staff-home tests pass (heading, scores and panel link unchanged); lint and type-check pass; checked in the browser as the adjudicator at 1280 and 360 px (no sideways scroll, controls at least 44 px).
+
 - `design` **Footer: Peolwane is a CEDA product** (team decision, 21 Nov). Every page's footer now says what Peolwane is (the innovation portal of the Citizen Entrepreneurial Development Agency), links to CEDA's main website (www.ceda.co.bw, new tab), and shows CEDA's head office (Four Thirty Square, Plot 54350, PG Matante Road, CBD, Gaborone; Private Bag 00504; +267 317 0895; toll-free 0800 600 253; feedback@ceda.co.bw) and a link to CEDA's contact page (www.ceda.co.bw/contact-us) for its offices across Botswana. The details live in `src/brand/ceda-info.ts`; the team lead confirmed them against CEDA's official contact details on 21 Nov. Branch towns and phone numbers are left out, since they weren't confirmed.
 
   Evidence: shell test extended (heading, website link with new tab and rel, head office, tel link, contact page link); 334 tests pass; lint and type-check pass; browser smoke suite 20 passed; no sideways scroll at 360 or 1280 px.
