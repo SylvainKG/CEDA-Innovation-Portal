@@ -4,6 +4,10 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `design` **Submission receipt laid out to Sandra's 21 Nov frame** (#119 screen E; `ceda submittion.pdf`, T05 V2 snapshot). `ReceiptCard` now shows a tick in a green circle, "SUBMISSION RECEIPT" over the heading ("Version 2 submitted" or "Idea submitted") and "Your revised idea has been sent to CEDA.", then one card: the reference large in orange with a round copy button, and the details in rows (version, submitted "(server time)", challenge, form version, files, declaration). The receipt page is centred, with View my idea and Print receipt under the card and "What happens next" below.
+
+  Evidence: 58 component and applicant tests pass (headings, reference and server time unchanged); lint and type-check pass; checked in the browser as Demo Applicant A at 1280 and 360 px (no sideways scroll, controls at least 44 px).
+
 - `design` **Record decision laid out to Sandra's 21 Nov frame** (#119 screen C; `ceda adjudicatorsave decision.pdf`). The side sheet from #118 already gives the frame's "WORKFLOW ACTION" title, consequence strip, audit line and buttons; this adds the frame's order: Outcome and Reason, each with REQUIRED at the right, then "Assessed version" in a grey box with the version's real submission date ("Version 1 (current) · submitted 20 Oct 2026").
 
   Evidence: 42 staff tests pass; lint and type-check pass; checked in the browser as the adjudicator (side sheet, then full screen on a narrow window; no sideways scroll).
