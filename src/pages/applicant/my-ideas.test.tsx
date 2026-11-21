@@ -88,7 +88,7 @@ describe('T06 My ideas page', () => {
   it('shows Applicant A two separate cards: the earlier idea and the new draft, draft first', async () => {
     await mockSubmission.saveDraft({ challengeId: WATER_SMART_ID, data: { title: 'Solar drip irrigation kit (DEMO)' } })
     renderIdeas()
-    expect(await screen.findByRole('heading', { level: 1, name: 'My ideas' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Welcome, Demo Applicant A' })).toBeInTheDocument()
     const cards = await screen.findAllByRole('article')
     expect(cards).toHaveLength(2)
     expect(within(cards[0] as HTMLElement).getByRole('heading', { name: 'Solar drip irrigation kit (DEMO)' })).toBeInTheDocument()
@@ -115,7 +115,10 @@ describe('T06 My ideas page', () => {
       idea({ status: 'action_required', open_feedback: { kind: 'revision', due_at: '2026-11-21T14:00:00Z', status: 'open' } }),
     ])
     renderIdeas()
-    expect(await screen.findByText('CEDA needs a response from you')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Revise your idea/ })).toBeInTheDocument()
+    const banner = (await screen.findByRole('heading', { level: 2, name: 'An idea needs your response' })).closest('section') as HTMLElement
+    expect(banner).toHaveTextContent(/Respond by 21 Nov 2026, 16:00 CAT/)
+    // The banner offers the same action as the card.
+    expect(within(banner).getByRole('link', { name: /Revise your idea/ })).toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: /Revise your idea/ })).toHaveLength(2)
   })
 })

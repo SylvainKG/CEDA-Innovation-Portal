@@ -3,6 +3,7 @@ import { Menu, X } from 'lucide-react'
 import { ButtonLink } from '@/components/ButtonLink'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Brand, Footer, MockRoleSwitcher, SkipLink, TopBarEnd } from './ShellParts'
+import { useSession } from '@/lib/session'
 
 const LINKS = [
   { to: '/challenges', label: 'Challenges' },
@@ -18,6 +19,8 @@ const LINKS = [
 export function PublicShell() {
   const [open, setOpen] = useState(false)
   const home = useLocation().pathname === '/'
+  // A signed-in person (e.g. on two-step sign-in) has the account menu instead of "Sign in" / "Submit an innovation".
+  const { data: user } = useSession()
   return (
     <div className="flex min-h-screen flex-col">
       <SkipLink />
@@ -30,12 +33,16 @@ export function PublicShell() {
                 {l.label}
               </NavLink>
             ))}
-            <ButtonLink to="/auth/sign-in" variant="secondary" className="!border-brand !text-brand-text">
-              Sign in
-            </ButtonLink>
-            <ButtonLink to="/auth/register" variant="secondary" className="!border-brand !text-brand-text">
-              Submit an innovation
-            </ButtonLink>
+            {user ? null : (
+              <>
+                <ButtonLink to="/auth/sign-in" variant="secondary" className="!border-brand !text-brand-text">
+                  Sign in
+                </ButtonLink>
+                <ButtonLink to="/auth/register" variant="secondary" className="!border-brand !text-brand-text">
+                  Submit an innovation
+                </ButtonLink>
+              </>
+            )}
           </nav>
           <div className="flex items-center gap-2">
             <TopBarEnd />
@@ -53,7 +60,7 @@ export function PublicShell() {
         </div>
         {open ? (
           <nav id="public-menu" aria-label="Main" className="flex flex-col border-t border-line px-4 py-2 md:hidden">
-            {[...LINKS, { to: '/auth/sign-in', label: 'Sign in' }, { to: '/auth/register', label: 'Submit an innovation' }].map((l) => (
+            {[...LINKS, ...(user ? [] : [{ to: '/auth/sign-in', label: 'Sign in' }, { to: '/auth/register', label: 'Submit an innovation' }])].map((l) => (
               <NavLink key={l.to} to={l.to} className="inline-flex min-h-touch min-w-touch items-center justify-center px-2 text-ink" onClick={() => setOpen(false)}>
                 {l.label}
               </NavLink>
