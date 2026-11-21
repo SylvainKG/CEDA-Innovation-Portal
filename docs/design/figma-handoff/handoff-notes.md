@@ -23,6 +23,7 @@ Functionality follows the blueprint until the team decides. Source for every row
 | 13 | 16 Nov | `AdminView` overview | Donut chart | No pie charts (spec T13) | Replace with horizontal bars | |
 | 14 | 16 Nov | Roles | Public, applicant, evaluator, adjudicator, admin | Also screening officer, support consultant, committee member, auditor (§2.2) | Design the missing role variants from the shared shell and table | |
 | 15 | 16 Nov | Demo data | `CEDA-2025-NNNN`, 2025 dates, personas Amantle Moyo, Kabelo Ndlovu, M. Olebile, Thato Molefe | `CEDA-2026-NNNN`, seed personas (Demo Applicant A — Lesedi Agro Demo, Water-Smart Agriculture Challenge 2026) (§3.1) | Use blueprint seed data in all new frames and snapshots | |
+| 18 | 21 Nov | T08 Applicant case view (Sandra's "ceda view ideas" export, #100) | Five steps always, Feedback greyed when unused; version picker with no visible label; field labels only | The shared StageTimeline shows Feedback only once it happens; every control needs a visible label (spec §9); the form schema groups answers in sections | Five steps wait for the shared stepper change (Obvious, #100 decision 2). The picker keeps the shared Select's "Version" label. Section titles stay as small headings inside the card. Added: "What changed in this version" and a note when an earlier version is shown | |
 
 ## Handoff log
 
