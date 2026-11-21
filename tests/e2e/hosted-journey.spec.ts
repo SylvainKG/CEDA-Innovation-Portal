@@ -426,7 +426,11 @@ test('Steps 5-17: the case goes from screening through revision, decision and aw
   await test.step('15: the applicant sees the decision, the award and notifications; never internal notes', async () => {
     const a = await asAccount(browser, ACCOUNTS.applicantA)
     await a.goto(`/ideas/${id}`)
-    await expect(a.getByText('Awarded BWP 250,000.00.')).toBeVisible({ timeout: 20_000 })
+    await a.getByRole('tab', { name: 'Decision' }).click()
+    const panel = a.getByRole('tabpanel')
+    await expect(panel.getByRole('heading', { name: 'Decision: Approved' })).toBeVisible({ timeout: 20_000 })
+    await expect(panel.getByText('Strong scores and a credible pilot plan (browser test).')).toBeVisible()
+    await expect(panel.getByRole('heading', { name: 'Award: BWP 250,000.00' })).toBeVisible()
     await expect(a.getByText('Fits the challenge (browser test).')).toHaveCount(0) // the screening reason is a staff note
     await a.goto('/notifications')
     await expect(a.getByText(reference).first()).toBeVisible({ timeout: 20_000 })
