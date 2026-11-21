@@ -4,6 +4,10 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `design` **My ideas laid out to Sandra's 21 Nov frame** (T06, #100). "MY IDEAS" above "Welcome, <name>"; a red "An idea needs your response" banner with the earliest deadline and that idea's action; two-column cards with the status pill and reference, the five-step stepper, "Updated … ago" with the deadline, and the one action; a red top edge on cards that need a response. The page's h1 is now "Welcome, <name>" (tests updated, including the hosted journey and the smoke suite).
+
+  Evidence: 325 tests pass; lint and type-check pass; browser smoke suite 20 passed at 360 and 1280 px; no sideways scroll.
+
 - `design` **T02 create account laid out to Sandra's frame** ("ceda site create account", 21 Nov; #100). The register page is now "Create your account" ("Register to submit and track ideas."). The password rules sit in a "Your password must have:" box that ticks off "At least 12 characters" as you type; screen readers hear "done" or "not yet", and the box is linked to the field. The privacy panel is the compact "How we use your information" (purpose, who can see it, proposed retention, contact; spec T02), still marked Sample. The full, versioned notice is one tap away under "Read the full privacy notice", because consent is recorded against its version. The consent row reads "I agree to the privacy notice." with "Required", the button says "Create account" at full width, and "Already registered? Sign in" is centred. Differences logged as handoff-notes #22.
 
   Evidence: 2 new tests (the live 12-character rule and its link to the field; the full notice stays reachable) and the register tests updated to the new wording.

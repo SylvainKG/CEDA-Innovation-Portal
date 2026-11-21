@@ -86,7 +86,7 @@ describe('T02 sign in', () => {
     type(/Email address/, 'applicant.a@demo.ceda-portal.test')
     type(/^Password/, 'demo-password-1')
     press(/^Sign in$/)
-    expect(await screen.findByRole('heading', { level: 1, name: 'My ideas' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Welcome, Demo Applicant A' })).toBeInTheDocument()
   })
 
   it('removes the previous person’s unsent drafts and keys when someone else signs in, but keeps the same person’s', async () => {
@@ -96,7 +96,7 @@ describe('T02 sign in', () => {
     type(/Email address/, 'applicant.a@demo.ceda-portal.test')
     type(/^Password/, 'demo-password-1')
     press(/^Sign in$/)
-    await screen.findByRole('heading', { level: 1, name: 'My ideas' })
+    await screen.findByRole('heading', { level: 1, name: 'Welcome, Demo Applicant A' })
     expect(window.localStorage.getItem('ceda.draft.local.p1')).toBeNull()
     expect(window.localStorage.getItem('ceda.last.user')).toBe('demo-applicant-a')
   })
@@ -225,7 +225,7 @@ describe('sign out', () => {
     window.localStorage.setItem('ceda.draft.local.p1', '{"data":{}}')
     window.localStorage.setItem('ceda.submit.key.p1', 'k1')
     renderAt('/ideas')
-    await screen.findByRole('heading', { level: 1, name: 'My ideas' })
+    await screen.findByRole('heading', { level: 1, name: 'Welcome, Demo Applicant A' })
     press('Sign out')
     expect(await screen.findByRole('heading', { level: 1, name: 'Submit your innovation to CEDA' })).toBeInTheDocument()
     expect(window.localStorage.getItem('ceda.draft.local.p1')).toBeNull()
