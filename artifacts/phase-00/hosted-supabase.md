@@ -159,6 +159,49 @@ Independent check afterwards: 8 cases, sequence 8, 1 file. The snapshot file was
 
 The first attempt (run 44886087299) failed on a test selector (the password field's accessible name is "PasswordRequired"), wrote nothing, and was fixed in #72.
 
+## 3f. Browser journey steps 5–17 against hosted, and two exact resets (21 Nov 2026)
+
+The same suite, extended with steps 5–17 (#72). Each staging run had its own snapshot before it and an exact reset after it, using `staging-reset.mjs` from `main` (#68), with project `hncwpxyuolfxafbemapb` confirmed as staging.
+
+| Run | Snapshot | Result | Reset |
+|---|---|---|---|
+| [44898204783](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44898204783), 11:15–11:18 UTC | 11:06:30 UTC: 33 tables, 259 rows, sequence 8, 1 storage object | Tests 1–5 passed; steps 5–15 passed; **failed at step 16** (the consultant's chat reply never reached the applicant: the page closed before the send finished, which left 1 chat message where a full exchange has 2). Fixed in #72 (`fcd971a`) | ~11:24 UTC, see below |
+| [44909107002](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44909107002), 13:31–13:32 UTC, from `main` (`f035194`) | 13:28:40 UTC: 33 tables, 259 rows (same as the 11:06 baseline), sequence 8, 1 storage object | **6 passed: the full main journey, steps 0–17, through the real screens against this project.** This includes chat both ways, the CSV export containing the case, and the audit log filtered by the case | ~13:39 UTC, see below |
+
+Between the two runs, the throwaway-stack rehearsal (run 44898567700, `journey_local`) wrote nothing here.
+
+**A setting changed by a run has to go back to its exact snapshot value before the reset.** Both runs touched `app_settings.chat_demo_override`. The first left it on `"open"` after failing; the second put it back to `null` itself, through `set_chat_override(null)`. That function also sets `updated_at = now()`, so in both cases the row still differed from the snapshot, and the reset would roll back rather than overwrite an existing row (by design). Before each reset I restored the row's exact snapshot values with one guarded update: `value = null`, `updated_at = 2026-11-17 07:13:46.482239+00`, applied only while the row still held the run's value. `app_settings` has no triggers.
+
+**What each reset removed** (all 33 tables identical to the snapshot before commit; 19 triggers paused and re-enabled; the run's PDF deleted through the Storage API, HTTP 200):
+
+| Table | Run 1 (11:24) | Run 2 (13:39) |
+|---|---|---|
+| `proposals` / `proposal_versions` / `attachments` | 1 / 2 / 2 | 1 / 2 / 2 |
+| `case_events` | 9 | 9 |
+| `feedback_requests` / `feedback_tasks` / `task_verifications` | 2 / 3 / 6 | 2 / 3 / 6 |
+| `assignments` / `scorecards` / `scorecard_items` | 2 / 3 / 12 | 2 / 3 / 12 |
+| `internal_notes` / `decisions` / `awards` | 1 / 1 / 1 | 1 / 1 / 1 |
+| `chat_sessions` / `chat_messages` | 1 / 1 | 1 / **2** |
+| `notifications` / `audit_events` | 14 / 29 | 14 / 30 |
+| Reference sequence | 9 → 8 | 9 → 8 |
+
+**Independent check after each reset:** 8 cases (highest `CEDA-2026-0008`), sequence 8, 8 versions, 1 storage object (the demo template), chat override `null`, and no disabled triggers in `public`; after the second, also 13 accounts. The demo starts at `CEDA-2026-0009`. Both snapshot files were deleted.
+
+## 3g. Readiness for the Amplify site in Supabase mode (21 Nov 2026, ~13:55 UTC)
+
+Checked before Sylvain switches the Amplify staging build from `VITE_API_MODE=mock` to `supabase`. Until then the deployed bundle is mock mode: it contains no Supabase URL, so a registration on the site creates nothing here. That was confirmed on 21 Nov with 13 accounts, none created in the last 24 hours.
+
+| Check | Result |
+|---|---|
+| Auth Site URL and Redirect URLs (Management API) | Site URL `https://main.d270qrk6a7zs47.amplifyapp.com`; Redirect URLs: that host and `…/**`, plus `http://localhost:5173` and `…/**`; minimum password length 12 |
+| Edge Function secrets (names only) and status | `PORTAL_URL`, `APP_ORIGINS`, `RELAY_SECRET`; `attachment-url`, `email-relay`, `invite-staff` all ACTIVE |
+| `APP_ORIGINS`, tested by behaviour: CORS preflight to `attachment-url` and `invite-staff` | From the Amplify origin: `204` with `Access-Control-Allow-Origin` set to that origin. From a foreign origin: `204` with no allow-origin, so the browser blocks it |
+| Email | **Simulated** (C-22): no custom SMTP. Supabase's built-in sender only mails the project's team members, at 2 per hour, and `mailer_autoconfirm` is off. So a **new** registration waits for a confirmation email that doesn't arrive; judges use the seeded, already-verified demo accounts |
+
+**Supabase advisors, same session:** unchanged in substance from the 17 Nov baseline (API contract, test record):
+- **Security:** `SECURITY DEFINER` RPCs callable signed in (63, by design, D-02; the exact list is pinned by `010_security_privileges`, which passed on hosted at 10:29 UTC) and signed out (`health`, `chat_status`); `app_settings` and `email_outbox` have no policies (intentional: no client access); leaked-password protection is off (Pro feature).
+- **Performance (INFO):** 34 unindexed foreign keys and one table with two permissive `SELECT` policies, both recorded debt; unused indexes are down from 15 to 1, now that the tables have been used.
+
 ## 4. Not done or not run
 
 | Item | Status |
