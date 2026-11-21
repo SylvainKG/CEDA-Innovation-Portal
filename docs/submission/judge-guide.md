@@ -77,7 +77,7 @@ Evidence for each: the negative suite in `docs/testing/test-plan.md` §2 and the
 
 | Area | Status |
 |---|---|
-| Submission, references, versions, files (private, 60-second download links) | Built and verified on the hosted project (C-02, C-11) |
+| Submission, references, versions, files (private, 60-second download links) | Built. Files and download links verified on the hosted project (C-02); one idea per submit, even when sent twice at once, proven at the database layer, with the repeated-submit replay also checked through the hosted API (C-11) |
 | Roles and permissions, enforced in the database for every route | Built and verified (C-01, C-03 to C-10) |
 | Audit trail | Every workflow action is recorded. Entries can't be changed or deleted by any portal user, including administrators (C-06, C-14) |
 | Live updates | Delivered only to the people allowed to see them (C-16) |
