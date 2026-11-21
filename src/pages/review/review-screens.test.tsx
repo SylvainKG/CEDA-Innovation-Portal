@@ -35,7 +35,7 @@ const as = (role: Role | null) => mockSession.switchDemoRole?.(role)
 async function declareClear(user: UserEvent) {
   await user.click(await screen.findByRole('radio', { name: /I have no conflict of interest/ }))
   await user.click(screen.getByRole('button', { name: 'Continue to proposal' }))
-  await screen.findByRole('heading', { name: 'Your scorecard' })
+  await screen.findByRole('heading', { name: 'Your scorecard · Version 1' })
 }
 
 /** Score every criterion with the same score and a valid reason. */
@@ -74,7 +74,7 @@ describe('T09 declaration gate', () => {
   it('keeps the proposal closed until the reviewer declares no conflict', async () => {
     await as('reviewer')
     const user = renderAt(`/staff/cases/${CASE_8}/score`)
-    expect(await screen.findByRole('heading', { name: 'Declare before you open the proposal' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Before you open this proposal' })).toBeInTheDocument()
     expect(screen.getByText('Lesedi Agro Demo', { exact: false })).toBeInTheDocument()
     expect(screen.queryByText('Fictional problem statement (DEMO).')).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Continue to proposal' }))
@@ -86,7 +86,7 @@ describe('T09 declaration gate', () => {
   it('a conflict, once confirmed, withdraws the reviewer from the case', async () => {
     await as('reviewer')
     const user = renderAt(`/staff/cases/${CASE_8}/score`)
-    await user.click(await screen.findByRole('radio', { name: 'I have a conflict of interest' }))
+    await user.click(await screen.findByRole('radio', { name: 'I have a conflict' }))
     await user.click(screen.getByRole('button', { name: 'Declare conflict and withdraw' }))
     const dialog = await screen.findByRole('dialog', { name: 'Declare a conflict and withdraw?' })
     expect(within(dialog).getByText("You'll lose access to this case. An administrator will reassign it.")).toBeInTheDocument()
@@ -104,10 +104,10 @@ describe('T09 scorecard', () => {
     await as('reviewer')
     const user = renderAt(`/staff/cases/${CASE_8}/score`)
     await declareClear(user)
-    expect(screen.getByText('Weighted score: — (score every criterion)')).toBeInTheDocument()
+    expect(screen.getByRole('group', { name: 'Weighted score' })).toHaveTextContent('— out of 5Score every criterion to see it.')
     const innovation = screen.getByRole('radiogroup', { name: 'Innovation score' })
     await user.click(within(innovation).getByText('5'))
-    expect(screen.getByText('Selected: 5 · Fully demonstrated with evidence')).toBeInTheDocument()
+    expect(screen.getByText('Fully demonstrated with evidence')).toBeInTheDocument()
     await user.click(within(screen.getByRole('radiogroup', { name: 'Feasibility score' })).getByText('3'))
     await user.type(screen.getByLabelText('Reason for your Feasibility score'), LONG)
 
@@ -137,7 +137,7 @@ describe('T09 scorecard', () => {
     const user = renderAt(`/staff/cases/${CASE_8}/score`)
     await declareClear(user)
     await scoreAll(user, 4)
-    expect(screen.getByText('Weighted score: 4.00 of 5')).toBeInTheDocument()
+    expect(screen.getByRole('group', { name: 'Weighted score' })).toHaveTextContent('4.00 out of 5')
     await user.click(screen.getByRole('button', { name: 'Submit scorecard' }))
     const dialog = await screen.findByRole('dialog', { name: 'Submit your scorecard for CEDA-2026-0008?' })
     expect(within(dialog).getByText("You can't change scores after submitting.")).toBeInTheDocument()
