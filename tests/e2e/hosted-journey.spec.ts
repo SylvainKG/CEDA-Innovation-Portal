@@ -278,7 +278,7 @@ test('Steps 5-17: the case goes from screening through revision, decision and aw
     await openCase(s, id)
     await s.getByRole('button', { name: 'Record screening' }).click()
     const screen = s.getByRole('dialog')
-    await screen.getByRole('radio', { name: 'Eligible' }).check()
+    await screen.getByRole('radio', { name: 'Eligible', exact: true }).check()
     await screen.getByLabel(/^Reason/).fill('Fits the challenge (browser test).')
     await screen.getByRole('button', { name: 'Record result' }).click()
     await expect(s.getByText('Recorded as eligible. The case moved to evaluation.')).toBeVisible({ timeout: 20_000 })
@@ -352,7 +352,7 @@ test('Steps 5-17: the case goes from screening through revision, decision and aw
     await expect(a.getByRole('heading', { level: 1, name: 'Revise your idea' })).toBeVisible({ timeout: 20_000 })
     const roadmap = a.getByRole('region', { name: 'Roadmap' })
     for (const task of await roadmap.getByRole('group').all()) {
-      await task.getByRole('radio', { name: 'Addressed' }).check()
+      await task.getByRole('radio', { name: 'Addressed', exact: true }).check()
       await task.getByLabel('What did you change?').fill('Done in version 2 (browser test).')
     }
     await a.getByLabel(/^What changed\?/).fill('Added a budget, the site and a maintenance plan (browser test).')
@@ -387,7 +387,7 @@ test('Steps 5-17: the case goes from screening through revision, decision and aw
     await openCase(adj, id)
     await adj.getByRole('button', { name: 'Record decision' }).click()
     const dialog = adj.getByRole('dialog')
-    await dialog.getByRole('radio', { name: 'Approved' }).check()
+    await dialog.getByRole('radio', { name: 'Approved', exact: true }).check()
     await dialog.getByLabel(/^Reason/).fill('Strong scores and a credible pilot plan (browser test).')
     await dialog.getByRole('button', { name: 'Save decision (not published)' }).click()
     await expect(adj.getByText(/Decision saved as Approved\. It is not published/)).toBeVisible({ timeout: 20_000 })
