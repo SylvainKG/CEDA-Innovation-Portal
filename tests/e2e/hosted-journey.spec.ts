@@ -52,7 +52,7 @@ async function signIn(page: Page, account: Account) {
   }
   await page.goto('/auth/sign-in')
   await page.getByLabel('Email address').fill(account.email)
-  await page.getByLabel('Password', { exact: true }).fill(password)
+  await page.getByLabel(/^Password/).fill(password)
   await page.getByRole('button', { name: 'Sign in' }).click()
   await page.waitForURL((url) => !url.pathname.startsWith('/auth/'), { timeout: 20_000 })
 }
@@ -105,7 +105,7 @@ test('a wrong password is refused without saying which part was wrong', async ({
   test.skip(mock, 'The mock has no passwords')
   await page.goto('/auth/sign-in')
   await page.getByLabel('Email address').fill(ACCOUNTS.applicantA.email)
-  await page.getByLabel('Password', { exact: true }).fill('not-the-demo-password')
+  await page.getByLabel(/^Password/).fill('not-the-demo-password')
   await page.getByRole('button', { name: 'Sign in' }).click()
   await expect(page.getByText('Email or password is incorrect.')).toBeVisible()
   await expect(page).toHaveURL(/\/auth\/sign-in/)
