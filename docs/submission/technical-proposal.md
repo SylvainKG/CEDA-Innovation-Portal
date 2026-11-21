@@ -130,7 +130,7 @@ It is backed by a side-by-side comparison of V1 and V2 (INN-01) and a rule-based
 
 **Testing.**
 
-- **487 pgTAP assertions** in 12 suites, run in CI on the Supabase local stack on every database change. The latest run against the hosted project passed 482 of 482 (20 Nov, before migration 015); the release run is **[confirm at release]**. **Mutation checks** confirm the tests fail when a rule is broken.
+- **502 pgTAP assertions** in 13 suites, run in CI on the Supabase local stack on every database change. The latest run against the hosted project passed 493 of 493 (21 Nov, before the report reconciliation suite was added); the release run is **[confirm at release]**. **Mutation checks** confirm the tests fail when a rule is broken.
 - A **two-connection concurrency test** for double submits.
 - **Vitest** for the frontend logic.
 - **Playwright** browser checks at 360 and 1280 px, and a security-header check against the deployed site.
@@ -160,7 +160,7 @@ Every claim is in `docs/testing/claim-register.md`, with its evidence and what i
 ## 11. Lessons learned
 
 1. **Put the rule where it can't be skipped.** Enforcing access and state in the database meant screens could be built fast without each one re-implementing security, and it made the negative tests meaningful.
-2. **Test the refusal, not only the success.** Most of our 487 assertions check that the wrong person or the wrong state is refused and that nothing changed. Mutation checks proved the tests can fail.
+2. **Test the refusal, not only the success.** Most of our 502 assertions check that the wrong person or the wrong state is refused and that nothing changed. Mutation checks proved the tests can fail.
 3. **Say exactly what was verified, and where.** We learned to label evidence by layer ("database", "API on the hosted project", "browser") and to write Not run and Simulated plainly. Our own reset tool, for example, showed that the database owner can pause protective triggers, so we narrowed the audit claim to "any portal user, including administrators".
 4. **Small, reviewed, green pull requests.** Seven required checks and review on every PR caught real problems: function privileges, a confidential screening note visible to applicants, whitespace-only answers, and a data-loss bug in the form's first autosave, before they reached the build.
 5. **Design and code in parallel.** When design frames lagged, building from the written spec with design review on staging kept the plan on time (BCR-003).
