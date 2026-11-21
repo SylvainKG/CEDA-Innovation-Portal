@@ -4,6 +4,10 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `design` **Reports laid out to Sandra's 21 Nov frames** (#119 screen F; `ceda adjudicator reports.pdf` and its outcomes, timelines, impact and chats pages, `ceda administrator reporting.pdf`). "INNOVATION PORTAL" over "Reports", "Operational indicators for administrators and committee members." and Export CSV at the right; the filters in one card (challenge, "Date range (CAT)" from and to, Apply filters) with the applied ones as removable chips and "Clear all"; each chart in a card with "Filtered by the controls above" ("All time" for chat), a "Show as table" toggle with a steady label, and the bars on a light full-width track with the value at the right.
+
+  Evidence: report and chat tests pass (16); lint and type-check pass; checked in the browser as the administrator at 1280 and 360 px (chips apply and clear; no sideways scroll, controls at least 44 px).
+
 - `design` **Users and roles laid out to Sandra's 21 Nov frames** (#119 screen G; `ceda administrator users +roles.pdf`, `ceda administrator invite user.pdf`). "ADMIN SETTINGS" over the title and "Invite user" at the right, which opens the invitation as a side sheet ("A time-limited invitation is sent to the email address."; email, full name and role, each REQUIRED). Everyone registered in table-like rows from 768 px (NAME, EMAIL, ROLES, ACTIONS): roles as orange chips with a × to remove, and "Choose a role" + Grant role; your own row says "You can't change your own roles." once. People stack on phones; the list stays a list for screen readers. "Case stages (fixed for this MVP)" below.
 
   Evidence: admin and routing tests pass (29; the invite test now opens the sheet first); lint and type-check pass; checked in the browser as the administrator at 1280 and 360 px (no sideways scroll, controls at least 44 px).
