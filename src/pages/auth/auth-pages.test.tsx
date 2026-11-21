@@ -47,8 +47,28 @@ describe('T02 sign in', () => {
     type(/Email address/, 'applicant.a@demo.ceda-portal.test')
     type(/^Password/, MOCK_WRONG_PASSWORD)
     press(/^Sign in$/)
-    expect(await screen.findByText('Email or password is incorrect.')).toBeInTheDocument()
+    // Shown in the "There is a problem" box (Sandra's frame), linked to the email field to try again.
+    const summary = await screen.findByRole('alert')
+    expect(within(summary).getByRole('link', { name: 'Email or password is incorrect.' })).toHaveAttribute('href', '#signin-email')
     expect(screen.getByLabelText(/^Password/)).toHaveValue('')
+  })
+
+  it('has the frame’s intro and puts "Forgot password?" under the password field', async () => {
+    renderAt('/auth/sign-in')
+    expect(await screen.findByText('Access your ideas or staff workspace.')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Forgot password?' })).toHaveAttribute('href', '/auth/forgot')
+    expect(screen.getByRole('link', { name: 'Register' })).toHaveAttribute('href', '/auth/register')
+  })
+
+  it('demo picker lists the seven journey accounts and fills in the email only, without signing in', async () => {
+    renderAt('/auth/sign-in')
+    const picker = await screen.findByRole('region', { name: 'Choose a demo portal' })
+    expect(within(picker).getAllByRole('button')).toHaveLength(7)
+    fireEvent.click(within(picker).getByRole('button', { name: 'Screening officer' }))
+    expect(screen.getByLabelText(/Email address/)).toHaveValue('screening@demo.ceda-portal.test')
+    expect(screen.getByLabelText(/^Password/)).toHaveValue('')
+    expect(document.activeElement).toBe(screen.getByLabelText(/^Password/))
+    expect(screen.getByRole('heading', { level: 1, name: 'Sign in' })).toBeInTheDocument()
   })
 
   it('offers to resend the link to an unverified address', async () => {
