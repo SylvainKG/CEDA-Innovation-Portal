@@ -13,6 +13,7 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
   - D-35: manual fallback.
 
   Stacey's re-check table is added to BCR-001, and the phase-00 record and claim C-18 are updated. Open follow-up: list the D-07 flag in the release notes.
+- `test` **Smoke checks no longer fail against the Supabase-mode staging site.** The signed-in page checks in `shell-smoke.spec.ts` use the mock session, which only a mock-mode build has, so they now skip when `E2E_BASE_URL` points at a deployed site. There, the real-backend journey (`hosted-journey.spec.ts`) covers signed-in pages; it passed 4/4 read-only against the deployed site (run 44953549649). In mock mode all 20 smoke checks still run and pass.
 - `docs` **Submission documents brought up to date for the release** (judge guide, user manual, technical proposal):
   - the line "Peolwane is the portal's name; it is built for CEDA's Innovation Fund" in all three;
   - the four screenshots retaken with the Peolwane brand, from a mock build, without the development-only role switcher;
