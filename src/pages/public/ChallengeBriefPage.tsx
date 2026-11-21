@@ -111,7 +111,7 @@ export function ChallengeBriefPage() {
         ) : null}
 
         <p>
-          Questions? <Link to="/help/faqs">Read the FAQs</Link>.
+          Questions? <Link to="/help/faqs" className="inline-flex min-h-touch items-center">Read the FAQs</Link>.
         </p>
         {/* Mobile: sticky to the bottom of the content, so it never covers the footer or another bottom bar. */}
         <div className="sticky bottom-0 z-10 -mx-4 border-t border-line bg-surface-card p-3 lg:hidden">{action}</div>

@@ -6,6 +6,7 @@ import type { DecisionOutcome, StaffCase } from '@/lib/api/types'
 import { activeDecision } from '@/features/staff/case-view'
 import { formatDateTimeCAT } from '@/lib/format'
 import { AWARD_MAX_MINOR, AWARD_MIN_MINOR, formatBWP, parseBWP } from '@/lib/money'
+import { RequiredTag } from '@/components/ErrorSummary'
 
 /**
  * Slice 5 (spec T08 Decision tab, T10 decision/publish/award/close; contract §4.5), built from the written spec
@@ -128,7 +129,7 @@ export function RecordDecisionDialog({ c, open, onOpenChange, onDone }: { c: Sta
       <p className="text-sm">Assessed version: Version {c.version?.version_no ?? 1} (current)</p>
       <fieldset className="flex flex-col gap-2" aria-describedby={errors.outcome ? `${id}-oerr` : undefined}>
         <legend className="font-semibold">
-          Outcome <span className="text-sm font-normal text-ink-muted">Required</span>
+          Outcome <RequiredTag />
         </legend>
         {(['approved', 'not_approved'] as const).map((o) => (
           <label key={o} className="flex min-h-touch items-center gap-3">
