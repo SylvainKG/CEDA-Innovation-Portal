@@ -21,6 +21,8 @@ Each test file runs in its own transaction and rolls back. The case-reference se
 
 **Process note (Sylvain's review of #35):** migrations 012 and 013 were applied to hosted before their PRs were reviewed, so hosted is ahead of `main` until #35 and #40 merge. From now on, only migrations already on `main` are applied to hosted. The runner is for staging only, never for the judging project after code freeze (22 Nov, 18:00 CAT).
 
+**Hosted matches `main` since 21 Nov, 10:27 UTC**, when #40 merged (`694dc65`). Both list the same 15 migrations, `20261116100000` to `20261123130000` (hosted read through the Management API). The 013 file on `main` is identical to the one applied on 17 Nov from `ae1aaa6` (`git diff ae1aaa6 694dc65` on that file is empty).
+
 | When | Test files from | Command | Summary line |
 |---|---|---|---|
 | 17 Nov, 10:15 (12:15) | `db/security-checks` (migrations 001–010) | Local `pg` runner, the same method as below | `TOTAL 457 assertions, 0 failed` |
@@ -32,27 +34,31 @@ Each test file runs in its own transaction and rolls back. The case-reference se
 | 20 Nov, 13:47:44 (15:47:44) | `main` + 013 tests (after 014) | `run-hosted.mjs`, TLS verified with the dashboard CA (`prod-ca-2021.crt`) | `TOTAL 482 assertions, 0 failed (hosted, 14.2 s)`; sequence `8 -> restored to 8` |
 | 21 Nov, 08:30:07 (10:30:07) | `main` (`f42e31d`) + 013's suite, after 015 | `run-hosted.mjs`, TLS verified | `TOTAL 492 assertions, 4 failed`: `009` #7, #8, #15 and `007` #24 counted genuine history on hosted (0003's real expiry at 14:00 UTC and its extension at 14:06 UTC on 20 Nov). Not a defect: the checks assumed a fresh seed |
 | 21 Nov, 08:38:49 (10:38:49) | branch `db/tests-hold-on-live-data` (#97) + 013's suite | Same | **`TOTAL 493 assertions, 0 failed`**: the four checks now count only their own transaction's rows; sequence 8 |
+| **21 Nov, 10:29:40 (12:29:40)** | **`main` (`694dc65`)**, all 13 suites, hosted at migration 015 and level with `main` | `run-hosted.mjs`, TLS verified | **`TOTAL 507 assertions, 0 failed (hosted, 12.2 s)`**; sequence `8 -> restored to 8`. The same count as CI on `main`, including the report reconciliation suite (`013`) on the live data |
 
 Output of the last run (all files `ok`):
 
 ```
-hosted run started 2026-11-17T16:30:35.819Z · Postgres 17.12 · latest migration 20261123100000
+hosted run started 2026-11-21T10:29:40.813Z · Postgres 17.12 · latest migration 20261123130000
 ok   001_foundation.test.sql: 39 passed, 0 failed
-ok   002_slice1_submit.test.sql: 59 passed, 0 failed
-ok   003_slice2_screen_assign.test.sql: 56 passed, 0 failed
+ok   002_slice1_submit.test.sql: 62 passed, 0 failed
+ok   003_slice2_screen_assign.test.sql: 61 passed, 0 failed
 ok   004_slice3_evaluate.test.sql: 61 passed, 0 failed
 ok   005_slice4_revise.test.sql: 72 passed, 0 failed
 ok   006_slice5_decide_award.test.sql: 45 passed, 0 failed
-ok   007_slice6_reports_audit_chat.test.sql: 45 passed, 0 failed
+ok   007_slice6_reports_audit_chat.test.sql: 46 passed, 0 failed
 ok   008_slice6_admin_settings.test.sql: 52 passed, 0 failed
 ok   009_scheduled_jobs.test.sql: 20 passed, 0 failed
 ok   010_security_privileges.test.sql: 11 passed, 0 failed
-reference sequence 8 -> restored to 8
+ok   011_my_ideas.test.sql: 14 passed, 0 failed
+ok   012_alert_preference.test.sql: 10 passed, 0 failed
+ok   013_report_reconciliation.test.sql: 14 passed, 0 failed
+reference sequence 8 -> restored to 8 (highest existing reference 8)
 
-TOTAL 460 assertions, 0 failed (hosted, 9.3 s)
+TOTAL 507 assertions, 0 failed (hosted, 12.2 s)
 ```
 
-`main` has 460 assertions; PR #35 adds the 3 whitespace tests (463 in total, also passed on hosted, row 3 above).
+This is not yet the release run: that is repeated against the release commit after code freeze, on staging only.
 
 ## 3. Accounts, Edge Functions, scheduled jobs (17 Nov)
 
