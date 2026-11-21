@@ -29,7 +29,8 @@ The code token names are fixed so implementation can start now. Only values chan
 | `surface-sunken` | — (literal) | `#FAF9F7` | Figma (Make CSS) | Table header, read-only areas |
 | `text-primary` | `--ink` | `#333333` | Figma (Make CSS) | Body text. 12.63:1 on white ✓ |
 | `text-secondary` | `--muted` | `#727272` | Figma (Make CSS) | Help text, metadata. 4.81:1 ✓ — but `#888`, `#999` and `#AAA` are also used for text and fail (see contrast table) |
-| `border-default` | `--line` | `#E6E3DF` | Figma (Make CSS) | Cards, dividers. Inputs use `#DCD9D5` |
+| `border-default` | `--line` | `#E6E3DF` | Figma (Make CSS) | Cards, dividers only (decorative, no contrast needed) |
+| `border-input` | — | `#8A8580` | **Decided 18 Nov (Sandra)** | Borders of text fields, selects, textareas, checkboxes, radios and the upload drop zone. 3.65:1 on white, 3.47:1 on `#FAF9F7` (WCAG 1.4.11 needs ≥ 3:1). Replaces Make's `#DCD9D5` (1.41:1, fails). Warm grey, in the Make palette's family. **States:** default 1 px `#8A8580` · hover 1 px `#727272` · focus: border unchanged + 2 px `focus-ring` with 2 px offset · error 2 px `#B42C28` (6.30:1) + error text below, never colour alone · disabled 1 px `#E6E3DF` on `#FAF9F7` with `#727272` text and a visible reason · read-only: no border, `#FAF9F7` fill |
 | `focus-ring` | — | `#1A73E8` | placeholder | Make removes outlines on search and filters and has no visible focus there. Keep the placeholder until a branded ring is approved |
 | `feedback-error` | `--red` | `#E53935` | Figma (Make CSS) | Errors, destructive button (white on it 4.23:1: passes UI, fails small text) |
 | `feedback-error-subtle` *(new)* | `--red-pale` | `#FFF0EF` | Figma (Make CSS) | Error badge background |
@@ -40,17 +41,19 @@ The code token names are fixed so implementation can start now. Only values chan
 | `demo-subtle` | — | `#F3F2EF` | **decided** | Sample label and demo banner background |
 | `demo-border` | — | `#8A8580` | **decided** | Sample label 1 px dashed border |
 
-**Status colours.** Make draws badges as a pill with a coloured dot + text (no icon). It defines four tones only, and several blueprint statuses have no tone yet.
+**Status colours — F4 decided 18 Nov (Sandra), existing colours only.** Every badge is a pill with an **icon + text**, never colour alone. Badge **label text is `#333333`** in every tone (it passes on all backgrounds below); the tone comes from the background, border and icon colour (icon is UI: ≥ 3:1). Only Awarded uses `#1F1F1F` for text and icon. 
 
-| Code token | Figma variable | Background | Text | Source |
+| Code token | Label (applicant / staff) | Background | Icon colour, icon | Source |
 |---|---|---|---|---|
-| `status-draft` | `.status` default | `#F3F2EF` | `#6E6E6E` (4.55:1) | Figma (Make CSS) |
-| `status-submitted` | `.status-submitted` | `#FFF3E9` | `#B65C0E` (4.25:1, fails at 8 px) | Figma (Make CSS) |
-| `status-review` | `.status-under-evaluation` | `#FFF3E9` | `#B65C0E` | Figma (Make CSS). Same tone as Submitted, so the two can't be told apart by colour |
-| `status-action-required` | `.status-feedback-requested` | `#FFF0EF` | `#B42C28` (5.69:1) | Figma (Make CSS). Red reads as an error; spec uses amber |
-| `status-approved` | `.status-completed` (nearest) | `#EDF7F0` | `#3F7650` (4.89:1) | Figma (Make CSS), reused |
-| `status-closed` | — | `#F2F4F7` | `#344054` | placeholder |
-| `status-awarded` | `.status-selected` (nearest) | `#FFF9DC` | `#7E6500` (5.29:1) | Figma (Make CSS), reused |
+| `status-draft` | Draft | `#F3F2EF` | `#6E6E6E` icon (4.55:1), Lucide `PencilLine` | Decided 18 Nov (Make values) |
+| `status-submitted` | Submitted / Awaiting screening | `#FFF3E9` | `#B65C0E` icon (4.25:1), `Send` | Decided 18 Nov (Make values) |
+| `status-review` | Under review / In evaluation | `#FAF9F7` + 1 px `#E6E3DF` border | `#B65C0E` icon (4.41:1), `Search` | Decided 18 Nov. **Replaces the indigo placeholder `#E8EAFB` / `#3538CD`** (not a brand colour). Told apart from Submitted by background, border and icon |
+| `status-action-required` | Action required / Waiting on applicant | `#FFF9DC` | `#7E6500` icon (5.29:1), `AlertCircle` | Decided 18 Nov. **Amber, not red**: red stays for errors only |
+| `status-approved` | Approved | `#EDF7F0` | `#3F7650` icon (4.89:1), `CheckCircle2` | Decided 18 Nov (Make values) |
+| `status-closed` | Not approved / Closed | `#FFFFFF` + 1 px `#8A8580` border | `#333333` icon (12.63:1), `XCircle` | Decided 18 Nov. **Replaces placeholder `#F2F4F7` / `#344054`** |
+| `status-awarded` | Awarded | `#F9C51C` (solid gold) | `#1F1F1F` text and icon (10.23:1), `Award` | Decided 18 Nov. Solid fill so it can't be confused with Action required |
+
+**Challenge timing pills (T01, T03)** reuse the same tones: Open → `status-approved` · Closing soon → `status-action-required` · Opening soon → `status-review` · Closed → `status-closed`. Same rule: icon + text. Don't lower the opacity of closed cards (it drops text below 4.5:1); use the Closed pill and the "Closed on …" line instead.
 
 ## Typography
 
@@ -101,14 +104,24 @@ Make uses **Inter** (Google Fonts, weights 400/500/600/700/800) with no system f
 | `#3F7650` on `#EDF7F0` (completed badge) | 4.89:1 | Pass | 16 Nov 2026 |
 | `#6E6E6E` on `#F3F2EF` (default badge) | 4.55:1 | Pass (just) | 16 Nov 2026 |
 | `#FFFFFF` on `#E53935` (danger button) | 4.23:1 | UI only | 16 Nov 2026 |
+| `#8A8580` on `#FFFFFF` (input border) | 3.65:1 | Pass (UI) | 18 Nov 2026 |
+| `#8A8580` on `#FAF9F7` (input border, sunken) | 3.47:1 | Pass (UI) | 18 Nov 2026 |
+| `#DCD9D5` on `#FFFFFF` (Make input border) | 1.41:1 | **Fail** — retired | 18 Nov 2026 |
+| `#B42C28` on `#FFFFFF` (error border) | 6.30:1 | Pass | 18 Nov 2026 |
+| `#B65C0E` on `#FAF9F7` (Under review icon) | 4.41:1 | Pass (UI) | 18 Nov 2026 |
+| `#333333` on `#FAF9F7` (badge text) | 12.01:1 | Pass | 18 Nov 2026 |
+| `#333333` on `#FFF9DC` (badge text) | 11.93:1 | Pass | 18 Nov 2026 |
+| `#1F1F1F` on `#F9C51C` (Awarded badge) | 10.23:1 | Pass | 18 Nov 2026 |
 
-## Open fixes (proposed, need team approval — not applied)
+## Fixes (F2 and F4 decided; F1, F3, F5, F6 applied in code as proposed, pending team approval)
+
+**Input borders:** decided 18 Nov, see `border-input` under *Colour*.
 
 | # | Problem | Proposal | Keeps branding? |
 |---|---|---|---|
 | F1 | Type scale too small | Adopt the spec scale on Inter: body 16/24, small 14/20, h2 20/28, h3 17/24, inputs 16 px, badges and table headers 14 px (12 px uppercase only if contrast ≥ 4.5:1) | Yes (same typeface) |
 | F2 | Primary button and link contrast | **Decided 16 Nov (existing colours only):** primary buttons keep the `#F58220` fill with **dark label text `#1F1F1F` (6.35:1)** instead of white; orange **text** (links, table actions, active labels) uses `#B65C0E`, already in the Make file as the badge text colour (4.64:1 on white). `#F58220` stays for fills, icons, active indicators and illustrations. New tokens: `brand-primary-on` = `#1F1F1F`, `brand-primary-text` = `#B65C0E` | Yes — no new colour |
 | F3 | Grey text fails | Use `text-secondary #727272` for all secondary text; drop `#888`, `#999`, `#AAA` for text | Yes |
-| F4 | Status tones overlap or are missing | Separate Submitted and Under review; amber for Action required; add Closed; add icons next to the dot (spec: icon + text) | Mostly |
+| F4 | Status tones overlap or are missing | **Decided 18 Nov (Sandra):** see *Status colours* above. Existing colours only; indigo and slate placeholders retired | Yes — no new colour |
 | F5 | Radius sprawl | 4 (inputs, badges), 8 (cards, dialogs — round 9 → 8), 999 (pills) | Yes |
 | F6 | No focus indicator on some controls | 2 px focus ring + 2 px offset on every interactive element | Yes |
