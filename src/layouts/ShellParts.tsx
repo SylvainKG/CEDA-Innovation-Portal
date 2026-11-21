@@ -48,7 +48,7 @@ const FOOTER_LINKS = [
  * Footer (Sandra's 21 Nov frames, with the team's 21 Nov decision: Peolwane is a CEDA product). Three columns from
  * 768 px: what Peolwane is and a link to CEDA's main website; CEDA's head office; a pointer to CEDA's offices with a link
  * to CEDA's page for each office. Below: the portal links and the demo note. `chatSpace` keeps the bottom row clear
- * of the floating "Chat with CEDA" button on applicant pages. CEDA's details come from `src/brand/ceda-info.ts`.
+ * of the floating buttons: "Peolwane AI" on every page, and "Chat with CEDA" on applicant pages. CEDA's details come from `src/brand/ceda-info.ts`.
  */
 export function Footer({ chatSpace = false }: { chatSpace?: boolean }) {
   const ext = 'text-ink underline underline-offset-2 hover:text-brand-text'
