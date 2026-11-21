@@ -23,7 +23,7 @@ async function horizontalOverflow(page: Page) {
 const pages: { name: string; role?: string; path: string; heading: string | RegExp }[] = [
   { name: 'public home', path: '/', heading: 'Submit your innovation to CEDA' }, // T01 built from spec (was the placeholder title)
   { name: 'sign-in', path: '/auth/sign-in', heading: 'Sign in' },
-  { name: 'applicant home', role: 'applicant', path: '/ideas', heading: 'My ideas' },
+  { name: 'applicant home', role: 'applicant', path: '/ideas', heading: /^Welcome, / }, // T06 to Sandra's frame: greets the applicant
   { name: 'staff home', role: 'admin', path: '/staff', heading: /^Good (morning|afternoon|evening), / }, // T06 to Sandra's frames: greets the signed-in person
   { name: 'reviewer queue', role: 'reviewer', path: '/staff/reviews', heading: 'My reviews' },
 ]
