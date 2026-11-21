@@ -100,8 +100,8 @@ describe('API mode (composition root)', () => {
     expect(resolveApiMode('mock', false)).toBe('mock')
   })
 
-  it('fails fast for the Supabase mode until its adapters exist, and for unknown values', () => {
-    expect(() => resolveApiMode('supabase', true)).toThrow(/not available yet/)
+  it('accepts the Supabase mode and fails fast for unknown values', () => {
+    expect(resolveApiMode('supabase', false)).toBe('supabase')
     expect(() => resolveApiMode('prod', false)).toThrow(/Unknown VITE_API_MODE/)
   })
 })
