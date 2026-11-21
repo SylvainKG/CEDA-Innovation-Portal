@@ -21,7 +21,7 @@ export function ReceiptPage() {
   const r = receipt.data
 
   return (
-    <div className="flex max-w-form flex-col gap-6">
+    <div className="mx-auto flex w-full max-w-[38rem] flex-col gap-6">
       {/* The DEMO badge is in the header, which is not printed; a printed receipt must still say it is fictional. */}
       {/* The header (with the logo) is not printed, so the printed receipt carries the logo itself. */}
       <img src={brand.mark.src} alt={brand.fullName} width={brand.mark.width} height={brand.mark.height} className="hidden h-16 w-auto self-start print:block" />
@@ -38,6 +38,14 @@ export function ReceiptPage() {
           declarationAccepted: Boolean(r.declaration_accepted_at),
         }}
       />
+      <div className="flex flex-wrap justify-center gap-3 print:hidden">
+        <ButtonLink to={`/ideas/${r.proposal_id}`}>
+          View my idea
+        </ButtonLink>
+        <Button variant="secondary" icon={Printer} onClick={() => window.print()}>
+          Print receipt
+        </Button>
+      </div>
       <section aria-labelledby="next-heading" className="flex flex-col gap-2">
         <h2 id="next-heading" className="text-h2 font-semibold">
           What happens next
@@ -55,14 +63,6 @@ export function ReceiptPage() {
         </ol>
         <p className="text-sm text-ink-muted">Keep your reference: {r.reference}. Only you and CEDA staff assigned to this case can see your idea.</p>
       </section>
-      <div className="flex flex-wrap gap-3 print:hidden">
-        <ButtonLink to={`/ideas/${r.proposal_id}`}>
-          View my idea
-        </ButtonLink>
-        <Button variant="secondary" icon={Printer} onClick={() => window.print()}>
-          Print receipt
-        </Button>
-      </div>
     </div>
   )
 }
