@@ -4,6 +4,10 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `design` **Record decision laid out to Sandra's 21 Nov frame** (#119 screen C; `ceda adjudicatorsave decision.pdf`). The side sheet from #118 already gives the frame's "WORKFLOW ACTION" title, consequence strip, audit line and buttons; this adds the frame's order: Outcome and Reason, each with REQUIRED at the right, then "Assessed version" in a grey box with the version's real submission date ("Version 1 (current) · submitted 20 Oct 2026").
+
+  Evidence: 42 staff tests pass; lint and type-check pass; checked in the browser as the adjudicator (side sheet, then full screen on a narrow window; no sideways scroll).
+
 - `design` **Adjudicator score panel laid out to Sandra's 21 Nov frame** (#119 screen B; `ceda adjudicator evaluation.pdf`). The case's title as the heading ("SCORE PANEL" above it), its challenge and status badge, "Version n · x of y reviews submitted" and "Open full case →" for staff who can read the case; reviewers keep "Score panel" as the heading. One table with CRITERION, each reviewer and SPREAD in small capitals: each score in a tinted box with its reason behind "Reason", "Reviewers disagree (spread n)" under a criterion that differs by 2 or more, the spread in large figures, and a weighted-score row ending in "Panel average x out of 5". "Version n scorecards (count), read only" under it; the large-spread warning above it as a banner; each reviewer's submission time and overall comment in "Each reviewer"; and, for an adjudicator once every review is in, "Record decision on the case page". The per-criterion mean column and the aggregate card give way to the frame's layout.
 
   Evidence: panel test updated (title, score cells, panel average); 16 review tests pass; lint and type-check pass; checked in the browser as the adjudicator and as Reviewer 1 at 1280 and 360 px (no sideways scroll: only the table scrolls, with its hint; controls at least 44 px).
