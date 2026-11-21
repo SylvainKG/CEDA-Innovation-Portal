@@ -52,7 +52,10 @@ export const BRANDS = {
   },
 } as const satisfies Record<string, Brand>
 
-/** The brand in use. To change brand, change this one line and follow docs/design/brand.md. */
-export const ACTIVE: keyof typeof BRANDS = 'peolwane'
+/**
+ * The brand in use. To change brand, change this one line and follow docs/design/brand.md.
+ * CEDA for judging (team lead decision on #100, 21 Nov 2026); Peolwane is ready for after it.
+ */
+export const ACTIVE: keyof typeof BRANDS = 'ceda'
 
 export const brand: Brand = BRANDS[ACTIVE]
