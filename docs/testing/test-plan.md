@@ -28,6 +28,7 @@ Every check starts as **Not run**. A check becomes Passed or Failed only with a 
 - **Specs:** `tests/e2e/`. `shell-smoke.spec.ts` covers what exists today: page heading and DEMO label, no horizontal scroll, skip link, signed-out redirect, Forbidden and Not-found states, 44 px targets.
 - `hosting-headers.spec.ts` (deployed site only, skipped locally): HTTPS, the six security headers from `customHttp.yml` and the single-page-app rewrite (`/`, `/staff`, `/ideas/123` answer 200 with HTML, no redirect) on Amplify.
 - **What it does not prove:** the route guard is a UI convenience. **Access control is evidenced only by the N-tests against the real backend** (pgTAP now, Playwright once screens call the RPCs).
+- **Real-backend journey** (`hosted-journey.spec.ts`, issue #61): every demo account signs in; a wrong password is refused; staff screens show Forbidden to the wrong roles; Applicant B gets Not found for A's idea and receipt (N-a); Applicant A submits an idea, and a lost reply on `submit_proposal` is recovered with one case only (N-k). Run it with *Run workflow* → `journey` ticked. With no `base_url` it builds this checkout in Supabase mode inside the run (variable `SUPABASE_URL`, secret `SUPABASE_PUBLISHABLE_KEY`) and serves it on `localhost:5173`, an origin the project already allows; with `base_url` it tests that deployed build. It reads `DEMO_PASSWORD` from the Actions secret, and a first step names any missing setting without showing values. **Read-only by default**; ticking `journey_write` adds the submit test, which **creates one case**: snapshot before, exact reset after (#65, #68). Never against judging. Locally against a mock build: `E2E_JOURNEY=1 E2E_JOURNEY_MOCK=1 E2E_BASE_URL=…`.
 - **CI:** `.github/workflows/e2e.yml`, separate from `ci.yml`. Not a required check until the N1–N11 suite runs against the backend.
 
 ## 2. Negative suite (blueprint §3.3), required on video and automated
@@ -87,10 +88,10 @@ Credentials come from `DEMO_PASSWORD` in the environment, never from the spec fi
 
 | Browser / device | Main journey | Negative suite | Keyboard path | Status |
 |---|---|---|---|---|
-| Chrome (desktop) | ✓ | ✓ | ✓ | Not run |
+| Chrome (desktop) | ✓ | ✓ | ✓ | **Keyboard path and screen sweep: Passed with defects** (Chromium 1280, mock build, 21 Nov; `artifacts/phase-07/browser-keyboard-log.md`). Main journey on the real backend and negative suite: Not run |
 | Edge (desktop) | ✓ | — | — | Not run |
 | Firefox (desktop) | ✓ | — | — | Not run |
-| Mobile viewport (360 px) | Steps 2–4, 10, 15 | — | — | Not run |
+| Mobile viewport (360 px) | Steps 2–4, 10, 15 | — | — | **Step 2 keyboard-only and screen sweep: Passed with defects** (Chromium 360, mock build, 21 Nov). Other steps: Not run |
 
 Checks not run by the deadline stay labelled **Not run** in the final evidence.
 
