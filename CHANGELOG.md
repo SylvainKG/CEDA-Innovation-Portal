@@ -37,6 +37,10 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
   Evidence: 3 new tests (counts reconcile with the seed; titles never shown; reviewer and applicant refused) and 1 updated; 293 in total; lint, type-check and build pass.
 
+
+- `feature` **Report reconciliation test** (test plan S6). New pgTAP file `013_report_reconciliation.test.sql` checks, as the demo administrator on the fictional seed, that the Reports page figures (submitted, applicants, drafts started, per-challenge, by stage, funnel, approved, award total) equal direct counts from the tables, that staff home and committee stage counts match the Reports page, and that the CSV export has one row per submitted case with the same award total. Read-only; rolls back.
+
+  Evidence: 14 assertions pass in the PGlite stand-in; the full suite is 501 assertions, 0 failed. Mutation check: a report that drops closed cases fails 6 of the 14.
 - `feature` **Notification bell with the unread count** (NTF-01, spec T11). The bell in every signed-in header shows how many notifications are unread (a badge, "9+" above nine), and its accessible name says it: "Notifications, 3 unread". The count refreshes every 30 seconds and when you return to the tab, and drops as soon as notifications are marked read. Not built: the popover with the 10 latest (the bell opens the full page), Realtime instead of polling, and the email alert opt-in (NTF-02): the database has `profiles.alerts_opt_in` but no way for a person to change their own setting yet, which needs a backend function and the backend owner's approval.
 
   Evidence: 2 new tests (applicant count drops after Mark all as read; staff see only their own count); 290 in total; lint, type-check and build pass.
