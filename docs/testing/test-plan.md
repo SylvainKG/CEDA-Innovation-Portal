@@ -31,21 +31,23 @@ Every check starts as **Not run**. A check becomes Passed or Failed only with a 
 
 ## 2. Negative suite (blueprint §3.3), required on video and automated
 
+Status 21 Nov 2026: every N-test passes at the database layer, both in CI on the Supabase local stack and on the hosted project. On 21 Nov hosted and `main` had the same migrations (001–015), and every suite from `main` (`694dc65`) passed: CI `Files=13, Tests=507`, `Result: PASS`; hosted **507/507** at 10:29 UTC (run record `artifacts/phase-00/hosted-supabase.md` §2). The files are `supabase/tests/database/0NN_*.test.sql`. Browser runs against hosted staging (21 Nov; `artifacts/phase-01/` to `phase-05/`, #99) cover N1 and part of N7. The other browser attempts are still Not run.
+
 Each case is tested at **every entry route** that applies: the page, the PostgREST table/view, the RPC, Storage and Realtime.
 
 | # | Attempt | Expected | Accounts | pgTAP | Playwright | Slice | Status |
 |---|---|---|---|---|---|---|---|
-| N1 | Applicant B opens A's case and calls the REST endpoint | 403 page / zero rows | applicant.b | ✓ | ✓ | S1 | Not run |
-| N2 | Applicant B requests A's attachment URL; an expired 60 s link | Refused; expired link fails | applicant.b, applicant.a | ✓ | ✓ | S1 | Not run |
-| N3 | Unassigned Reviewer 3 opens the case | Zero rows, no file link | reviewer.3 | ✓ | ✓ | S2 | Not run |
-| N4 | Applicant A queries the decision before publication | Nothing returned (not in payload) | applicant.a | ✓ | ✓ | S5 | Not run |
-| N5 | Admin awards a case that is not approved | `CASE_NOT_APPROVED`; no rows change | admin | ✓ | ✓ | S5 | Not run |
-| N6 | Any role updates V1 or deletes an audit row | Trigger refuses | every role | ✓ | — | S1 (V1), S5 (full) | Not run |
-| N7 | Support consultant calls proposal/score endpoints | Zero rows | consultant | ✓ | ✓ | S2 | Not run |
-| N8 | Admin grants a role to themself | Refused + audited | admin | ✓ | ✓ | S2 | Not run |
-| N9 | Submit to the closed challenge | Refused; draft preserved | applicant.a | ✓ | ✓ | S1 | Not run |
-| N10 | Assigned reviewer requests proposal/files before declaring | Zero rows / no file link | reviewer.1 | ✓ | ✓ | S3 | Not run |
-| N11 | Reviewer declares a conflict, then reopens the case | Assignment revoked; zero rows; audit entry | reviewer.2 | ✓ | ✓ | S3 | Not run |
+| N1 | Applicant B opens A's case and calls the REST endpoint | 403 page / zero rows | applicant.b | ✓ | ✓ | S1 | pgTAP **Passed** (002; [CI run 44894464018 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44894464018)); browser **Passed** on staging, 21 Nov (N-a: A's idea and receipt show "We can't find this page" to Applicant B; run 44886380703) |
+| N2 | Applicant B requests A's attachment URL; an expired 60 s link | Refused; expired link fails | applicant.b, applicant.a | ✓ | ✓ | S1 | pgTAP: refusal **Passed** (002; [CI run 44894464018 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44894464018)); 60-second expiry **Passed through the hosted function** on 20 Nov (403 for B; the owner's link works at once and is refused 62 s later; `hosted-supabase.md` §3d); browser Not run |
+| N3 | Unassigned Reviewer 3 opens the case | Zero rows, no file link | reviewer.3 | ✓ | ✓ | S2 | pgTAP **Passed** (001, 002, 003, 005; [CI run 44894464018 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44894464018)); Playwright Not run |
+| N4 | Applicant A queries the decision before publication | Nothing returned (not in payload) | applicant.a | ✓ | ✓ | S5 | pgTAP **Passed** (001, 006; [CI run 44894464018 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44894464018)); Playwright Not run |
+| N5 | Admin awards a case that is not approved | `CASE_NOT_APPROVED`; no rows change | admin | ✓ | ✓ | S5 | pgTAP **Passed** (001, 006; [CI run 44894464018 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44894464018)); Playwright Not run |
+| N6 | Any role updates V1 or deletes an audit row | Trigger refuses | every role | ✓ | — | S1 (V1), S5 (full) | pgTAP **Passed** (001, 002, 006; [CI run 44894464018 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44894464018)); Playwright Not run |
+| N7 | Support consultant calls proposal/score endpoints | Zero rows | consultant | ✓ | ✓ | S2 | pgTAP **Passed** (001, 002, 003; [CI run 44894464018 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44894464018)); browser Partly, on staging, 21 Nov (the consultant gets "You don't have access to this page" on All cases; run 44886380703) |
+| N8 | Admin grants a role to themself | Refused + audited | admin | ✓ | ✓ | S2 | pgTAP **Passed** (001, 003; [CI run 44894464018 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44894464018)); Playwright Not run |
+| N9 | Submit to the closed challenge | Refused; draft preserved | applicant.a | ✓ | ✓ | S1 | pgTAP **Passed** (002; [CI run 44894464018 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44894464018)); Playwright Not run |
+| N10 | Assigned reviewer requests proposal/files before declaring | Zero rows / no file link | reviewer.1 | ✓ | ✓ | S3 | pgTAP **Passed** (001, 003, 004; [CI run 44894464018 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44894464018)); Playwright Not run |
+| N11 | Reviewer declares a conflict, then reopens the case | Assignment revoked; zero rows; audit entry | reviewer.2 | ✓ | ✓ | S3 | pgTAP **Passed** (004; [CI run 44894464018 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44894464018)); Playwright Not run |
 
 ## 3. Slice tests owned by Sylvain (blueprint §5)
 
@@ -62,7 +64,7 @@ Each case is tested at **every entry route** that applies: the page, the PostgRE
 | S4 | Applicant cannot edit tasks or verifications | pgTAP | Not run |
 | S4 | Unassigned reviewer cannot verify a task | pgTAP | Not run |
 | S5 | **Full main journey (steps 0–17) passes on staging** | Playwright | Not run |
-| S6 | Report counts reconcile with seed data; CSV matches screen | Playwright + SQL | Not run |
+| S6 | Report counts reconcile with seed data; CSV matches screen | pgTAP (`013_report_reconciliation`) + Playwright | **Passed (database layer)**: 14 assertions, PGlite stand-in 21 Nov; mutation check (report drops closed cases) fails 6. Browser comparison of screen and downloaded CSV: Not run |
 | S6 | OpenAPI export generated; scaling note written | Manual | Not run |
 
 ## 4. Main journey (blueprint §3.2) as one Playwright suite
