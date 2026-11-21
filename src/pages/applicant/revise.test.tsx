@@ -46,13 +46,16 @@ async function revisionRequested() {
 }
 
 async function answerTasks(user: UserEvent) {
-  const roadmap = await screen.findByRole('region', { name: 'Roadmap' }, LOAD)
+  const roadmap = await screen.findByRole('region', { name: 'Your roadmap' }, LOAD)
   const tasks = within(roadmap).getAllByRole('group')
   await user.click(within(tasks[0]!).getByRole('radio', { name: 'Addressed' }))
-  await user.type(within(tasks[0]!).getByLabelText('What did you change?'), 'Added a budget table.')
+  await user.type(within(tasks[0]!).getByLabelText(/^Explanation/), 'Added a budget table.')
   await user.click(within(tasks[1]!).getByRole('radio', { name: 'Not addressed' }))
-  await user.type(within(tasks[1]!).getByLabelText('Why not?'), 'The site is not confirmed yet.')
+  await user.type(within(tasks[1]!).getByLabelText(/^Explanation/), 'The site is not confirmed yet.')
 }
+
+/** Step 2 of Sandra's two-step revise frame: "Review changes" holds What changed?, the declaration and Submit. */
+const review = (user: UserEvent) => user.click(screen.getByRole('button', { name: 'Review changes' }))
 
 afterEach(() => vi.restoreAllMocks())
 beforeEach(async () => {
@@ -68,17 +71,21 @@ describe('T04 V2 revise mode', () => {
   it('answers the roadmap, edits the idea and submits version 2 with a receipt; the case returns to evaluation', async () => {
     await revisionRequested()
     const user = renderAt(`/ideas/${CASE_8}/revise`)
-    expect(await screen.findByRole('heading', { level: 1, name: 'Revise your idea' }, LOAD)).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Rainwater tanks for poultry farms' }, LOAD)).toBeInTheDocument()
+    expect(screen.getByText('Revise your idea')).toBeInTheDocument()
     expect(screen.getByText('Please strengthen the budget.')).toBeInTheDocument()
-    const submit = screen.getByRole('button', { name: 'Submit Version 2' })
-    expect(submit).toBeDisabled()
-    expect(screen.getByText('0 of 2 tasks answered. Answer every task to submit.')).toBeInTheDocument()
+    // Submit is on step 2, disabled with the reason until every task is answered.
+    await review(user)
+    expect(screen.getByRole('button', { name: 'Submit Version 2' })).toBeDisabled()
+    expect(screen.getByText('Answer all 2 roadmap tasks to submit (0 of 2 answered).')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Back' }))
 
     await answerTasks(user)
     expect(screen.getByText('2 of 2 tasks answered')).toBeInTheDocument()
     const summary = screen.getByLabelText(/^Summary/)
     await user.clear(summary)
     await user.type(summary, 'A revised summary with a budget.')
+    await review(user)
     await user.type(screen.getByLabelText(/^What changed\?/), 'Added a budget; site still to confirm.')
     await user.click(screen.getByRole('checkbox', { name: /accept the declaration/i }))
     await user.click(screen.getByRole('button', { name: 'Submit Version 2' }))
@@ -98,6 +105,7 @@ describe('T04 V2 revise mode', () => {
     await revisionRequested()
     const user = renderAt(`/ideas/${CASE_8}/revise`)
     await answerTasks(user)
+    await review(user)
     await user.click(screen.getByRole('button', { name: 'Submit Version 2' }))
     const alert = await screen.findByRole('alert')
     expect(within(alert).getByRole('link', { name: 'What changed: Say what changed' })).toBeInTheDocument()
@@ -109,6 +117,7 @@ describe('T04 V2 revise mode', () => {
     mockSubmissionControls.loseNextSubmitReply()
     const user = renderAt(`/ideas/${CASE_8}/revise`)
     await answerTasks(user)
+    await review(user)
     await user.type(screen.getByLabelText(/^What changed\?/), 'Added a budget.')
     await user.click(screen.getByRole('checkbox', { name: /accept the declaration/i }))
     await user.click(screen.getByRole('button', { name: 'Submit Version 2' }))

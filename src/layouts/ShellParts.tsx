@@ -236,9 +236,9 @@ function AccountMenu() {
         <span aria-hidden className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-semibold text-surface-card">
           {initials(user.displayName)}
         </span>
-        <span aria-hidden className="hidden flex-col leading-tight lg:flex">
-          <span className="text-sm font-semibold">{user.displayName}</span>
-          <span className="text-xs text-ink-muted">{subtitle}</span>
+        <span aria-hidden className="hidden max-w-[11rem] flex-col leading-tight lg:flex">
+          <span className="truncate text-sm font-semibold">{user.displayName}</span>
+          <span className="truncate text-xs text-ink-muted">{subtitle}</span>
         </span>
       </button>
       {open ? (

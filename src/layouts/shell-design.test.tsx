@@ -35,7 +35,7 @@ describe('shared shell, laid out to Sandra\'s 21 Nov frames', () => {
   it('applicant: text links, DEMO pill, account menu with Sign out, and the floating chat button', async () => {
     await as('applicant')
     const user = renderAt('/ideas')
-    await screen.findByRole('heading', { level: 1, name: 'My ideas' }, LOAD)
+    await screen.findByRole('heading', { level: 1, name: 'Welcome, Demo Applicant A' }, LOAD)
     const header = screen.getByRole('banner')
     expect(within(header).getByText('DEMO')).toBeInTheDocument()
     const nav = within(header).getByRole('navigation', { name: 'Main' })
@@ -76,7 +76,7 @@ describe('shared shell, laid out to Sandra\'s 21 Nov frames', () => {
   it('staff: the portal label and "Restricted staff area" in the sidebar, no chat button', async () => {
     await as('screening_officer')
     renderAt('/staff')
-    await screen.findByRole('heading', { name: 'Welcome, Demo Screening Officer' }, LOAD)
+    await screen.findByRole('heading', { level: 1, name: /^Good (morning|afternoon|evening), Demo Screening Officer$/ }, LOAD)
     expect(screen.getAllByText('Screening officer portal').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Restricted staff area').length).toBeGreaterThan(0)
     expect(screen.queryByRole('link', { name: 'Chat with CEDA' })).not.toBeInTheDocument()
