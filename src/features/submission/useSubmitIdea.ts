@@ -38,6 +38,7 @@ export function useSubmitIdea(proposalId: string | undefined) {
       clearSubmitKey(proposalId)
       qc.setQueryData(submissionKeys.receipt(proposalId), { ...receipt, found: true })
       qc.removeQueries({ queryKey: submissionKeys.draft(proposalId) })
+      void qc.invalidateQueries({ queryKey: submissionKeys.myIdeas })
       setState({ kind: 'submitted', receipt })
     },
     [proposalId, qc],
