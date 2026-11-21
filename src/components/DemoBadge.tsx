@@ -1,12 +1,14 @@
-import { FlaskConical } from 'lucide-react'
-
-/** Shown in every shell: the portal is a demonstration with fictional data (spec §4). Dark pill (Sandra, 20 Nov). */
+/**
+ * Shown in every shell: the portal is a demonstration with fictional data (spec §4). Laid out to Sandra's 21 Nov
+ * frames: a light yellow pill with a small DEMO chip and "Demo environment — fictional data" (text from md up).
+ */
 export function DemoBadge() {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-demo px-3 py-1 text-sm font-semibold text-demo-on">
-      <FlaskConical aria-hidden className="h-4 w-4" />
-      DEMO<span className="sr-only">: </span>
-      <span className="ml-1 hidden font-normal md:inline">fictional data</span>
+    <span className="inline-flex shrink-0 items-center gap-2 rounded-full border border-brand-accent bg-brand-accent-subtle py-0.5 pl-0.5 pr-0.5 text-xs text-ink md:pr-3">
+      <span className="rounded-full bg-brand-accent px-2 py-0.5 font-bold tracking-wide">DEMO</span>
+      <span className="sr-only md:not-sr-only">
+        <span className="sr-only">: </span>Demo environment — fictional data
+      </span>
     </span>
   )
 }
