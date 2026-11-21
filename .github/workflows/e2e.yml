@@ -18,7 +18,12 @@ on:
         required: false
         default: false
       journey_write:
-        description: 'Also run the submit test, which CREATES one case on staging. Only after a snapshot (#65, #68); reset afterwards.'
+        description: 'Also run the write tests, which CREATE a case and carry it to award on staging. Only after a snapshot (#65, #68); reset afterwards.'
+        type: boolean
+        required: false
+        default: false
+      journey_local:
+        description: 'Run the whole journey, writes included, against a throwaway Supabase stack started in this job (no secrets, no staging data). Use it to rehearse before a staging run.'
         type: boolean
         required: false
         default: false
@@ -34,7 +39,7 @@ jobs:
   e2e:
     name: e2e (Chromium, 360 + 1280 px)
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -45,14 +50,14 @@ jobs:
       - name: Install Chromium for Playwright
         run: npx playwright install --with-deps chromium
       - name: Run browser tests
-        if: ${{ !(github.event_name == 'workflow_dispatch' && inputs.journey) }}
+        if: ${{ !(github.event_name == 'workflow_dispatch' && (inputs.journey || inputs.journey_local)) }}
         run: npm run test:e2e -- --trace off
         env:
           E2E_BASE_URL: ${{ inputs.base_url }}
       # Real-backend journey (issue #61): only a manual run with "journey" ticked gets these values; pull requests never do.
       # Without base_url it builds this checkout in Supabase mode (public URL + publishable key) and serves it on 5173.
       - name: Check the journey settings (names only, never values)
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.journey }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.journey && !inputs.journey_local }}
         env:
           HAS_URL: ${{ vars.SUPABASE_URL != '' }}
           HAS_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY != '' }}
@@ -68,7 +73,7 @@ jobs:
           fi
           if [ -n "$missing" ]; then echo "::error::Missing repository settings:$missing (Settings > Secrets and variables > Actions)"; exit 1; fi
       - name: Real-backend journey
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.journey }}
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.journey && !inputs.journey_local }}
         run: npm run test:e2e -- tests/e2e/hosted-journey.spec.ts --project=desktop-1280 --trace off
         env:
           E2E_BASE_URL: ${{ inputs.base_url }}
@@ -78,6 +83,37 @@ jobs:
           E2E_JOURNEY: '1'
           E2E_JOURNEY_WRITE: ${{ inputs.journey_write && '1' || '' }}
           DEMO_PASSWORD: ${{ secrets.DEMO_PASSWORD }}
+      # Rehearsal (journey_local): the same journey against a disposable Supabase stack in this job, built from the
+      # migrations and the fictional seed. Its URL and keys are the CLI's fixed local demo values, not project secrets.
+      - uses: supabase/setup-cli@v1
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.journey_local }}
+        with:
+          version: 2.108.0
+      - name: Start a throwaway Supabase stack and set the demo passwords
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.journey_local }}
+        run: |
+          set -o pipefail
+          DEMO_PASSWORD="$(openssl rand -hex 16)"   # a fresh throwaway password for this run's disposable stack
+          echo "::add-mask::$DEMO_PASSWORD"
+          export DEMO_PASSWORD
+          echo "LOCAL_DEMO_PASSWORD=$DEMO_PASSWORD" >> "$GITHUB_ENV"
+          supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor 2>&1 | tail -n 5
+          eval "$(supabase status -o env)"
+          SUPABASE_URL="$API_URL" SUPABASE_SERVICE_ROLE_KEY="${SERVICE_ROLE_KEY:-$SECRET_KEY}" node scripts/set-demo-passwords.mjs
+          {
+            echo "LOCAL_API_URL=$API_URL"
+            echo "LOCAL_ANON_KEY=${ANON_KEY:-$PUBLISHABLE_KEY}"
+          } >> "$GITHUB_ENV"
+      - name: Journey against the throwaway stack (writes included)
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.journey_local }}
+        run: npm run test:e2e -- tests/e2e/hosted-journey.spec.ts --project=desktop-1280 --trace off
+        env:
+          E2E_LOCAL_SUPABASE: '1'
+          VITE_SUPABASE_URL: ${{ env.LOCAL_API_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ env.LOCAL_ANON_KEY }}
+          E2E_JOURNEY: '1'
+          E2E_JOURNEY_WRITE: '1'
+          DEMO_PASSWORD: ${{ env.LOCAL_DEMO_PASSWORD }}
       - name: Keep the report when a test fails
         if: failure()
         uses: actions/upload-artifact@v4
