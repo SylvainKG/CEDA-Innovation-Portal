@@ -23,6 +23,7 @@ Functionality follows the blueprint until the team decides. Source for every row
 | 13 | 16 Nov | `AdminView` overview | Donut chart | No pie charts (spec T13) | Replace with horizontal bars | |
 | 14 | 16 Nov | Roles | Public, applicant, evaluator, adjudicator, admin | Also screening officer, support consultant, committee member, auditor (§2.2) | Design the missing role variants from the shared shell and table | |
 | 15 | 16 Nov | Demo data | `CEDA-2025-NNNN`, 2025 dates, personas Amantle Moyo, Kabelo Ndlovu, M. Olebile, Thato Molefe | `CEDA-2026-NNNN`, seed personas (Demo Applicant A — Lesedi Agro Demo, Water-Smart Agriculture Challenge 2026) (§3.1) | Use blueprint seed data in all new frames and snapshots | |
+| 16 | 21 Nov | T02 Sign in (Sandra's "ceda site signin" and "sign in + dashboard" exports, #100) | Demo note "Demo accounts are available. Staff can choose a role after sign-in."; a "Choose a demo portal" list | Choosing a role after sign-in exists in mock mode only; no password anywhere in the site (D-17) | Note reads "Demo accounts are available: choose one below to fill in its email address." The list fills in the email only and never signs in (#100 decision 1; Stacey confirmed D-17) | |
 
 ## Handoff log
 
@@ -35,4 +36,5 @@ Functionality follows the blueprint until the team decides. Source for every row
 
 | Date and time (CAT) | Event (rate limit / outage / access / takeover) | Effect | Continued with | Reconciled on |
 |---|---|---|---|---|
+| 21 Nov 2026, 13:00 | Takeover: Sylvain assigned T02 Sign in, Create account and the T08 applicant case view to ABM (#100) | Obvious keeps the shared shell, My ideas and Revise | ABM, one branch per screen (`ui/t02-sign-in-design` first) | — |
 | 16 Nov 2026, 09:30 | Rate limit (plan): Sandra's Figma account is on the **Starter plan**, about 20 MCP read calls per month. Canvas read tools don't support Make files | MCP inventory not possible beyond the Make source; MCP budget for TASK-02 effectively gone | Manual inventory (TASK-01 B2) from the Make source | Open — needs a Professional plan seat or a team-owned file (#10) |
