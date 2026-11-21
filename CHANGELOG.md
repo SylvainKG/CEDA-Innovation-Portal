@@ -5,6 +5,14 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 ## [Unreleased]
 
 - `feature` **OpenAPI export of the database API** (ARC-01, test plan S6). The Database workflow's Supabase-stack job now saves PostgREST's own description of the API (every exposed table and function) as the `openapi` artifact of each run, with the number of paths in the job summary. It is read as a signed-in (`authenticated`) user, with a short-lived token signed by the disposable CI stack's demo JWT secret: PostgREST lists only the functions the caller may execute, and the workflow functions are granted to `authenticated`, so a service-role read showed only 4 of them. The summary states whether `/rpc/submit_proposal` is present, and the step fails if it isn't. Evidence only, so a failure is reported without blocking the database gate.
+- `test` **Smoke checks no longer fail against the Supabase-mode staging site.** The signed-in page checks in `shell-smoke.spec.ts` use the mock session, which only a mock-mode build has, so they now skip when `E2E_BASE_URL` points at a deployed site. There, the real-backend journey (`hosted-journey.spec.ts`) covers signed-in pages; it passed 4/4 read-only against the deployed site (run 44953549649). In mock mode all 20 smoke checks still run and pass.
+- `docs` **Submission documents brought up to date for the release** (judge guide, user manual, technical proposal):
+  - the line "Peolwane is the portal's name; it is built for CEDA's Innovation Fund" in all three;
+  - the four screenshots retaken with the Peolwane brand, from a mock build, without the development-only role switcher;
+  - the hosted browser journey filled in: the full journey passed on staging (run 44909107002) and the read-only part on the deployed site (run 44953549649);
+  - Peolwane AI, marked [confirm at release] until it is live;
+  - the two-step revise ("Review changes");
+  - the team line in the proposal (ABM; Sandra until 21 Nov).
 - `design` **All cases laid out to Sandra's 21 Nov frame** (#119 screen H; `ceda administrator screening.pdf`). Like the other work queues (#118): "WORK QUEUE" over "All cases" and "Filter cases and open a workspace to take action.", the shared filter card (search by reference or title, status, challenge) with removable chips, and the table: reference, idea, challenge, last update, reviewers assigned and the status badge. The status filter still lives in the address; committee members keep the status-only variant (D-08).
 
   Evidence: all-cases and committee tests pass (10, wording unchanged); lint and type-check pass; checked in the browser as the administrator at 1280 and 360 px (no sideways scroll, controls at least 44 px).
