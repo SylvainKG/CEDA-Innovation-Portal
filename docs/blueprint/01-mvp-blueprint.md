@@ -4,7 +4,7 @@
 **Sources:** `requirements/Portal_Backlog.md` (10 Nov), *User requirements* (10 Nov), *User stories, tech stack and security design*, *Journey and data flow* (14 Nov), *What to adopt from each reference platform* (10 Nov), *Botswana Innovation Ecosystem research brief* (Nov 2026)
 **Not yet read:** the whiteboard photos (the journey document is derived from them)
 **Terminology:** this blueprint uses the backlog's terms, **challenge** and **case/proposal**. The reference analysis calls the same things "Programme" and "Idea".
-**Team:** Sandra (UI/UX & Figma), Obvious (frontend), Stacey (backend & database), Sylvain (integration, testing & documentation), ABM (frontend, joined 21 Nov 2026); see §7.
+**Team:** Sandra (UI/UX & Figma; unavailable from 21 Nov 2026, duties handed to ABM), Obvious (frontend), Stacey (backend & database), Sylvain (integration, testing & documentation), ABM (frontend, joined 21 Nov 2026; acting UI/UX & Figma lead from 21 Nov evening); see §7.
 **Design source of truth:** the shared CEDA Figma project for visual design; this blueprint for functional behaviour (§8.1).
 **Deadline:** Upload by 12:00 CAT on 23 Nov 2026 (hard cut-off 17:00). Today is day 2 of 11.
 
@@ -99,12 +99,12 @@ Legend: **Full** = working end to end with real state · **Simplified** = real b
 | D-28 | Screen inventory | **CONFIRMED** (14 Nov) | No new standalone screens. v0.2 features are placed inside templates T04–T10 | New screens | Keeps the 15-template set | — |
 | D-29 | Readiness Passport | **CONFIRMED** (14 Nov) | Optional. Starts only after the required workflow and SEC-02 negative suite pass on staging | — | Protects the core lifecycle | — |
 | D-30 | Opportunity Navigator | **CONFIRMED** (14 Nov) | Sample-information panel on the published decision only | Separate module | Scope control | — |
-| D-31 | Named ownership | **CONFIRMED** (14 Nov); ABM added 21 Nov | Sandra UI/UX & Figma · Obvious frontend · Stacey backend & database · Sylvain integration, testing & documentation · ABM frontend (from 21 Nov: applicant screens to the approved frames, issue #100). Primary responsibility, not exclusive permission (§7) | Track letters A–D (v0.2) | Clear accountability for a team of five | ABM's first tasks: issue #100 |
+| D-31 | Named ownership | **CONFIRMED** (14 Nov); ABM added 21 Nov; **Sandra's duties handed to ABM 21 Nov (team lead)** | Sandra UI/UX & Figma · Obvious frontend · Stacey backend & database · Sylvain integration, testing & documentation · ABM frontend (from 21 Nov: applicant screens to the approved frames, issue #100). **From 21 Nov evening, Sandra is unavailable and ABM is acting UI/UX & Figma lead:** the design decisions, the staging review of each screen against its frame, marking screens Approved, the final snapshots and design reconciliation, and the design owner's sign-off on change requests. ABM's design approvals count from the `ABM-IX` account only. Obvious stays primary UI backup. If Sandra returns, she resumes her role and reviews what was approved for her. Primary responsibility, not exclusive permission (§7) | Track letters A–D (v0.2) | Clear accountability for a team of five | ABM's first tasks: issue #100 |
 | D-32 | Source-of-truth split | **CONFIRMED** (14 Nov) | Figma = visual design; blueprint + API contracts = functional behaviour; `02-figma-ui-ux-spec.md` = behavioural detail, with its placeholder tokens used only where Figma has none; CEDA brand guidance overrides both (§8.1) | Spec-only design | Preserves the existing Figma direction without losing approved behaviour | — |
 | D-33 | Figma vs blueprint conflicts | **CONFIRMED** (14 Nov) | Logged in `handoff-notes.md`, resolved by the team; functionality follows the blueprint until resolved | Silent alignment | No silent functional change | — |
-| D-34 | Shared Figma access | **CONFIRMED** requirement; setup OPEN | Team-controlled Figma project; ≥ 2 editors (Sandra, Obvious); ≥ 2 team-level owners; Stacey and Sylvain view/Dev Mode | Personal drafts | No single-account dependency | Sandra, 15 Nov |
-| D-35 | Figma MCP connection | **OPEN** | Official Figma MCP server, each person with their own login. Connection mode, seat requirements and rate limits are **ASSUMED to vary by plan and must be verified** at setup and recorded in `screen-inventory.md` | Manual exports only | Lets the coding assistant read frames directly; fallback exists (§9.1) | Sandra, 15 Nov |
-| D-36 | Handoff artefacts in the repo | **CONFIRMED** (14 Nov) | `docs/design/figma-handoff/` with inventory, status, tokens, components, navigation, notes and dated snapshots; capture on approval and daily 17:00 CAT; size budget ≤ 300 KB per snapshot, ≤ 25 MB total (proposed) | Live Figma only | Development never depends entirely on live Figma access | Sandra |
+| D-34 | Shared Figma access | **CONFIRMED** requirement; setup OPEN | Team-controlled Figma project; ≥ 2 editors (Sandra, Obvious); ≥ 2 team-level owners; Stacey and Sylvain view/Dev Mode | Personal drafts | No single-account dependency | Sandra, 15 Nov (ABM for Sandra from 21 Nov) |
+| D-35 | Figma MCP connection | **OPEN** | Official Figma MCP server, each person with their own login. Connection mode, seat requirements and rate limits are **ASSUMED to vary by plan and must be verified** at setup and recorded in `screen-inventory.md` | Manual exports only | Lets the coding assistant read frames directly; fallback exists (§9.1) | Sandra, 15 Nov (ABM for Sandra from 21 Nov) |
+| D-36 | Handoff artefacts in the repo | **CONFIRMED** (14 Nov) | `docs/design/figma-handoff/` with inventory, status, tokens, components, navigation, notes and dated snapshots; capture on approval and daily 17:00 CAT; size budget ≤ 300 KB per snapshot, ≤ 25 MB total (proposed) | Live Figma only | Development never depends entirely on live Figma access | Sandra (ABM for Sandra from 21 Nov) |
 | D-37 | Screen status and Ready for build | **CONFIRMED** (14 Nov) | Status vocabulary §8.5. A screen is buildable when at least Provisional with the slice's states, exported to the repo, and its RPCs are in the approved contract. Provisional builds are labelled | Wait for the full Figma file | Parallel development without design drift | — |
 | D-38 | Branches, reviews, takeover | **CONFIRMED** (14 Nov); review-rule setup OPEN | One branch per task, PRs only, required reviewers per area (§7.3), takeover procedure §9.2, claims in `screen-status.md` | Direct pushes | No overwritten work | Sylvain, once GitHub usernames are known |
 | D-39 | Existing Figma designs are read-only until approved | **CONFIRMED** (14 Nov) | No modification of existing Figma designs until Sandra has reviewed the inventory and the team has approved the proposed changes | — | Protects existing work | — |
@@ -375,11 +375,13 @@ In this order, stopping wherever time runs out. The schedule is never extended f
 
 | Person | Role | Primary responsibilities |
 |---|---|---|
-| **Sandra** | UI/UX & Figma Integration Lead | Connect the team's AI coding assistant to the shared Figma project through the official Figma MCP server; inventory existing designs; map frames to T01–T15; identify completed, incomplete and missing screens; preserve the existing visual direction, branding and components; design missing dashboards and interfaces within MVP scope; own design tokens, typography, spacing, components and responsive rules; maintain the screen inventory and handoff docs; export approved snapshots and assets to the repo; coordinate UI changes with developers to prevent design drift |
+| **Sandra** | UI/UX & Figma Integration Lead (**unavailable from 21 Nov; duties handed to ABM**, D-31) | Connect the team's AI coding assistant to the shared Figma project through the official Figma MCP server; inventory existing designs; map frames to T01–T15; identify completed, incomplete and missing screens; preserve the existing visual direction, branding and components; design missing dashboards and interfaces within MVP scope; own design tokens, typography, spacing, components and responsive rules; maintain the screen inventory and handoff docs; export approved snapshots and assets to the repo; coordinate UI changes with developers to prevent design drift |
 | **Obvious** | Frontend & UI Implementation Lead | Implement approved Figma designs in React and TypeScript; maintain reusable components and navigation; implement responsive layouts and every interface state; integrate screens with approved backend operations; **primary UI backup when Sandra cannot access Figma** |
 | **Stacey** | Backend & Database Lead | Supabase schema, authentication and role-based permissions; guarded workflow operations (screening, evaluation, feedback, resubmission, adjudication, award); database integrity, access controls and backend tests (pgTAP); coordinating API contracts with the frontend |
 | **Sylvain** | Integration, Testing & Documentation Lead | Integration across frontend, backend and Figma specs; the traceability matrix and this implementation checklist; end-to-end demo scenarios; testing coordination, documentation and evidence; demo readiness, deployment preparation and submission documents; handovers; UI help when required |
-| **ABM** (from 21 Nov) | Frontend Developer | Implement screens to the approved Figma frames (first: sign in, create account, applicant case view, the five-step stepper; issue #100); use the shared components in `src/components/` and route any change to them through Obvious's review; keep each screen's unit tests in step with its wording; check each screen at 360 and 1280 px, keyboard only |
+| **ABM** (from 21 Nov) | Frontend Developer; **acting UI/UX & Figma Lead** from 21 Nov evening (D-31) | **Acting for Sandra:** answer the open design decisions; review each finished screen on staging against its frame and mark it Approved in `screen-status.md`, or log the difference; keep the handoff docs and final snapshots; sign change requests as design owner. **As before:** implement screens to the approved Figma frames (first: sign in, create account, applicant case view, the five-step stepper; issue #100); use the shared components in `src/components/` and route any change to them through Obvious's review; keep each screen's unit tests in step with its wording; check each screen at 360 and 1280 px, keyboard only |
+
+From 21 Nov evening the matrix shows ABM in Sandra's former design column (D-31); Sandra's column is empty while she is unavailable.
 
 These assignments define **primary responsibility, not exclusive permission**. Anyone may take an outstanding task once it is agreed in the checklist and delivered through a pull request.
 
@@ -389,12 +391,12 @@ Key: **P** primary owner · **B** backup owner · **R** required reviewer · **C
 
 | Area | Sandra | Obvious | Stacey | Sylvain | ABM |
 |---|---|---|---|---|---|
-| Figma inventory, frame mapping, design backlog | P | C | — | R (scope check) | — |
-| Missing screens and dashboards in Figma | P | B | — | R (scope check) | — |
-| Design tokens, components, responsive rules (Figma) | P | B | — | — | — |
-| Handoff artefacts `docs/design/figma-handoff/` | P | B | — | R | C |
-| React shell, navigation, shared components `src/components/` | R (visual) | P | — | B | C |
-| Screen implementation and UI states | R (visual QA) | P | — | C | C |
+| Figma inventory, frame mapping, design backlog | — | C | — | R (scope check) | P |
+| Missing screens and dashboards in Figma | — | B | — | R (scope check) | P |
+| Design tokens, components, responsive rules (Figma) | — | B | — | — | P |
+| Handoff artefacts `docs/design/figma-handoff/` | — | B | — | R | P |
+| React shell, navigation, shared components `src/components/` | — | P | — | B | C, R (visual) |
+| Screen implementation and UI states | — | P | — | C | C, R (visual QA) |
 | Frontend integration with RPCs `src/lib/api/` | — | P | R | C | C |
 | Supabase schema, migrations, RLS, RPCs, Edge Functions | — | — | P | B | — |
 | API contracts and permission matrix | — | R | P | C | — |
@@ -457,14 +459,14 @@ Key: **P** primary owner · **B** backup owner · **R** required reviewer · **C
 
 | Step | Who | Output |
 |---|---|---|
-| 1 Inventory and map | Sandra | `screen-inventory.md` |
-| 2 Gap list and backlog | Sandra, scope check by Sylvain | `screen-status.md` (prioritised by slice date) |
-| 3 Design missing screens/states | Sandra (Obvious as backup) | Frames marked *Provisional* |
-| 4 Design review | Sandra + Obvious (buildability) + Sylvain (blueprint conformance) | Frames marked *Approved*, or changes requested |
-| 5 Snapshot and handoff | Sandra | Approved snapshot + spec in `figma-handoff/` via pull request |
+| 1 Inventory and map | ABM (for Sandra, D-31) | `screen-inventory.md` |
+| 2 Gap list and backlog | ABM, scope check by Sylvain | `screen-status.md` (prioritised by slice date) |
+| 3 Design missing screens/states | ABM (Obvious as backup) | Frames marked *Provisional* |
+| 4 Design review | ABM + Obvious (buildability) + Sylvain (blueprint conformance) | Frames marked *Approved*, or changes requested |
+| 5 Snapshot and handoff | ABM | Approved snapshot + spec in `figma-handoff/` via pull request |
 | 6 Implementation | Obvious (or assigned developer) | Pull request referencing the snapshot version |
-| 7 Visual QA | Sandra | Implementation matches the snapshot, or the difference is logged |
-| 8 Reconcile | Sandra | Any change made during implementation is reflected back in Figma |
+| 7 Visual QA | ABM | Implementation matches the snapshot, or the difference is logged |
+| 8 Reconcile | ABM | Any change made during implementation is reflected back in Figma |
 
 ### 8.5 Screen inventory and status tracking
 
@@ -590,6 +592,10 @@ Principle: **the remaining development work must never depend entirely on live F
 ---
 
 ## 12. Change log
+
+### 21 Nov 2026 · Sandra's duties handed to ABM
+
+Sandra is unavailable and her design tasks were not moving two days before the code freeze. The team lead handed her duties to ABM as acting UI/UX & Figma lead (D-31, §7.1, §7.2, §8.4; owners of D-34–D-36). Nothing in scope or schedule changes. The tracker moves Sandra's open tasks to ABM; her finished work stays credited to her.
 
 ### v0.2 → v0.3 change summary · 14 Nov 2026
 
