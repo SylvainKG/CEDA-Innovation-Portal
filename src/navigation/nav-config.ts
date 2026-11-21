@@ -9,7 +9,6 @@ import {
   Inbox,
   Lightbulb,
   ListChecks,
-  MessageCircle,
   ScrollText,
   Settings,
   Trophy,
@@ -50,7 +49,6 @@ export const APPLICANT_NAV: readonly NavItem[] = [
   { label: 'My ideas', to: '/ideas', icon: Lightbulb, roles: ['applicant'] },
   { label: 'Challenges', to: '/challenges', icon: Trophy, roles: ['applicant'] },
   { label: 'Help', to: '/help/faqs', icon: HelpCircle, roles: ['applicant'] },
-  { label: 'Chat', to: '/support/chat', icon: MessageCircle, roles: ['applicant'] },
 ]
 
 /** Items a person may see, given all of their roles. */

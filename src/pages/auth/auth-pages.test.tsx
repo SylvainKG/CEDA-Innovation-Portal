@@ -226,6 +226,8 @@ describe('sign out', () => {
     window.localStorage.setItem('ceda.submit.key.p1', 'k1')
     renderAt('/ideas')
     await screen.findByRole('heading', { level: 1, name: 'My ideas' })
+    // Sign out sits in the account menu on the avatar (decision #19).
+    press('Account: Demo Applicant A')
     press('Sign out')
     expect(await screen.findByRole('heading', { level: 1, name: 'Submit your innovation to CEDA' })).toBeInTheDocument()
     expect(window.localStorage.getItem('ceda.draft.local.p1')).toBeNull()
