@@ -4,6 +4,9 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `design` **Screening frames: side sheet, queue and staff case** (Sandra's 21 Nov exports). Workflow action dialogs are now the frame's side sheet ("WORKFLOW ACTION", consequence strip, audit note and buttons at the bottom; full screen on phones); tables are bordered cards with small uppercase headings; the screening queue has "WORK QUEUE", a search and challenge filter with removable chips (`QueueFilters`); the staff case puts its actions at the right, the stepper in a card and the proposal in one "Submitted proposal · Version N" card.
+
+  Evidence: 334 tests pass; lint and type-check pass; browser smoke suite 20 passed; hosted-journey spec (mock) 3 passed; local check at 360 and 1280 px (no sideways scroll; sheet 480 px on the right, full screen on phones; focus returns to the opening button).
 - `design` **Staff home laid out to Sandra's 21 Nov role dashboards** (screening officer, reviewer, adjudicator, administrator). "<ROLE> PORTAL" and "Good morning/afternoon/evening, <name>" (CAT); the role's figure cards; "Your next tasks" (up to five, a red dot when due) beside "Recent activity"; "Cases by stage" bars for administrators. Figures the roles can't read are replaced by the nearest real figure, never invented. The h1 changes from "Welcome, <name>" (tests updated, including the smoke suite).
 
   Evidence: 334 tests pass; lint and type-check pass; browser smoke suite 20 passed; four role dashboards checked at 1280 px and two at 360 px (no sideways scroll, no control under 44 px).
