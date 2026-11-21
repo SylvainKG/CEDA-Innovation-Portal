@@ -22,13 +22,13 @@ Screens still being built are marked **[confirm at release]**; that line is chec
 
 **Register (applicants).** Choose **Register**. Enter your name, email address and a password of **at least 12 characters**, then accept the privacy notice. We email you a link: open it to verify your address, then sign in. Staff accounts are created by invitation from an administrator.
 
-**Sign in.** Use your email address and password. If either is wrong, the message doesn't say which, for your protection. After several failed attempts, wait 5 minutes.
+**Sign in.** Use your email address and password. If either is wrong, the message doesn't say which, for your protection. If you try too often, wait a few minutes and try again.
 
 **Forgot your password.** Choose **Forgot your password?** and enter your email. If an account exists, we send a single-use link that expires. The message is the same whether or not an account exists.
 
 **Staff two-step sign-in.** Staff permissions require a second factor (an authenticator app); the server enforces this. The first time, the **Two-step sign-in** screen shows a QR code: scan it with an authenticator app (or type the key shown), then enter the 6-digit code. After that, enter a new code from the app when asked. Seeded demo staff accounts are exempt so that judges can sign in directly; the screen tells them so.
 
-**Notifications.** The bell in the header shows how many updates are unread; **Notifications** lists them. They also arrive live while you are signed in. **Email alerts** are optional: switch them on or off on the Notifications page. In this demonstration they are **Simulated** (queued but not sent).
+**Notifications.** The bell in the header shows how many updates are unread; **Notifications** lists them. The count refreshes every so often while you are signed in. **Email alerts** are optional: switch them on or off on the Notifications page **[confirm at release]**. In this demonstration they are **Simulated** (queued but not sent).
 
 **Help.** **Help** holds the FAQs, regulatory contacts and how to report a problem. All times are Gaborone time (CAT).
 
@@ -94,7 +94,7 @@ Screens still being built are marked **[confirm at release]**; that line is chec
 - **Users and roles:** everyone registered, with their roles. Grant a role, remove one (with a reason), or **invite** staff by email (the email is Simulated in this demonstration). **You can't change your own roles:** the controls on your own row are disabled, and the server refuses and records the attempt anyway.
 - **Roles:** what each role can do. Built-in roles keep their permissions; add a new role to combine permissions differently, and choose whether it needs two-step sign-in.
 - **Chat settings:** whether chat is always open, always closed or follows the opening hours; the hours for each day of the week; and closure days (for example public holidays).
-- **Other settings:** the review quorum and the demo two-step exemption have no screen; they are stored settings the backend team changes. Switch the exemption **off** for any real use.
+- **Other settings:** the review quorum (2 reviews) and the demo two-step exemption are configuration values with no screen; only the backend team can change them. Switch the exemption **off** for any real use.
 
 Every change on these screens is recorded in the audit log.
 
