@@ -4,10 +4,6 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
-- `feature` **Report reconciliation test** (test plan S6). New pgTAP file `013_report_reconciliation.test.sql` checks, as the demo administrator on the fictional seed, that the Reports page figures (submitted, applicants, drafts started, per-challenge, by stage, funnel, approved, award total) equal direct counts from the tables, that staff home and committee stage counts match the Reports page, and that the CSV export has one row per submitted case with the same award total. Read-only; rolls back.
-
-  Evidence: 14 assertions pass in the PGlite stand-in; the full suite is 501 assertions, 0 failed. Mutation check: a report that drops closed cases fails 6 of the 14.
-
 - `feature` Judge guide draft (DOC-02, D-07, D-17): `docs/submission/judge-guide.md`: access and the 13 demo accounts with what each role should look at; the main journey in about 15 minutes (first submission CEDA-2026-0009); access-control checks judges can try themselves; what is real, simulated (email) or sample wording, tied to the claim register. Items that depend on the release build are marked to confirm at release.
 - `feature` **E-mail alerts switch** (NTF-02, spec T11). The notifications page has an **Email alerts** section with a switch that saves as soon as it changes: "Email me when there's an update on my ideas (free)" for applicants, "Email me when something needs my attention" for staff, with the explanation "Emails say an update is waiting; they never include your idea's content." It changes only the reader's own setting (`set_alert_preference`, migration 015 in #88); setting the same value twice is harmless, so after a lost reply the setting is re-read and the switch shows what is saved. In the demo a banner says e-mail delivery is simulated. `OversightPort` gains `alertPreference` (own `profiles.alerts_opt_in`) and `setAlertPreference`.
 
@@ -37,6 +33,10 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
   Evidence: 3 new tests (counts reconcile with the seed; titles never shown; reviewer and applicant refused) and 1 updated; 293 in total; lint, type-check and build pass.
 
+
+- `feature` **Report reconciliation test** (test plan S6). New pgTAP file `013_report_reconciliation.test.sql` checks, as the demo administrator on the fictional seed, that the Reports page figures (submitted, applicants, drafts started, per-challenge, by stage, funnel, approved, award total) equal direct counts from the tables, that staff home and committee stage counts match the Reports page, and that the CSV export has one row per submitted case with the same award total. Read-only; rolls back.
+
+  Evidence: 14 assertions pass in the PGlite stand-in; the full suite is 501 assertions, 0 failed. Mutation check: a report that drops closed cases fails 6 of the 14.
 - `feature` **Notification bell with the unread count** (NTF-01, spec T11). The bell in every signed-in header shows how many notifications are unread (a badge, "9+" above nine), and its accessible name says it: "Notifications, 3 unread". The count refreshes every 30 seconds and when you return to the tab, and drops as soon as notifications are marked read. Not built: the popover with the 10 latest (the bell opens the full page), Realtime instead of polling, and the email alert opt-in (NTF-02): the database has `profiles.alerts_opt_in` but no way for a person to change their own setting yet, which needs a backend function and the backend owner's approval.
 
   Evidence: 2 new tests (applicant count drops after Mark all as read; staff see only their own count); 290 in total; lint, type-check and build pass.
