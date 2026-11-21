@@ -4,6 +4,8 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `docs` **Blueprint: ABM joins the team** (D-31, §7). The header, D-31, the named-owners table, the responsibility matrix (new ABM column) and the parallel-development rules now include ABM as Frontend Developer from 21 Nov 2026. First tasks: sign in, create account, applicant case view and the five-step stepper (issue #100). Changes to shared components still go through Obvious.
+
 - `repair` **Dialogs return keyboard focus to the button that opened them** (WCAG 2.4.3, QA-01). Closing an action dialog (Record screening, Assign reviewers, Remove role and every other `Dialog`) with Escape, Cancel or the close button left nothing focused, so keyboard and screen-reader users were sent back to the top of the page. Radix returns focus only to its own Trigger; ours are opened by ordinary buttons. The shared `Dialog` now remembers the focused element as it opens and focuses it again on close, falling back to Radix's default when that element has gone.
 
   Evidence: 2 new tests (Escape and Cancel) fail without the fix and pass with it; 317 in total; lint, type-check and build pass. Local Chromium check at 1280 px, keyboard only: in Record screening, Assign reviewers and Remove role, focus moves into the dialog, Tab stays inside, Escape closes, focus returns to the opening button.
