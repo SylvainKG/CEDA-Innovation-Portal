@@ -222,7 +222,7 @@ test('Applicant A submits an idea; a lost reply is recovered without a second ca
   // Exactly one case with this reference: the recovery replayed the receipt rather than submitting twice.
   // Through the app's own navigation, as a person would (a reload would also empty the mock's in-memory data).
   await page.getByRole('link', { name: 'My ideas' }).first().click()
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('My ideas')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/^Welcome, /) // My ideas greets the applicant (Sandra's frame)
   await expect(page.getByText(reference, { exact: true })).toHaveCount(1, { timeout: 20_000 })
   test.info().annotations.push({ type: 'reference', description: reference })
   await page.close()
@@ -349,12 +349,14 @@ test('Steps 5-17: the case goes from screening through revision, decision and aw
   await test.step('10: the applicant answers every task and submits version 2', async () => {
     const a = await asAccount(browser, ACCOUNTS.applicantA)
     await a.goto(`/ideas/${id}/revise`)
-    await expect(a.getByRole('heading', { level: 1, name: 'Revise your idea' })).toBeVisible({ timeout: 20_000 })
-    const roadmap = a.getByRole('region', { name: 'Roadmap' })
+    // Sandra's 21 Nov frame: "REVISE YOUR IDEA" over the idea's title, "Your roadmap", then a "Review changes" step.
+    await expect(a.getByText('Revise your idea', { exact: true })).toBeVisible({ timeout: 20_000 })
+    const roadmap = a.getByRole('region', { name: 'Your roadmap' })
     for (const task of await roadmap.getByRole('group').all()) {
       await task.getByRole('radio', { name: 'Addressed', exact: true }).check()
-      await task.getByLabel('What did you change?').fill('Done in version 2 (browser test).')
+      await task.getByLabel(/^Explanation/).fill('Done in version 2 (browser test).')
     }
+    await a.getByRole('button', { name: 'Review changes' }).click()
     await a.getByLabel(/^What changed\?/).fill('Added a budget, the site and a maintenance plan (browser test).')
     await a.getByRole('checkbox', { name: /accept the declaration/i }).check()
     await a.getByRole('button', { name: 'Submit Version 2' }).click()

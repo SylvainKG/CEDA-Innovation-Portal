@@ -35,7 +35,7 @@ describe('shared shell, laid out to Sandra\'s 21 Nov frames', () => {
   it('applicant: text links, DEMO pill, account menu with Sign out, and the floating chat button', async () => {
     await as('applicant')
     const user = renderAt('/ideas')
-    await screen.findByRole('heading', { level: 1, name: 'My ideas' }, LOAD)
+    await screen.findByRole('heading', { level: 1, name: 'Welcome, Demo Applicant A' }, LOAD)
     const header = screen.getByRole('banner')
     expect(within(header).getByText('DEMO')).toBeInTheDocument()
     const nav = within(header).getByRole('navigation', { name: 'Main' })
