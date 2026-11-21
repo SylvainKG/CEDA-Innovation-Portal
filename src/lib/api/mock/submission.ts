@@ -395,6 +395,28 @@ export const mockSubmission: SubmissionPort = {
     } else if (query.versionNo !== undefined && query.versionNo > 1) {
       const r = mockOwnsCase(userId, query.proposalId) ? state.revisionReceipts.get(`${query.proposalId}:${query.versionNo}`) : undefined
       return r ? { ...r, replayed: undefined, found: true } : { found: false }
+    } else if (!ownProposal(query.proposalId, userId) && mockOwnsCase(userId, query.proposalId)) {
+      // The seeded idea was submitted before the demo began, so no receipt was stored for its version 1. Build it
+      // from the stored version, as the server's private.receipt does for any submitted version.
+      const { mockStaffInternals } = await import('./staff')
+      const c = mockStaffInternals.cases().find((x) => x.id === query.proposalId)
+      const v1 = mockStaffInternals.history(query.proposalId)[0] ?? (c?.version ? { version: c.version, files: c.files } : undefined)
+      if (!c || !v1) return { found: false }
+      return {
+        proposal_id: c.id,
+        reference: c.reference,
+        status: c.status,
+        version_no: v1.version.version_no,
+        submitted_at: v1.version.submitted_at,
+        submitted_at_display: formatDateTimeCAT(v1.version.submitted_at),
+        timezone: 'Africa/Gaborone',
+        challenge: { id: c.challenge.id, title: c.challenge.title },
+        form_version: (formFor(c.challenge.id) as ChallengeForm).form_version,
+        declaration_version: v1.version.declaration_version,
+        declaration_accepted_at: v1.version.submitted_at,
+        files: [...v1.files],
+        found: true,
+      }
     }
     const p =
       'proposalId' in query
