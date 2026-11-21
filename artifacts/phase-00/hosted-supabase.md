@@ -133,6 +133,26 @@ Run as the demo accounts with supabase-js 2.119.0 (the browser client), under a 
 
 **Reset:** the extra rows (1 case, 1 version, 1 attachment, 1 case event, 1 notification, 4 audit entries) were removed and the sequence set from 9 back to 8. All 33 tables were identical to the snapshot before commit; the test file was deleted through the Storage API (200), and Storage again matches the snapshot. This was the first real use of the tool's delete path, files included. The snapshot was deleted afterwards.
 
+## 3e. Browser journey against hosted (issue #61, #72) and its reset (21 Nov 2026)
+
+Sylvain's Playwright suite `tests/e2e/hosted-journey.spec.ts`, run from GitHub Actions: the merged screens built in `supabase` mode on `localhost:5173`, against this project, Chromium at 1280 px.
+
+| Run | Scope | Result |
+|---|---|---|
+| [44886380703](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44886380703), 08:47 UTC | Read-only | **4 passed, 1 skipped**: every demo account signs in to its own home; a wrong password is refused without saying which part; staff screens show Forbidden to the wrong roles; N-a (Applicant B can't open A's idea or receipt) |
+| [44886824024](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44886824024), 08:51–08:54 UTC | Write | **5 passed**: Applicant A submits with a PDF; the submit reply is cut after the server handled it ("Not confirmed yet."); **Check status** finds the receipt; exactly one card has the reference (N-k) |
+
+**Database check before the reset (read-only):** exactly one new case, `CEDA-2026-0009` (Applicant A, `submitted`, **1 version**), and one file. That's the server-side half of N-k.
+
+**Snapshot and reset:** snapshot at 08:50:29 UTC (33 tables, 259 rows, sequence 8, 1 storage object). `staging-reset.mjs reset --confirm` at 08:54 UTC:
+- it removed 1 case, 1 version, 1 attachment, 1 case event, 1 notification and 3 audit entries, and set the sequence from 9 to 8;
+- all 33 tables were identical to the snapshot before commit, with 19 triggers re-enabled;
+- the PDF was deleted (200).
+
+Independent check afterwards: 8 cases, sequence 8, 1 file. The snapshot file was deleted.
+
+The first attempt (run 44886087299) failed on a test selector (the password field's accessible name is "PasswordRequired"), wrote nothing, and was fixed in #72.
+
 ## 4. Not done or not run
 
 | Item | Status |
