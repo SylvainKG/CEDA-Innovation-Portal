@@ -1,6 +1,6 @@
 # Restore drill (OPS-01)
 
-**Recorded by:** Stacey · **Date:** 18 Nov 2026 · **Status:** **Passed** (logical backup → rebuild into a fresh Postgres; scope and limits below)
+**Recorded by:** Stacey · **Date:** 18 Nov 2026 · **Status:** **Passed** (logical backup restored into a PGlite stand-in, Postgres in WebAssembly with the platform stubbed; a restore into a Supabase project **Not run**; scope and limits below)
 
 ## Why this method
 
@@ -50,6 +50,8 @@ The two backup files were deleted after the run (they hold account e-mails).
 |---|---|
 | **Storage objects** (proposal files, the demo template) | Not part of any database backup on Supabase. Demo files are fictional and re-creatable; for real use, schedule an object-storage copy (runbook §6) |
 | A restore into a **real Supabase project** (Auth, Storage, PostgREST, Edge Functions running) | The target here is Postgres only. The rebuild into a real project is `supabase db push --include-seed` (proven on 17 Nov for the hosted project and in CI on every push); loading backed-up data there is **Not run** |
+| **Auth identities** (`auth.identities`) | Only `auth.users` is copied. On a real Supabase restore, email sign-in also needs each account's identity row; recreate them (or re-invite) before anyone signs in |
+| Account count after restore | The backup holds 13 accounts, but the drill compares the `public` tables only; the accounts are loaded, not compared |
 | Passwords | Not in the backup by design. After a restore, accounts need a password reset (demo accounts: `scripts/set-demo-passwords.mjs`) |
 | `health().migration_version` is `null` on the restored copy | PGlite has no `supabase_migrations` history table; on Supabase `db push` records it |
 | Schema 012 and 013 | The restore used `main` (001–011). Hosted is at 013, but 012 and 013 change functions only, not tables, so the data loads unchanged |
