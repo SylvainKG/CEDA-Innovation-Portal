@@ -177,11 +177,12 @@ export function PrivacyPage() {
           <p>
             Peolwane AI, the assistant at the bottom right of every page, is provided for us by the Leseding AI Engine, which uses Google
             Gemini. When you use it, what you type, or a recording of what you say, is sent to that service to answer you, and the spoken
-            reply is made there. It is used only to answer you.
+            reply is made there. We use it only to answer you. The Leseding AI Engine processes what you send to produce the answer; its own
+            retention terms are not yet confirmed.
           </p>
           <p>
             Peolwane AI is not given your proposals, your cases or anything else from your account: it only sees what you type or say to it.
-            Please don&apos;t tell it personal details or the content of an idea. The conversation is kept only while the page is open. Using
+            Please don&apos;t tell it personal details or the content of an idea. The portal keeps the conversation only while the page is open. Using
             it is optional; everything on the portal works without it.
           </p>
         </section>

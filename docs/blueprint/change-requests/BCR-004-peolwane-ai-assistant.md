@@ -2,7 +2,7 @@
 
 **Status:** Proposed · **Author:** Sylvain (Integration, Testing & Documentation Lead) · **Date:** 21 Nov 2026
 **Affects:** D-25 (no external AI), D-41, R-11, claim C-17, `customHttp.yml`, the privacy page
-**Approval rule:** as BCR-001. Needs Sylvain (integration) and Stacey (security and backend). Sandra and Obvious for information.
+**Approval rule:** as BCR-001. Needs Sylvain (integration) and Stacey (security and backend). ABM (acting design owner since #123) and Obvious for information.
 **Schedule impact:** none on the lifecycle. Code is ready on its branch. It needs Leseding's key and origin allowlist before it can go live. If those don't arrive by the 22 Nov code freeze, the build ships without the assistant: with no key, nothing is shown.
 
 ## Why
@@ -38,7 +38,8 @@ The team lead asked for a voice-first assistant on every page, with text as an o
   - the production key;
   - allowlisting `https://main.d270qrk6a7zs47.amplifyapp.com` and `http://localhost:5173`;
   - loading a knowledge base about the portal (the FAQ, the judge guide and the user manual are the natural sources).
-- **Data protection:** Leseding's terms for retention and use of transcripts. Until known, the privacy text says only what we control.
+- **Data protection:** Leseding's terms for retention and use of transcripts, and where it processes data. Until known, the privacy text and the data-handling note say only what we control, and list it as a gap.
+- **Quota (R-11, from Stacey's review):** the embed key is in the public bundle, and Leseding's origin lock relies on the browser's `Origin` header, which can be set outside a browser. The risk is someone using up our quota, not our data. If the assistant stops answering, the rest of the portal is unaffected.
 
 ## Sign-off
 
