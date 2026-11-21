@@ -7,6 +7,7 @@ import { roleLabel } from '@/navigation/role-labels'
 import { useSession } from '@/lib/session'
 import { cn } from '@/lib/cn'
 import { Brand, Footer, MockRoleSwitcher, SkipLink, TopBarEnd } from './ShellParts'
+import { PeolwaneAssistant } from '@/features/assistant/PeolwaneAssistant'
 
 function StaffNav({ onNavigate }: { onNavigate?: () => void }) {
   const { data: user } = useSession()
@@ -92,7 +93,8 @@ export function StaffShell() {
           <div className="mx-auto w-full max-w-content px-4">
             <MockRoleSwitcher />
           </div>
-          <Footer />
+          <Footer chatSpace />
+          <PeolwaneAssistant />
         </div>
       </div>
     </div>
