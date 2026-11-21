@@ -86,7 +86,7 @@ Signed in as the demo accounts (Auth password grant, publishable key), calling t
 | N-g Applicant C reads decisions on 0004 (in adjudication) | **Passed:** 0 rows |
 | N-h Applicant D reads history of 0002 (screened eligible) | **Passed:** no reasons |
 | N-i Second clarification on 0003 while one is open | **Passed:** 409 `INVALID_STATE` |
-| N-k in the browser (network loss) | **Not run** (needs the browser build) |
+| N-k in the browser (network loss) | **Passed** on 21 Nov in the browser (§3e) |
 
 ## 3c. Issue #61 main journey through the REST API, then an exact reset (20 Nov 2026, 14:01–14:04 UTC)
 
@@ -158,5 +158,6 @@ The first attempt (run 44886087299) failed on a test selector (the password fiel
 | Item | Status |
 |---|---|
 | Leaked-password protection | Disabled (Pro feature; Free plan) |
-| Successful download link (60-second expiry), staff invitation, real email, Realtime delivery | **Not run** (needs the frontend, an approved test invitation, and SMTP, which is deferred) |
-| Restore drill (OPS-01) | **Not run** |
+| Successful download link (60-second expiry) and Realtime isolation | **Passed** through the API with the browser client library (§3d); not yet checked on screen |
+| Staff invitation, real email | **Not run** (needs an approved test invitation, and SMTP, which is deferred) |
+| Restore drill (OPS-01) | Recorded in `artifacts/phase-07/restore-drill.md` (#44) |
