@@ -3,6 +3,7 @@ import { APPLICANT_NAV } from '@/navigation/nav-config'
 import { cn } from '@/lib/cn'
 import { DemoBadge } from '@/components/DemoBadge'
 import { Brand, ChatLauncher, Footer, MockRoleSwitcher, SkipLink, TopBarEnd } from './ShellParts'
+import { PeolwaneAssistant } from '@/features/assistant/PeolwaneAssistant'
 
 /**
  * Applicant shell (spec §4), laid out to Sandra's 21 Nov frames: logo and DEMO pill, text links (the current one
@@ -48,6 +49,7 @@ export function ApplicantShell() {
       </div>
       <Footer chatSpace />
       <ChatLauncher />
+      <PeolwaneAssistant placement="applicant" />
       <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-10 grid grid-cols-3 border-t border-line bg-surface-card md:hidden">
         {APPLICANT_NAV.map((item) => (
           <NavLink
