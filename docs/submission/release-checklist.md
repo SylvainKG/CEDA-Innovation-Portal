@@ -32,17 +32,20 @@ Every line starts as **Not run**. Tick it only with evidence: a commit, a CI run
 - [ ] `node scripts/third-party-licences.mjs --check` passes on `main`
 - [ ] README, user manual (DOC-02) and judge guide name the same accounts, URL and features as the build
 - [ ] Claim register (`docs/testing/claim-register.md`): every public claim is **Passed** with evidence, or is worded with its status (Simulated, Deferred, Not run)
+- [ ] Every **[confirm at release]** mark in the judge guide, user manual and technical proposal is resolved against the release build (judging URL, contact, Peolwane AI, plan, uptime monitor)
+- [ ] **Staging back at the demo baseline:** after the last planned write run, Stacey's verified exact reset (`staging-reset.mjs`, #61), so the demo starts at `CEDA-2026-0009`. Must happen **before** the freeze and tag; the reset tool refuses after 18:00
 
 ## 2. Freeze and tag
 
 - [ ] Release commit chosen on `main`; tag `git tag -a v1.0-judging <sha> -m "Judging release"` and push the tag
 - [ ] `release` branch points at the tag; Amplify deploys the `release` branch (hosting guide)
-- [ ] Release note in `artifacts/phase-07/release.md`: tag, SHA, date, included PRs, known limitations
+- [ ] Release note in `artifacts/phase-07/release.md`: tag, SHA, date, included PRs, known limitations. It **must list the demo two-step exemption**: the `demo_mfa_exempt` setting is on so judges can sign in to the seeded staff accounts, and it must be switched **off** for any real use (D-07, BCR-001 Part C)
 
 ## 3. Judging environment (runbook §3 steps 0–9)
 
 - [ ] Amplify `release` branch: `VITE_API_MODE=supabase`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` (public key only; never the service-role key)
 - [ ] `APP_ORIGINS`, `PORTAL_URL`, the Auth Site URL and the Redirect URLs name the **release URL only**; `http://localhost:5173` and its `/**` entry removed; settings read back and recorded (runbook §3 step 8)
+- [ ] **If the judging project is a fresh one** (not the current staging project): re-upload the demo template to `challenge-files` (Storage objects aren't in database backups), and create the three Vault entries and the Edge Function secrets (runbook §3 steps 5–6)
 - [ ] Demo passwords set from `DEMO_PASSWORD` (12 characters or more) with `scripts/set-demo-passwords.mjs`; never written in the repo, the bundle or the video
 - [ ] Keep-alive workflow configured and one manual run green (if staying on the Free plan)
 - [ ] Uptime monitor on the release URL and `health()`, alerting the named contact
@@ -55,6 +58,7 @@ Every line starts as **Not run**. Tick it only with evidence: a commit, a CI run
 - [ ] Every judge account signs in and lands on its own home; a wrong password is refused
 - [ ] One full main journey (blueprint §3.2) and one permission-denied journey (§3.3) on the hosted build, recorded with the SHA
 - [ ] `health()` returns `ok: true` with the latest migration version
+- [ ] **Peolwane AI** (BCR-004, `docs/process/peolwane-ai.md`): `VITE_LESEDING_BASE` is exactly `https://lesedingaiengine.co.bw` (it must match `connect-src` in `customHttp.yml`) and `VITE_LESEDING_KEY` is set on the release branch; Leseding has allowlisted the release URL and loaded the portal knowledge base. Check on the release URL: the button shows, a typed question gets an answer, and the assistant **does not ask for a name or other personal details**. If any of this fails, remove the two variables and rebuild (the assistant is then not shown), and keep the docs' Peolwane AI lines marked as not live
 - [ ] No pgTAP runner against the judging project after 22 Nov, 18:00 (runbook §3 step 9)
 
 ## 5. Source package and installation files

@@ -1,0 +1,3 @@
+# The licence check compares bytes; keep LF on every platform (a Windows checkout with core.autocrlf=true would
+# otherwise fail the check with identical content). Stacey, #64 review.
+THIRD_PARTY_LICENCES.md text eol=lf

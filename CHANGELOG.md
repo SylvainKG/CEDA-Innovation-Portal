@@ -4,6 +4,14 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `chore` **Release checklist brought up to date** (`docs/submission/release-checklist.md`, #64). It adds:
+  - resolving every [confirm at release] mark;
+  - Stacey's exact reset of staging before the freeze;
+  - the release note naming the demo two-step exemption (D-07, BCR-001 Part C);
+  - the extra steps for a fresh judging project;
+  - the Peolwane AI checks, including that it never asks for personal details.
+
+  `.gitattributes` keeps `THIRD_PARTY_LICENCES.md` in LF, so the licence check also passes on Windows checkouts.
 - `feature` Release tooling (REL-01, SUB-01): `scripts/third-party-licences.mjs` writes `THIRD_PARTY_LICENCES.md` from the committed lockfiles (runtime packages separated from build and test tooling; `--check` fails on an out-of-date list or a licence outside the allowed set). `scripts/package-source.sh` packs exactly the committed files of the release tag under one team folder, refuses secret-looking or personal files, re-checks the licence list and enforces the 150 MB limit. `docs/submission/release-checklist.md`: freeze, tag, judging environment, hosted checks, package, bundle and upload, judging period, with the decisions still open.
 - `docs` **Submission documents brought up to date for the release** (judge guide, user manual, technical proposal):
   - the line "Peolwane is the portal's name; it is built for CEDA's Innovation Fund" in all three;
