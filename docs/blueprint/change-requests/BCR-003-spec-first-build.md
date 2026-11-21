@@ -1,6 +1,6 @@
 # BCR-003 — Build from the written spec where no design snapshot exists (proposes D-45)
 
-**Status:** Proposed · **Author:** Obvious (Frontend & UI Implementation Lead) · **Date:** 17 Nov 2026
+**Status:** Approved (Sandra 18 Nov, Sylvain 21 Nov 2026) · **Author:** Obvious (Frontend & UI Implementation Lead) · **Date:** 17 Nov 2026
 **Affects:** D-37 (screen status and Ready for build), blueprint v0.3 §5 (slice flow), `docs/design/figma-handoff/screen-status.md`
 **Approval rule:** as BCR-001. Needs Sandra (design owner) and Sylvain (integration). Stacey for information.
 **Schedule impact:** removes the main blocker to the 22 Nov code freeze. No scope change.
@@ -53,4 +53,4 @@ Then Slices 2–6 in blueprint order.
 |---|---|---|---|
 | Frontend & UI Implementation Lead | Obvious | Proposed | 17 Nov 2026 |
 | UI/UX & Figma Integration Lead | Sandra | Approved (PR review) | 18 Nov 2026 |
-| Integration, Testing & Documentation Lead | Sylvain | | |
+| Integration, Testing & Documentation Lead | Sylvain | Approved (PR review) | 21 Nov 2026 |
