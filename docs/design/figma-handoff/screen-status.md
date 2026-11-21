@@ -5,6 +5,8 @@
 
 **Provisional UI** (decided 20 Nov 2026, ahead of the 22 Nov code freeze): a screen built directly from the blueprint and `02-figma-ui-ux-spec.md` with the design tokens and shared components, because no approved snapshot exists (BCR-003, D-45). Sandra reviews each one on staging and it becomes Approved or a difference is logged; review does not block development.
 
+**Note (21 Nov, added by Sylvain on Sandra's behalf, assisted):** the *Notes* column below is mostly Sandra's 16 Nov first pass. Words such as "Overdue" and "Missing" describe that day. Every row's *Code status (PR)* column is current: all screens in the route map are built, as Provisional UI unless stated. The design review of each screen is still Sandra's.
+
 Design status values: Not started · In design · Provisional · In review · Approved · Implemented · Verified · Blocked.
 
 **How to read this pass:**
