@@ -79,7 +79,7 @@ function AdminCases() {
       key: 'status',
       header: 'Status',
       cell: (r) => (
-        <span className="whitespace-nowrap">
+        <span className="md:whitespace-nowrap">
           <StatusBadge status={r.status} audience="staff" />
         </span>
       ),
