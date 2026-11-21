@@ -5,13 +5,29 @@ import { describe, expect, it, vi } from 'vitest'
 import { AutosaveIndicator, Banner, DeclarationPanel, IdeaCard, ReceiptCard, StageTimeline, type IdeaCardModel } from '.'
 
 describe('StageTimeline', () => {
-  it('hides the Feedback stage unless it occurred or is open', () => {
-    const { rerender } = render(
-      <StageTimeline stages={[{ stage: 'submission', state: 'done' }, { stage: 'review', state: 'current' }]} />,
+  it('always shows the five stages, numbered, with a tick once done (#100 decision 2)', () => {
+    render(<StageTimeline stages={[{ stage: 'submission', state: 'done' }, { stage: 'review', state: 'current' }]} />)
+    const items = screen.getAllByRole('listitem')
+    expect(items).toHaveLength(5)
+    ;['Submission', 'Review', 'Feedback', 'Approval', 'Award'].forEach((label, i) => expect(items[i]).toHaveTextContent(label))
+    // Done shows a tick; the others show their number (hidden from screen readers, which hear the state).
+    expect(items[0]!.textContent?.startsWith('Submission')).toBe(true)
+    expect(items[1]!.textContent?.startsWith('2Review')).toBe(true)
+    expect(items[2]).toHaveTextContent('Feedback: not reached yet')
+  })
+
+  it('greys a skipped Feedback stage and announces it as not needed', () => {
+    render(
+      <StageTimeline
+        stages={[
+          { stage: 'submission', state: 'done' },
+          { stage: 'review', state: 'done' },
+          { stage: 'feedback', state: 'skipped' },
+          { stage: 'approval', state: 'current' },
+        ]}
+      />,
     )
-    expect(screen.queryByText('Feedback')).not.toBeInTheDocument()
-    rerender(<StageTimeline stages={[{ stage: 'feedback', state: 'current' }]} />)
-    expect(screen.getByText('Feedback')).toBeInTheDocument()
+    expect(screen.getAllByRole('listitem')[2]).toHaveTextContent('Feedback: not needed')
   })
 
   it('marks the current stage for assistive technology', () => {
