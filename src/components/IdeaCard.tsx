@@ -1,8 +1,7 @@
-import { CalendarClock } from 'lucide-react'
 import type { CaseStatus, FeedbackKind } from '@/lib/api/types'
-import { formatDateTimeCAT, relativeDays } from '@/lib/format'
+import { cn } from '@/lib/cn'
+import { formatDateTimeCAT, relativeDays, timeAgo } from '@/lib/format'
 import { ButtonLink } from './ButtonLink'
-import { ReferencePill } from './ReferencePill'
 import { StageTimeline, type StageEntry } from './StageTimeline'
 import { StatusBadge } from './StatusBadge'
 
@@ -29,37 +28,50 @@ export interface IdeaCardModel {
   notice?: string
 }
 
+/**
+ * Idea card (spec §7 T06), laid out to Sandra's 21 Nov "My ideas" frame: the status pill and the reference across
+ * the top, the title and challenge, the five-step stepper, then "Updated … · deadline" and the one action. A card
+ * that needs the applicant's response has a red top edge.
+ */
 export function IdeaCard({ idea, now }: { idea: IdeaCardModel; now?: Date }) {
   const headingId = `idea-${idea.id}-title`
+  const needsResponse = idea.status === 'action_required' && !idea.notice
   return (
-    <article aria-labelledby={headingId} className="flex flex-col gap-4 rounded-md bg-surface-card p-4 shadow-1">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="flex min-w-0 flex-col gap-1">
-          <h3 id={headingId} className="text-h3 font-semibold">
-            {idea.title}
-          </h3>
-          <p className="text-sm text-ink-muted">{idea.challenge}</p>
-        </div>
+    <article
+      aria-labelledby={headingId}
+      className={cn('flex h-full flex-col gap-4 rounded-md border-t-4 bg-surface-card p-5 shadow-1', needsResponse ? 'border-error' : 'border-brand')}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <StatusBadge status={idea.status} audience="applicant" context={{ feedbackKind: idea.feedbackKind }} />
+        {idea.reference ? <span className="font-mono text-xs text-ink-muted">{idea.reference}</span> : <span className="text-xs text-ink-muted">Draft: no reference yet</span>}
       </div>
-      {idea.reference ? <ReferencePill reference={idea.reference} /> : <p className="text-sm text-ink-muted">Draft: no reference yet</p>}
-      {idea.status !== 'draft' ? <StageTimeline stages={idea.stages} orientation="vertical" compact /> : null}
-      <div className="flex flex-col gap-1 text-sm text-ink-muted">
-        <span>Updated {formatDateTimeCAT(idea.updatedAt)}</span>
-        {idea.deadline ? (
-          <span className="flex items-center gap-1 font-semibold text-ink">
-            <CalendarClock aria-hidden className="h-4 w-4 text-status-action-fg" />
-            {idea.deadlineLabel ?? 'Respond by'} {formatDateTimeCAT(idea.deadline)} ({relativeDays(idea.deadline, now)})
-          </span>
+      <div className="flex min-w-0 flex-col gap-1">
+        <h3 id={headingId} className="text-h3 font-semibold">
+          {idea.title}
+        </h3>
+        <p className="text-sm text-ink-muted">{idea.challenge}</p>
+      </div>
+      {idea.status !== 'draft' ? <StageTimeline stages={idea.stages} compact /> : null}
+      {idea.notice ? <p className="rounded-md bg-surface-sunken p-3 text-sm">{idea.notice}</p> : null}
+      <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
+        <p className="text-sm text-ink-muted">
+          <span title={formatDateTimeCAT(idea.updatedAt)}>Updated {timeAgo(idea.updatedAt, now)}</span>
+          {idea.deadline ? (
+            <>
+              {' · '}
+              <span className={cn('font-semibold', needsResponse ? 'text-error' : 'text-ink')}>
+                {idea.deadlineLabel ?? 'Respond by'} {formatDateTimeCAT(idea.deadline)} ({relativeDays(idea.deadline, now)})
+              </span>
+            </>
+          ) : null}
+        </p>
+        {idea.primaryAction ? (
+          <ButtonLink to={idea.primaryAction.to}>
+            {idea.primaryAction.label}
+            <span className="sr-only">: {idea.title}</span>
+          </ButtonLink>
         ) : null}
       </div>
-      {idea.notice ? <p className="rounded-md bg-surface-sunken p-3 text-sm">{idea.notice}</p> : null}
-      {idea.primaryAction ? (
-        <ButtonLink to={idea.primaryAction.to}>
-          {idea.primaryAction.label}
-          <span className="sr-only">: {idea.title}</span>
-        </ButtonLink>
-      ) : null}
     </article>
   )
 }

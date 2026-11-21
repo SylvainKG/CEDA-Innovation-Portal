@@ -1,6 +1,8 @@
-import { Bell, LogOut } from 'lucide-react'
-import { Link, useNavigate } from 'react-router-dom'
-import cedaLogo from '@/assets/ceda-logo.png'
+import { useEffect, useRef, useState } from 'react'
+import { Bell, LogOut, MessageSquare } from 'lucide-react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { brand } from '@/brand'
+import { CEDA, telHref } from '@/brand/ceda-info'
 import { DemoBadge } from '@/components/DemoBadge'
 import { useNotifications } from '@/features/oversight/queries'
 import { apiMode } from '@/lib/api'
@@ -23,24 +25,96 @@ export function SkipLink() {
 export function Brand() {
   return (
     <Link to="/" className="flex min-h-touch items-center gap-3 font-bold text-ink no-underline">
-      {/* Official CEDA logo, upscaled from the supplied 447 px PNG; replace with CEDA's vector file when available. */}
-      <img src={cedaLogo} alt="CEDA" width={1432} height={900} className="h-10 w-auto" />
-      {/* Logo alone on phones so the text cannot collide with the DEMO badge; still read out as "CEDA Innovation Portal". */}
-      <span className="sr-only md:not-sr-only">Innovation Portal</span>
+      {/* The mark and names come from src/brand (one place to change the brand). */}
+      <img src={brand.mark.src} alt="" width={brand.mark.width} height={brand.mark.height} className="h-10 w-auto" />
+      {/* Read out as the full name at every width; the text shows from 768 px so it can't collide with the DEMO badge. */}
+      <span className="sr-only">{brand.fullName}</span>
+      <span aria-hidden className="hidden flex-col leading-tight md:flex">
+        <span>{brand.header.title}</span>
+        {brand.header.subtitle ? <span className="text-sm font-normal text-ink-muted">{brand.header.subtitle}</span> : null}
+      </span>
     </Link>
   )
 }
 
-export function Footer() {
+const FOOTER_LINKS = [
+  { to: '/privacy', label: 'Privacy' },
+  { to: '/help/support', label: 'Fault support' },
+  { to: '/help/faqs', label: 'FAQs' },
+  { to: '/help/contacts', label: 'Contacts' },
+]
+
+/**
+ * Footer (Sandra's 21 Nov frames, with the team's 21 Nov decision: Peolwane is a CEDA product). Three columns from
+ * 768 px: what Peolwane is and a link to CEDA's main website; CEDA's head office; a pointer to CEDA's offices with a link
+ * to CEDA's page for each office. Below: the portal links and the demo note. `chatSpace` keeps the bottom row clear
+ * of the floating buttons: "Peolwane AI" on every page, and "Chat with CEDA" on applicant pages. CEDA's details come from `src/brand/ceda-info.ts`.
+ */
+export function Footer({ chatSpace = false }: { chatSpace?: boolean }) {
+  const ext = 'text-ink underline underline-offset-2 hover:text-brand-text'
   return (
-    <footer className="mt-12 border-t border-line bg-surface-card">
-      <nav aria-label="Footer" className="mx-auto flex max-w-content flex-wrap items-center gap-x-4 px-4 py-4 text-sm">
-        <Link to="/privacy" className="inline-flex min-h-touch min-w-touch items-center">Privacy</Link>
-        <Link to="/help/support" className="inline-flex min-h-touch min-w-touch items-center">Fault support</Link>
-        <Link to="/help/faqs" className="inline-flex min-h-touch min-w-touch items-center">FAQs</Link>
-        <Link to="/help/contacts" className="inline-flex min-h-touch min-w-touch items-center">Contacts</Link>
-        <span className="text-ink-muted">Demonstration prototype with fictional data.</span>
-      </nav>
+    <footer className="mt-12 border-t border-line bg-surface-card text-sm" data-print="hide">
+      <div className="mx-auto grid max-w-content grid-cols-1 gap-6 px-4 py-6 md:grid-cols-3">
+        <section aria-labelledby="footer-about" className="flex flex-col gap-2">
+          <h2 id="footer-about" className="font-semibold">
+            {brand.header.title} · a {CEDA.shortName} product
+          </h2>
+          <p className="text-ink-muted">
+            The innovation portal of the {CEDA.name} ({CEDA.shortName}), Botswana: answer CEDA&apos;s challenges with your ideas and follow them from
+            submission to award.
+          </p>
+          <a href={CEDA.website} target="_blank" rel="noopener noreferrer" className={`inline-flex min-h-touch items-center ${ext}`}>
+            Visit {CEDA.shortName}&apos;s main website (www.ceda.co.bw)<span className="sr-only"> (opens in a new tab)</span>
+          </a>
+        </section>
+        <section aria-labelledby="footer-office" className="flex flex-col gap-2">
+          <h2 id="footer-office" className="font-semibold">
+            {CEDA.shortName} head office
+          </h2>
+          <address className="not-italic text-ink-muted">
+            {CEDA.headOffice.lines.map((l) => (
+              <span key={l} className="block">
+                {l}
+              </span>
+            ))}
+            <span className="block">{CEDA.headOffice.postal}</span>
+          </address>
+          <p className="flex flex-col">
+            <a href={telHref(CEDA.headOffice.phone)} className={`inline-flex min-h-touch items-center ${ext}`}>
+              Tel {CEDA.headOffice.phone}
+            </a>
+            <a href={telHref(CEDA.headOffice.tollFree)} className={`inline-flex min-h-touch items-center ${ext}`}>
+              Toll-free {CEDA.headOffice.tollFree}
+            </a>
+            <a href={`mailto:${CEDA.headOffice.email}`} className={`inline-flex min-h-touch items-center break-all ${ext}`}>
+              {CEDA.headOffice.email}
+            </a>
+          </p>
+        </section>
+        <section aria-labelledby="footer-branches" className="flex flex-col gap-2">
+          <h2 id="footer-branches" className="font-semibold">
+            {CEDA.shortName} offices
+          </h2>
+          <p className="text-ink-muted">{CEDA.shortName} has offices across Botswana.</p>
+          <a href={CEDA.contactPage} target="_blank" rel="noopener noreferrer" className={`inline-flex min-h-touch items-center ${ext}`}>
+            Addresses and phone numbers on ceda.co.bw<span className="sr-only"> (opens in a new tab)</span>
+          </a>
+        </section>
+      </div>
+      <div className="border-t border-line">
+        <div className={`mx-auto flex max-w-content flex-wrap items-center justify-between gap-x-6 gap-y-1 px-4 py-3 ${chatSpace ? 'md:pr-56' : ''}`}>
+          <p className="text-ink-muted">
+            {brand.fullName} · Demo prototype with fictional data
+          </p>
+          <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-4">
+            {FOOTER_LINKS.map((l) => (
+              <Link key={l.to} to={l.to} className="inline-flex min-h-touch min-w-touch items-center text-ink no-underline hover:underline">
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
+      </div>
     </footer>
   )
 }
@@ -54,22 +128,18 @@ export function NotificationsLink() {
   const unread = (list.data ?? []).filter((n) => !n.read_at).length
   const name = unread ? `Notifications, ${unread} unread` : 'Notifications'
   return (
+    // A round bell button (Sandra's 21 Nov frames); the touch target stays 44 × 44 px.
     <Link
       to="/notifications"
       aria-label={name}
-      className="relative inline-flex min-h-touch min-w-touch items-center justify-center gap-2 rounded-md px-2 text-ink no-underline hover:bg-surface-sunken"
+      className="relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-line text-ink no-underline hover:bg-surface-sunken"
     >
-      <span className="relative inline-flex">
-        <Bell aria-hidden className="h-5 w-5" />
-        {unread ? (
-          <span aria-hidden className="absolute -right-2 -top-2 min-w-[1.25rem] rounded-full bg-brand px-1 text-center text-xs font-semibold leading-5 text-brand-on">
-            {unread > 9 ? '9+' : unread}
-          </span>
-        ) : null}
-      </span>
-      <span aria-hidden className="hidden md:inline">
-        Notifications
-      </span>
+      <Bell aria-hidden className="h-5 w-5" />
+      {unread ? (
+        <span aria-hidden className="absolute -right-1 -top-1 min-w-[1.25rem] rounded-full bg-brand px-1 text-center text-xs font-semibold leading-5 text-brand-on">
+          {unread > 9 ? '9+' : unread}
+        </span>
+      ) : null}
     </Link>
   )
 }
@@ -102,14 +172,82 @@ export function MockRoleSwitcher({ compact = false }: { compact?: boolean }) {
   )
 }
 
-export function TopBarEnd() {
+/** The right end of a signed-in header: the bell and the account menu. `badge` keeps the DEMO pill here (public shell). */
+export function TopBarEnd({ badge = true }: { badge?: boolean }) {
   const { data: user } = useSession()
   return (
-    <div className="flex shrink-0 items-center gap-1 md:gap-2">
-      <DemoBadge />
+    <div className="flex shrink-0 items-center gap-2 md:gap-3">
+      {badge ? <DemoBadge /> : null}
       {user ? <NotificationsLink /> : null}
-      {user ? <span className="hidden text-sm text-ink-muted lg:inline">{user.displayName}</span> : null}
-      {user ? <SignOutButton /> : null}
+      {user ? <AccountMenu /> : null}
+    </div>
+  )
+}
+
+const initials = (name: string) =>
+  name
+    .split(/\s+/)
+    .filter((w) => /^[A-Za-z]/.test(w))
+    .slice(0, 2)
+    .map((w) => w[0]!.toUpperCase())
+    .join('') || '?'
+
+/**
+ * The avatar with the person's initials, name and role (Sandra's 21 Nov frames). It opens a small menu with
+ * Sign out (decision #19, provisional default: "Put Sign out in a menu on the avatar"). Escape or a click
+ * outside closes it.
+ */
+function AccountMenu() {
+  const { data: user } = useSession()
+  const [open, setOpen] = useState(false)
+  const box = useRef<HTMLDivElement>(null)
+  const button = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: MouseEvent) => {
+      if (box.current && !box.current.contains(e.target as Node)) setOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpen(false)
+        button.current?.focus()
+      }
+    }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+  if (!user) return null
+  const subtitle = user.roles.length ? roleLabel(user.roles.find((r) => r !== 'auditor') ?? user.roles[0]!) : ''
+  return (
+    <div ref={box} className="relative" data-print="hide">
+      <button
+        ref={button}
+        type="button"
+        aria-expanded={open}
+        aria-controls="account-menu"
+        aria-label={`Account: ${user.displayName}`}
+        onClick={() => setOpen((v) => !v)}
+        className="flex min-h-touch items-center gap-2 rounded-full pr-1 text-left text-ink hover:bg-surface-sunken md:pr-3"
+      >
+        <span aria-hidden className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-semibold text-surface-card">
+          {initials(user.displayName)}
+        </span>
+        <span aria-hidden className="hidden max-w-[11rem] flex-col leading-tight lg:flex">
+          <span className="truncate text-sm font-semibold">{user.displayName}</span>
+          <span className="truncate text-xs text-ink-muted">{subtitle}</span>
+        </span>
+      </button>
+      {open ? (
+        <div id="account-menu" className="absolute right-0 top-full z-30 mt-2 w-56 rounded-md border border-line bg-surface-card p-2 shadow-1">
+          <p className="px-2 py-1 text-sm font-semibold">{user.displayName}</p>
+          {subtitle ? <p className="px-2 pb-2 text-xs text-ink-muted">{subtitle}</p> : null}
+          <SignOutButton />
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -128,11 +266,29 @@ function SignOutButton() {
         navigate('/')
         signOut.mutate()
       }}
-      className="inline-flex min-h-touch min-w-touch shrink-0 items-center justify-center gap-2 rounded-md px-2 text-ink hover:bg-surface-sunken"
+      className="flex min-h-touch w-full items-center gap-2 rounded-md px-2 text-ink hover:bg-surface-sunken"
     >
-      {/* Icon only below md, like Notifications, so the 360 px staff header does not scroll sideways (#47 e2e). */}
       <LogOut aria-hidden className="h-5 w-5" />
-      <span className="sr-only md:not-sr-only">Sign out</span>
+      Sign out
     </button>
+  )
+}
+
+/**
+ * The floating "Chat with CEDA" button (Sandra's 21 Nov frames), for applicants. Hidden on the chat page itself.
+ * On phones it sits above the bottom navigation.
+ */
+export function ChatLauncher() {
+  const { pathname } = useLocation()
+  if (pathname.startsWith('/support/chat')) return null
+  return (
+    <Link
+      to="/support/chat"
+      data-print="hide"
+      className="fixed bottom-24 right-4 z-20 inline-flex min-h-touch items-center gap-2 rounded-full bg-[#333333] px-4 font-semibold text-white no-underline shadow-1 hover:bg-black md:bottom-6"
+    >
+      <MessageSquare aria-hidden className="h-5 w-5" />
+      Chat with CEDA
+    </Link>
   )
 }

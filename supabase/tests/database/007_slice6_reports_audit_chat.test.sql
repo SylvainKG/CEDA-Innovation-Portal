@@ -4,7 +4,7 @@
 -- 0004 in adjudication, 0005 not approved, 0006 awarded BWP 250,000, 0007 closed), applicants C, D, E and A.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(45);
+select plan(46);
 
 create temp table ids (k text primary key, v text);
 grant all on ids to authenticated, anon;
@@ -65,8 +65,12 @@ select is((select count(*)::int from public.query_audit(p_reference => 'ceda-202
   'filter by case reference (case-insensitive): seeded submission + screening');
 select is((select actor_name from public.query_audit(p_reference => 'CEDA-2026-0001', p_action => 'case.') limit 1),
   'Demo Screening Officer', 'filter by action prefix, with the actor''s name');
-select is((select count(*)::int from public.query_audit(p_actor_id => '00000000-0000-4000-8000-0000000000b1')), 2,
-  'filter by actor: their sign-up and the screening');
+-- Actor filter: count only this transaction's rows (now() is constant within it), so earlier real
+-- activity by the same person on a live project doesn't change the result; then check history is included.
+select is((select count(*)::int from public.query_audit(p_actor_id => '00000000-0000-4000-8000-0000000000b1', p_from => now())), 1,
+  'filter by actor: the screening done in this test');
+select ok(exists (select 1 from public.query_audit(p_actor_id => '00000000-0000-4000-8000-0000000000b1', p_action => 'account.registered')),
+  'filter by actor also returns their earlier sign-up');
 select is((select count(*)::int from public.query_audit(p_action => '%')), 0, 'wildcards in the action filter are treated literally');
 insert into ids select 'top', max(id)::text from public.query_audit();
 select ok((select bool_and(id < (select v::bigint from ids where k = 'top')) from public.query_audit(p_before_id => (select v::bigint from ids where k = 'top'))),
