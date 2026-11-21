@@ -1,7 +1,7 @@
 import { useId, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, Navigate, useParams } from 'react-router-dom'
-import { Banner, Button, DeclarationPanel, ReferencePill, Select, TextField } from '@/components'
+import { Banner, Button, DeclarationPanel, ReferencePill, SegmentedControl, Select, TextField } from '@/components'
 import { ErrorState, LoadingState, NotFoundState, UnknownOutcomeBanner } from '@/components/states/States'
 import { useRoadmap } from '@/features/feedback/queries'
 import { useSubmitRevision } from '@/features/feedback/useSubmitRevision'
@@ -103,9 +103,9 @@ function ReviseForm({ c, request }: { c: MyCase; request: FeedbackRequest }) {
         <p className="text-ink-muted">{c.title} · you're preparing version {nextVersion}</p>
       </header>
 
-      <Banner kind="action" title="CEDA asked you to revise your idea">
+      <Banner kind="warning" title="CEDA asked you to revise your idea">
         <span className="whitespace-pre-wrap">{request.message}</span>
-        <span className="mt-1 block">Respond by {formatDateTimeCAT(request.due_at)}.</span>
+        <span className="mt-1 block font-semibold">Respond by {formatDateTimeCAT(request.due_at)}.</span>
       </Banner>
 
       {s.kind === 'unknown' ? <UnknownOutcomeBanner what="Your revision" checking={s.checking} onCheckStatus={() => void revision.checkStatus()} /> : null}
@@ -140,24 +140,19 @@ function ReviseForm({ c, request }: { c: MyCase; request: FeedbackRequest }) {
             const a = answers[t.task_id]!
             const key = `task:${t.position}`
             return (
-              <fieldset key={t.task_id} id={`${id}-task-${t.position}`} className="flex flex-col gap-2 border-t border-line pt-3">
+              <fieldset key={t.task_id} id={`${id}-task-${t.position}`} className="flex flex-col gap-3 border-t border-line pt-3">
                 <legend className="font-semibold">
                   Task {t.position}: {t.text}
                 </legend>
-                <div className="flex flex-wrap gap-4">
-                  {(['addressed', 'not_addressed'] as const).map((st) => (
-                    <label key={st} className="flex min-h-touch items-center gap-2">
-                      <input
-                        type="radio"
-                        className="h-5 w-5"
-                        name={`${id}-t${t.position}`}
-                        checked={a.status === st}
-                        onChange={() => setAnswers((all) => ({ ...all, [t.task_id]: { ...all[t.task_id]!, status: st } }))}
-                      />
-                      {st === 'addressed' ? 'Addressed' : 'Not addressed'}
-                    </label>
-                  ))}
-                </div>
+                <SegmentedControl
+                  aria-labelledby={`${id}-task-${t.position}`}
+                  value={a.status}
+                  onChange={(status) => setAnswers((all) => ({ ...all, [t.task_id]: { ...all[t.task_id]!, status } }))}
+                  options={[
+                    { value: 'addressed' as const, label: 'Addressed' },
+                    { value: 'not_addressed' as const, label: 'Not addressed' },
+                  ]}
+                />
                 <TextField
                   multiline
                   rows={2}

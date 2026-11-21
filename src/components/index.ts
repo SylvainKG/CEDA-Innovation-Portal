@@ -30,3 +30,4 @@ export { DeclarationPanel, type DeclarationPanelProps } from './DeclarationPanel
 export { AutosaveIndicator, type AutosaveState } from './AutosaveIndicator'
 export { PlainMarkdown } from './PlainMarkdown'
 export { ChallengeCard } from './ChallengeCard'
+export { SegmentedControl } from './SegmentedControl'
