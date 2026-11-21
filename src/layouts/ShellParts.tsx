@@ -1,8 +1,8 @@
-import { Bell, LogOut } from 'lucide-react'
+import { LogOut } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import cedaLogo from '@/assets/ceda-logo.png'
 import { DemoBadge } from '@/components/DemoBadge'
-import { useNotifications } from '@/features/oversight/queries'
+import { NotificationPopover } from '@/components/NotificationPopover'
 import { apiMode } from '@/lib/api'
 import { MOCK_ROLE_OPTIONS, mockRoleOf } from '@/lib/api/mock/session'
 import type { Role } from '@/lib/api/types'
@@ -46,32 +46,12 @@ export function Footer() {
 }
 
 /**
- * The bell (spec T11, NTF-01): the unread count as a badge, refreshed every 30 seconds and on returning to the tab.
- * The accessible name says the count ("Notifications, 3 unread"); the badge is only a visual repeat of it.
+ * The bell (spec T11, NTF-01): the unread count as a badge, opens a popover with 10 latest notifications.
+ * Refreshed every 30 seconds and on returning to the tab. The accessible name says the count
+ * ("Notifications, 3 unread"); the badge is only a visual repeat of it.
  */
 export function NotificationsLink() {
-  const list = useNotifications()
-  const unread = (list.data ?? []).filter((n) => !n.read_at).length
-  const name = unread ? `Notifications, ${unread} unread` : 'Notifications'
-  return (
-    <Link
-      to="/notifications"
-      aria-label={name}
-      className="relative inline-flex min-h-touch min-w-touch items-center justify-center gap-2 rounded-md px-2 text-ink no-underline hover:bg-surface-sunken"
-    >
-      <span className="relative inline-flex">
-        <Bell aria-hidden className="h-5 w-5" />
-        {unread ? (
-          <span aria-hidden className="absolute -right-2 -top-2 min-w-[1.25rem] rounded-full bg-brand px-1 text-center text-xs font-semibold leading-5 text-brand-on">
-            {unread > 9 ? '9+' : unread}
-          </span>
-        ) : null}
-      </span>
-      <span aria-hidden className="hidden md:inline">
-        Notifications
-      </span>
-    </Link>
-  )
+  return <NotificationPopover />
 }
 
 /**

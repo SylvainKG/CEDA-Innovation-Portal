@@ -8,6 +8,7 @@ export { Dialog, type DialogProps } from './Dialog'
 export { FileUpload, type FileUploadProps, type UploadState } from './FileUpload'
 export { ProgressIndicator, type ProgressIndicatorProps } from './ProgressIndicator'
 export { NotificationItem, type NotificationItemProps } from './NotificationItem'
+export { NotificationPopover } from './NotificationPopover'
 export { DashboardCard, type DashboardCardProps } from './DashboardCard'
 export { DemoBadge, SampleLabel } from './DemoBadge'
 export {
