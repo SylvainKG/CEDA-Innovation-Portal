@@ -4,6 +4,10 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `design` **All cases laid out to Sandra's 21 Nov frame** (#119 screen H; `ceda administrator screening.pdf`). Like the other work queues (#118): "WORK QUEUE" over "All cases" and "Filter cases and open a workspace to take action.", the shared filter card (search by reference or title, status, challenge) with removable chips, and the table: reference, idea, challenge, last update, reviewers assigned and the status badge. The status filter still lives in the address; committee members keep the status-only variant (D-08).
+
+  Evidence: all-cases and committee tests pass (10, wording unchanged); lint and type-check pass; checked in the browser as the administrator at 1280 and 360 px (no sideways scroll, controls at least 44 px).
+
 - `design` **Reports laid out to Sandra's 21 Nov frames** (#119 screen F; `ceda adjudicator reports.pdf` and its outcomes, timelines, impact and chats pages, `ceda administrator reporting.pdf`). "INNOVATION PORTAL" over "Reports", "Operational indicators for administrators and committee members." and Export CSV at the right; the filters in one card (challenge, "Date range (CAT)" from and to, Apply filters) with the applied ones as removable chips and "Clear all"; each chart in a card with "Filtered by the controls above" ("All time" for chat), a "Show as table" toggle with a steady label, and the bars on a light full-width track with the value at the right.
 
   Evidence: report and chat tests pass (16); lint and type-check pass; checked in the browser as the administrator at 1280 and 360 px (chips apply and clear; no sideways scroll, controls at least 44 px).
