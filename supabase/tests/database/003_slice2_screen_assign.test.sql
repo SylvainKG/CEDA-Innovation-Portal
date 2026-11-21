@@ -2,11 +2,12 @@
 -- internal notes, committee status (D-08). Negatives N3, N7, N8.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(56);
+select plan(61);
 
 create temp table ids (k text primary key, v text);
 grant all on ids to authenticated;
 insert into ids select 'c1', id::text from public.proposals where reference = 'CEDA-2026-0001';
+insert into ids select 'c1_owner', applicant_id::text from public.proposals where reference = 'CEDA-2026-0001';
 
 -- A second submitted case (owner: Applicant D) for the ineligible path.
 do $$
@@ -45,8 +46,30 @@ select throws_ok(format($$select public.record_screening(%L, 'eligible', 'again'
   'PT409', 'INVALID_STATE', 'a case cannot be screened twice');
 select is((select count(*)::int from public.case_events
            where proposal_id = (select v::uuid from ids where k = 'c1') and from_status = 'submitted'
-             and to_status = 'in_evaluation' and reason = 'Meets all criteria (test)'), 1,
-  'the screening is recorded in the case history with its reason');
+             and to_status = 'in_evaluation' and reason = 'Screened: eligible'), 1,
+  'the screening is recorded in the case history, without the free-text reason');
+select is((select count(*)::int from public.internal_notes
+           where proposal_id = (select v::uuid from ids where k = 'c1')
+             and body = 'Screening (eligible): Meets all criteria (test)'), 1,
+  'the eligible reason is kept as an internal note that staff can read');
+reset role;  -- the audit trail is readable by admin and auditor only; check it as the owner
+select ok((select metadata ? 'note_id' and not (metadata::text like '%Meets all criteria%') from public.audit_events
+           where action = 'case.screened' and target_id = (select v from ids where k = 'c1')),
+  'the screening audit row points to the note without copying its text');
+set local role authenticated;
+
+-- the applicant of an eligible case never sees the screener's reason (migration 013)
+select set_config('request.jwt.claims',
+  format('{"sub":"%s","role":"authenticated"}', (select v from ids where k = 'c1_owner')), true);
+select is((select count(*)::int from public.case_events
+           where proposal_id = (select v::uuid from ids where k = 'c1') and reason like '%Meets all criteria%'), 0,
+  'the applicant cannot read the eligible reason in the case history');
+select is((select count(*)::int from public.internal_notes where proposal_id = (select v::uuid from ids where k = 'c1')), 0,
+  'the applicant cannot read the internal note holding it');
+select is((select count(*)::int from public.case_events
+           where proposal_id = (select v::uuid from ids where k = 'c1') and to_status = 'in_evaluation'), 1,
+  'the applicant still sees that their case moved to review');
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-0000000000b1","role":"authenticated"}', true);
 
 select is(public.record_screening((select v::uuid from ids where k = 'c2'), 'ineligible', 'Outside the challenge scope') ->> 'status',
   'closed', 'Ineligible closes the case');
