@@ -4,6 +4,8 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `feature` **OpenAPI export of the database API** (ARC-01, test plan S6). The Database workflow's Supabase-stack job now saves PostgREST's own description of the API (every exposed table and function) as the `openapi` artifact of each run, with the number of paths in the job summary. Read with the disposable CI stack's demo service key; evidence only, so a failure is reported without blocking the database gate.
+
 - `feature` **E-mail alerts switch** (NTF-02, spec T11). The notifications page has an **Email alerts** section with a switch that saves as soon as it changes: "Email me when there's an update on my ideas (free)" for applicants, "Email me when something needs my attention" for staff, with the explanation "Emails say an update is waiting; they never include your idea's content." It changes only the reader's own setting (`set_alert_preference`, migration 015 in #88); setting the same value twice is harmless, so after a lost reply the setting is re-read and the switch shows what is saved. In the demo a banner says e-mail delivery is simulated. `OversightPort` gains `alertPreference` (own `profiles.alerts_opt_in`) and `setAlertPreference`.
 
   Evidence: 4 new tests (on and off with the setting kept after a reload; another person's setting untouched; a lost reply confirmed by re-reading; the adapter sends no user id and maps a refusal); 314 in total; lint, type-check and build pass. Local browser check at 360 px: switch saves, no sideways scroll, no console errors.
