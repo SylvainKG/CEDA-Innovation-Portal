@@ -9,9 +9,9 @@ Not listed here, because they are not npm packages:
 
 ## Portal (frontend, build and test tooling)
 
-Source: `package-lock.json`. 500 packages: MIT 436 · Apache-2.0 25 · ISC 16 · BSD-2-Clause 9 · BSD-3-Clause 3 · MIT-0 2 · CC0-1.0 2 · BlueOak-1.0.0 2 · OFL-1.1 1 · Python-2.0 1 · MPL-2.0 1 · CC-BY-4.0 1 · 0BSD 1.
+Source: `package-lock.json`. 509 packages: MIT 444 · Apache-2.0 25 · ISC 16 · BSD-2-Clause 9 · BSD-3-Clause 3 · MIT-0 2 · CC0-1.0 2 · BlueOak-1.0.0 2 · 0BSD 2 · OFL-1.1 1 · Python-2.0 1 · MPL-2.0 1 · CC-BY-4.0 1.
 
-### Ships in the built site (42)
+### Ships in the built site (51)
 
 | Package | Version | Licence |
 |---|---|---|
@@ -32,6 +32,13 @@ Source: `package-lock.json`. 500 packages: MIT 436 · Apache-2.0 25 · ISC 16 ·
 | `@radix-ui/react-use-controllable-state` | 1.3.0 | MIT |
 | `@radix-ui/react-use-effect-event` | 0.0.5 | MIT |
 | `@radix-ui/react-use-layout-effect` | 1.1.4 | MIT |
+| `@supabase/auth-js` | 2.119.0 | MIT |
+| `@supabase/functions-js` | 2.119.0 | MIT |
+| `@supabase/phoenix` | 0.4.5 | MIT |
+| `@supabase/postgrest-js` | 2.119.0 | MIT |
+| `@supabase/realtime-js` | 2.119.0 | MIT |
+| `@supabase/storage-js` | 2.119.0 | MIT |
+| `@supabase/supabase-js` | 2.119.0 | MIT |
 | `@tanstack/query-core` | 5.107.1 | MIT |
 | `@tanstack/react-query` | 5.107.1 | MIT |
 | `@types/prop-types` | 15.7.15 | MIT |
@@ -42,6 +49,7 @@ Source: `package-lock.json`. 500 packages: MIT 436 · Apache-2.0 25 · ISC 16 ·
 | `csstype` | 3.2.3 | MIT |
 | `detect-node-es` | 1.1.0 | MIT |
 | `get-nonce` | 1.0.1 | MIT |
+| `iceberg-js` | 0.8.1 | MIT |
 | `js-tokens` | 4.0.0 | MIT |
 | `loose-envify` | 1.4.0 | MIT |
 | `lucide-react` | 1.73.0 | ISC |
@@ -54,6 +62,7 @@ Source: `package-lock.json`. 500 packages: MIT 436 · Apache-2.0 25 · ISC 16 ·
 | `react-style-singleton` | 2.2.3 | MIT |
 | `scheduler` | 0.23.2 | MIT |
 | `set-cookie-parser` | 2.7.3 | MIT |
+| `tslib` | 2.8.1 | 0BSD |
 | `tslib` | 2.9.1 | 0BSD |
 | `use-callback-ref` | 1.3.3 | MIT |
 | `use-sidecar` | 1.1.3 | MIT |
