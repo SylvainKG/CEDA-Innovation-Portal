@@ -85,10 +85,10 @@ export function ReportsPage() {
           apply()
         }}
       >
-        <label className="flex flex-col gap-1 font-semibold">
+        <label className="flex min-w-0 max-w-full flex-col gap-1 font-semibold">
           Challenge
           <select
-            className="min-h-touch rounded-sm border border-line-input bg-surface-card px-2 text-base font-normal"
+            className="min-h-touch w-full min-w-0 max-w-full rounded-sm border border-line-input bg-surface-card px-2 text-base font-normal"
             value={draft.challengeId ?? ''}
             onChange={(e) => setDraft({ ...draft, challengeId: e.target.value || undefined })}
           >
@@ -100,11 +100,11 @@ export function ReportsPage() {
             ))}
           </select>
         </label>
-        <label className="flex flex-col gap-1 font-semibold">
+        <label className="flex min-w-0 max-w-full flex-col gap-1 font-semibold">
           From
           <input type="date" className="min-h-touch rounded-sm border border-line-input bg-surface-card px-2 font-normal" value={draft.from ?? ''} onChange={(e) => setDraft({ ...draft, from: e.target.value || undefined })} />
         </label>
-        <label className="flex flex-col gap-1 font-semibold">
+        <label className="flex min-w-0 max-w-full flex-col gap-1 font-semibold">
           To
           <input
             type="date"

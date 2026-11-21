@@ -1,6 +1,7 @@
 import { useEffect, useRef, type ReactNode } from 'react'
 import { brand } from '@/brand'
 import { DemoBadge } from '@/components'
+import { ErrorSummary } from '@/components/ErrorSummary'
 
 /**
  * Shared pieces of the T02 auth card (spec T02; layout from Sandra's sign-in and create-account frames,
@@ -44,9 +45,8 @@ export function FormErrorSummary({ errors, title = 'There is a problem' }: { err
   }, [signature])
   if (errors.length === 0) return null
   return (
-    <div ref={box} id="error-summary" tabIndex={-1} role="alert" className="flex flex-col gap-2 rounded-md bg-error-subtle p-4 outline-none">
-      <h2 className="text-h3 font-semibold">{title}</h2>
-      <ul className="list-disc pl-6">
+    <ErrorSummary boxRef={box} title={title}>
+      <ul>
         {errors.map(({ id, message }) => (
           <li key={id ?? message}>
             {id ? (
@@ -65,6 +65,6 @@ export function FormErrorSummary({ errors, title = 'There is a problem' }: { err
           </li>
         ))}
       </ul>
-    </div>
+    </ErrorSummary>
   )
 }
