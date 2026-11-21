@@ -31,4 +31,15 @@ describe('Supabase oversight adapter', () => {
     await expect(createSupabaseOversight(client).getReport({})).rejects.toThrow('Could not load the report')
     expect(periodArgs({ challengeId: 'c1' })).toEqual({ p_challenge_id: 'c1', p_from: null, p_to: null })
   })
+
+  it("sets only the caller's own alert preference (no user id is sent) and maps a refusal", async () => {
+    const rpcs: { fn: string; args: unknown }[] = []
+    let answer: { data: unknown; error: unknown } = { data: { alerts_opt_in: true }, error: null }
+    const client = { rpc: async (fn: string, args: unknown) => (rpcs.push({ fn, args }), answer) } as unknown as SupabaseClient
+    const port = createSupabaseOversight(client)
+    expect(await port.setAlertPreference(true)).toEqual({ kind: 'ok', data: { alerts_opt_in: true } })
+    expect(rpcs).toEqual([{ fn: 'set_alert_preference', args: { p_opt_in: true } }])
+    answer = { data: null, error: { message: 'FORBIDDEN', hint: 'Sign in first.', details: null } }
+    expect(await port.setAlertPreference(false)).toMatchObject({ kind: 'refused', code: 'FORBIDDEN', message: 'Sign in first.' })
+  })
 })

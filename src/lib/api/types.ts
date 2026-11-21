@@ -690,3 +690,147 @@ export interface ChatStatistics {
   average_wait_seconds: number | null
   by_day: { day: string; volume: number; missed: number }[]
 }
+
+// ---------------------------------------------------------------------------------------------------
+// T12 users and roles (IAM-01, ARC-01; contract §4.2 grant_role / revoke_role, invite-staff Edge Function).
+// ---------------------------------------------------------------------------------------------------
+
+export interface RoleOption {
+  key: string
+  label: string
+  requires_mfa: boolean
+}
+
+/** A registered person as an administrator sees them (profiles + active user_roles; role.manage). */
+export interface AdminUser {
+  id: string
+  full_name: string
+  email: string | null
+  organisation: string | null
+  is_demo: boolean
+  roles: string[]
+}
+
+// ---------------------------------------------------------------------------------------------------
+// INN-01 version compare: every submitted version of a case (proposal_versions + attachments; RLS can_read_case).
+// ---------------------------------------------------------------------------------------------------
+
+export interface VersionFile {
+  doc_key: string | null
+  filename: string
+  size_bytes: number
+  /** Content fingerprint: the same file name with a different fingerprint was replaced. */
+  sha256: string | null
+}
+
+export interface VersionSnapshot {
+  version_no: number
+  submitted_at: string
+  change_note: string | null
+  data: DraftData
+  files: VersionFile[]
+}
+
+// ---------------------------------------------------------------------------------------------------
+// D-08 committee view: status only (list_case_status, case_stage_counts). No proposal text, scores or notes.
+// ---------------------------------------------------------------------------------------------------
+
+export interface CaseStatusRow {
+  reference: string
+  challenge_title: string
+  public_stage: string
+  last_update: string
+}
+
+// ---------------------------------------------------------------------------------------------------
+// T12 challenges (ADM-01, ADM-02; contract migration 008): admin reads and the editor.
+// ---------------------------------------------------------------------------------------------------
+
+export type ChallengeStatus = 'draft' | 'published' | 'unpublished' | 'closed'
+
+export interface AdminChallenge {
+  id: string
+  slug: string
+  title: string
+  summary: string
+  status: ChallengeStatus
+  opens_at: string
+  closes_at: string
+  audience: string
+}
+
+/** A form version: published ones never change (ADM-02); at most one unpublished draft at a time. */
+export interface AdminChallengeVersion {
+  id: string
+  version_no: number
+  brief_md: string
+  form_schema: FormSchema
+  required_docs: RequiredDoc[]
+  rubric_version_id: string
+  published_at: string | null
+}
+
+export interface RubricVersionOption {
+  id: string
+  title: string
+  version_no: number
+  published: boolean
+}
+
+export interface ChallengeDetailsInput {
+  title: string
+  summary: string
+  opensAt: string
+  closesAt: string
+  audience: string
+}
+
+// ---------------------------------------------------------------------------------------------------
+// T12 rubrics (REV-02, ARC-01, D-20): versions are drafts until published; published ones are locked.
+// ---------------------------------------------------------------------------------------------------
+
+export interface AdminRubricVersion {
+  id: string
+  version_no: number
+  published_at: string | null
+  criteria: RubricCriterion[]
+}
+
+export interface AdminRubric {
+  id: string
+  key: string
+  title: string
+  versions: AdminRubricVersion[]
+}
+
+// ---------------------------------------------------------------------------------------------------
+// T12 roles and content (ARC-01, HLP-01; migration 008).
+// ---------------------------------------------------------------------------------------------------
+
+export interface AdminRole {
+  key: string
+  label: string
+  /** Built-in roles keep their permissions; new roles are data (ARC-01). */
+  is_system: boolean
+  requires_mfa: boolean
+  permissions: string[]
+}
+
+export interface PermissionOption {
+  key: string
+  description: string
+}
+
+export type AdminContentKind = 'faq' | 'contact' | 'referral' | 'support' | 'privacy' | 'declaration' | 'page'
+
+export interface AdminContentPage {
+  slug: string
+  kind: AdminContentKind
+  title: string
+  body_md: string
+  /** Wording version; required for privacy and declaration (consents are stored against it). */
+  version: string | null
+  position: number
+  is_sample: boolean
+  status: 'draft' | 'published'
+}

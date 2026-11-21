@@ -6,8 +6,8 @@ import { RoleShell } from '@/layouts/RoleShell'
 import { StaffShell } from '@/layouts/StaffShell'
 import { NotFoundState } from '@/components/states/States'
 import { STAFF_ROLES, type Role } from '@/lib/api/types'
-import { NotBuiltYet } from '@/pages/NotBuiltYet'
 import { SignInPage } from '@/pages/auth/SignInPage'
+import { MfaPage } from '@/pages/auth/MfaPage'
 import { RegisterPage } from '@/pages/auth/RegisterPage'
 import { ContactsPage, FaqPage, PrivacyPage, SupportPage } from '@/pages/help/HelpPages'
 import { DecisionQueuePage } from '@/pages/review/DecisionQueuePage'
@@ -21,6 +21,14 @@ import { ReportsPage } from '@/pages/oversight/ReportsPage'
 import { ApplicantChatPage } from '@/pages/support/ApplicantChatPage'
 import { SupportInboxPage } from '@/pages/support/SupportInboxPage'
 import { ScreeningQueuePage } from '@/pages/staff/ScreeningQueuePage'
+import { StaffHomePage } from '@/pages/staff/StaffHomePage'
+import { AdminUsersPage } from '@/pages/admin/AdminUsersPage'
+import { ChatSettingsPage } from '@/pages/admin/ChatSettingsPage'
+import { ChallengeEditorPage } from '@/pages/admin/ChallengeEditorPage'
+import { RubricEditorPage } from '@/pages/admin/RubricEditorPage'
+import { ContentAdminPage } from '@/pages/admin/ContentAdminPage'
+import { RolesPage } from '@/pages/admin/RolesPage'
+import { ChallengesPage as AdminChallengesPage } from '@/pages/admin/ChallengesPage'
 import { StaffCasePage } from '@/pages/staff/StaffCasePage'
 import { ForgotPasswordPage, ResetPasswordPage, VerifyEmailPage } from '@/pages/auth/RecoveryPages'
 import { ComponentGalleryRoute } from '@/pages/ComponentGalleryRoute'
@@ -35,7 +43,6 @@ import { apiMode } from '@/lib/api'
 import { RequireRole } from './guards'
 
 /** Routes from docs/design/figma-handoff/navigation-map.md ("Routes by template"). */
-const nb = (template: string, title: string, variant?: string) => <NotBuiltYet template={template} title={title} variant={variant} />
 const guard = (roles: readonly Role[], el: ReactElement) => <RequireRole anyOf={roles}>{el}</RequireRole>
 
 export const routes: RouteObject[] = [
@@ -50,7 +57,7 @@ export const routes: RouteObject[] = [
       { path: '/auth/verify', element: <VerifyEmailPage /> },
       { path: '/auth/forgot', element: <ForgotPasswordPage /> },
       { path: '/auth/reset', element: <ResetPasswordPage /> },
-      { path: '/auth/mfa', element: nb('T02', 'Two-step sign-in') },
+      { path: '/auth/mfa', element: <MfaPage /> },
       { path: '/help/faqs', element: <FaqPage /> },
       { path: '/help/contacts', element: <ContactsPage /> },
       { path: '/help/support', element: <SupportPage /> },
@@ -81,7 +88,7 @@ export const routes: RouteObject[] = [
   {
     element: <StaffShell />,
     children: [
-      { path: '/staff', element: guard(STAFF_ROLES, nb('T06', 'Home', 'Staff')) },
+      { path: '/staff', element: guard(STAFF_ROLES, <StaffHomePage />) },
       { path: '/staff/queue/screening', element: guard(['screening_officer', 'admin'], <ScreeningQueuePage />) },
       { path: '/staff/reviews', element: guard(['reviewer'], <MyReviewsPage />) },
       { path: '/staff/queue/decision', element: guard(['adjudicator', 'admin'], <DecisionQueuePage />) },
@@ -93,13 +100,13 @@ export const routes: RouteObject[] = [
       { path: '/reports', element: guard(['adjudicator', 'admin', 'support_lead', 'committee_member'], <ReportsPage />) },
       { path: '/audit', element: guard(['admin', 'auditor'], <AuditPage />) },
       { path: '/support/inbox', element: guard(['support_consultant', 'support_lead'], <SupportInboxPage />) },
-      { path: '/admin/challenges', element: guard(['admin'], nb('T12', 'Challenges', 'Admin')) },
-      { path: '/admin/challenges/:id', element: guard(['admin'], nb('T12', 'Challenge editor')) },
-      { path: '/admin/rubrics/:id', element: guard(['admin'], nb('T12', 'Rubric editor')) },
-      { path: '/admin/users', element: guard(['admin'], nb('T12', 'Users and roles')) },
-      { path: '/admin/content', element: guard(['admin'], nb('T12', 'Content')) },
-      { path: '/admin/settings/roles', element: guard(['admin'], nb('T12', 'Roles')) },
-      { path: '/admin/settings/chat', element: guard(['admin'], nb('T12', 'Chat settings')) },
+      { path: '/admin/challenges', element: guard(['admin'], <AdminChallengesPage />) },
+      { path: '/admin/challenges/:id', element: guard(['admin'], <ChallengeEditorPage />) },
+      { path: '/admin/rubrics/:id', element: guard(['admin'], <RubricEditorPage />) },
+      { path: '/admin/users', element: guard(['admin'], <AdminUsersPage />) },
+      { path: '/admin/content', element: guard(['admin'], <ContentAdminPage />) },
+      { path: '/admin/settings/roles', element: guard(['admin'], <RolesPage />) },
+      { path: '/admin/settings/chat', element: guard(['admin'], <ChatSettingsPage />) },
     ],
   },
   {

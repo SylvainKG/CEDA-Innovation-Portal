@@ -30,6 +30,8 @@ interface StoredNotification extends AppNotification {
 
 const state = {
   notifications: [] as StoredNotification[],
+  /** profiles.alerts_opt_in per demo persona (default off). */
+  alerts: new Map<string, boolean>(),
   latencyMs: import.meta.env.MODE === 'test' ? 0 : 200,
 }
 
@@ -56,6 +58,7 @@ function seedNotifications(): StoredNotification[] {
 
 function reset() {
   state.notifications = seedNotifications()
+  state.alerts.clear()
 }
 reset()
 
@@ -282,5 +285,19 @@ export const mockOversight: OversightPort = {
       )
       .sort((a, b) => b.id - a.id)
       .slice(0, limit)
+  },
+
+  async alertPreference() {
+    await wait()
+    const user = await mockSession.getSession()
+    return user ? (state.alerts.get(user.id) ?? false) : null
+  },
+
+  async setAlertPreference(optIn) {
+    await wait()
+    const user = await mockSession.getSession()
+    if (!user) return refused('FORBIDDEN', 'Sign in first.')
+    state.alerts.set(user.id, optIn)
+    return { kind: 'ok', data: { alerts_opt_in: optIn } }
   },
 }

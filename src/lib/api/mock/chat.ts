@@ -1,6 +1,6 @@
 import type { ChatPort } from '../chat'
 import { fromRpcError, rpcError } from '../errors'
-import type { ChatMessage, ChatSessionStatus, CommandOutcome, Role } from '../types'
+import type { ChatMessage, ChatSessionStatus, ChatStatus, CommandOutcome, Role } from '../types'
 import { mockSession } from './session'
 
 /**
@@ -23,15 +23,22 @@ interface Stored {
 
 const state = {
   open: true,
+  /** null: follow the calendar (the mock treats the calendar as open). */
+  override: 'open' as 'open' | 'closed' | null,
+  hours: [] as ChatStatus['hours'],
+  closures: new Map<string, string>(),
   sessions: [] as Stored[],
   messages: [] as (ChatMessage & { session_id: string })[],
   latencyMs: import.meta.env.MODE === 'test' ? 0 : 200,
 }
 
-const HOURS = [1, 2, 3, 4, 5, 6, 7].map((weekday) => ({ weekday, is_working: weekday <= 5, opens_at: '09:00', closes_at: '16:00' }))
+const HOURS = () => [1, 2, 3, 4, 5, 6, 7].map((weekday) => ({ weekday, is_working: weekday <= 5, opens_at: '09:00', closes_at: '16:00' }))
 
 function reset() {
   state.open = true
+  state.override = 'open'
+  state.hours = HOURS()
+  state.closures.clear()
   state.sessions = []
   state.messages = []
 }
@@ -41,6 +48,7 @@ export const mockChatControls = {
   reset,
   setOpen(open: boolean) {
     state.open = open
+    state.override = open ? 'open' : 'closed'
   },
   /** Age a queued chat (tests of the 30-minute "missed" rule). */
   backdate(sessionId: string, minutes: number) {
@@ -52,6 +60,7 @@ export const mockChatControls = {
 const wait = () => new Promise<void>((resolve) => setTimeout(resolve, state.latencyMs))
 const refused = (...args: Parameters<typeof rpcError>): CommandOutcome<never> => fromRpcError(rpcError(...args))
 const HANDLE: readonly Role[] = ['support_consultant', 'support_lead']
+const isAdmin = async () => Boolean((await mockSession.getSession())?.roles.includes('admin'))
 
 function sweep() {
   const now = Date.now()
@@ -74,7 +83,8 @@ function visible(userId: string, roles: Role[], s: Stored) {
 export const mockChat: ChatPort = {
   async status() {
     await wait()
-    return { open: state.open, mode: state.open ? 'demo_override_open' : 'demo_override_closed', server_time_display: new Date().toISOString(), hours: HOURS }
+    const mode = state.override === 'open' ? 'demo_override_open' : state.override === 'closed' ? 'demo_override_closed' : 'calendar'
+    return { open: state.open, mode, server_time_display: new Date().toISOString(), hours: state.hours.map((h) => ({ ...h })) }
   },
 
   async mySession() {
@@ -196,5 +206,40 @@ export const mockChat: ChatPort = {
       average_wait_seconds: handled.length ? Math.round(handled.reduce((t, s) => t + (Date.parse(s.accepted_at!) - Date.parse(s.queued_at)) / 1000, 0) / handled.length) : null,
       by_day: [...days.values()].sort((a, b) => a.day.localeCompare(b.day)),
     }
+  },
+
+  async closures() {
+    await wait()
+    return [...state.closures.entries()].map(([day, reason]) => ({ day, reason })).sort((a, b) => a.day.localeCompare(b.day))
+  },
+
+  async setHours({ weekday, isWorking, opensAt, closesAt }) {
+    await wait()
+    if (!(await isAdmin())) return refused('FORBIDDEN', "You don't have access to this action.")
+    if (weekday < 1 || weekday > 7 || !opensAt || !closesAt || opensAt >= closesAt) return refused('VALIDATION', 'Choose a day, and an opening time before the closing time.')
+    state.hours = state.hours.map((h) => (h.weekday === weekday ? { weekday, is_working: isWorking, opens_at: opensAt, closes_at: closesAt } : h))
+    return { kind: 'ok', data: { weekday, is_working: isWorking } }
+  },
+
+  async setClosure({ day, reason }) {
+    await wait()
+    if (!(await isAdmin())) return refused('FORBIDDEN', "You don't have access to this action.")
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return refused('VALIDATION', 'Choose a date.')
+    if (reason === null) state.closures.delete(day)
+    else {
+      const r = reason.trim()
+      if (!r || [...r].length > 200) return refused('VALIDATION', 'Give a reason (up to 200 characters).', { reason: 'Give a reason (up to 200 characters)' })
+      state.closures.set(day, r)
+    }
+    return { kind: 'ok', data: { day, closed: reason !== null } }
+  },
+
+  async setOverride(mode) {
+    await wait()
+    if (!(await isAdmin())) return refused('FORBIDDEN', "You don't have access to this action.")
+    state.override = mode
+    // The mock has no clock-based calendar: "follow the calendar" counts as open.
+    state.open = mode !== 'closed'
+    return { kind: 'ok', data: { mode, open: state.open } }
   },
 }
