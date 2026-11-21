@@ -84,10 +84,10 @@ Credentials come from `DEMO_PASSWORD` in the environment, never from the spec fi
 
 | Browser / device | Main journey | Negative suite | Keyboard path | Status |
 |---|---|---|---|---|
-| Chrome (desktop) | ✓ | ✓ | ✓ | Not run |
+| Chrome (desktop) | ✓ | ✓ | ✓ | **Keyboard path and screen sweep: Passed with defects** (Chromium 1280, mock build, 21 Nov; `artifacts/phase-07/browser-keyboard-log.md`). Main journey on the real backend and negative suite: Not run |
 | Edge (desktop) | ✓ | — | — | Not run |
 | Firefox (desktop) | ✓ | — | — | Not run |
-| Mobile viewport (360 px) | Steps 2–4, 10, 15 | — | — | Not run |
+| Mobile viewport (360 px) | Steps 2–4, 10, 15 | — | — | **Step 2 keyboard-only and screen sweep: Passed with defects** (Chromium 360, mock build, 21 Nov). Other steps: Not run |
 
 Checks not run by the deadline stay labelled **Not run** in the final evidence.
 
