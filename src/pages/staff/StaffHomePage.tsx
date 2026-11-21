@@ -129,7 +129,7 @@ export function StaffHomePage() {
           <h2 id="home-recent" className="text-h2 font-semibold">
             Recent activity
           </h2>
-          <Link to="/notifications">All notifications</Link>
+          <Link to="/notifications" className="inline-flex min-h-touch items-center">All notifications</Link>
         </div>
         {notes.isError ? <p className="text-ink-muted">We couldn&apos;t load recent activity.</p> : null}
         {recent.length === 0 && !notes.isError ? <p className="text-ink-muted">No recent activity.</p> : null}

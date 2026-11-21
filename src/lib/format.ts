@@ -58,3 +58,13 @@ export function formatBytes(bytes: number): string {
   if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
   return `${Math.max(1, Math.round(bytes / 1024))} KB`
 }
+
+/** "just now", "5 min ago", "2 h ago", "3 days ago" (the exact time is in the title). */
+export function timeAgo(iso: string, now: Date = new Date()): string {
+  const s = Math.max(0, (now.getTime() - Date.parse(iso)) / 1000)
+  if (s < 60) return 'just now'
+  if (s < 3600) return `${Math.floor(s / 60)} min ago`
+  if (s < 86_400) return `${Math.floor(s / 3600)} h ago`
+  const d = Math.floor(s / 86_400)
+  return d === 1 ? 'yesterday' : `${d} days ago`
+}

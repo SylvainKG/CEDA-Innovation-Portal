@@ -50,7 +50,7 @@ function AdminCases() {
       header: 'Reference',
       primary: true,
       cell: (r) => (
-        <Link to={`/staff/cases/${r.id}`} className="whitespace-nowrap font-mono">
+        <Link to={`/staff/cases/${r.id}`} className="inline-flex min-h-touch items-center whitespace-nowrap font-mono">
           {r.reference}
         </Link>
       ),
