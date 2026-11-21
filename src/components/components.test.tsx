@@ -1,8 +1,9 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
+import { useState } from 'react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, vi } from 'vitest'
-import { Button, DataTable, EmptyState, FileUpload, ForbiddenState, StatusBadge, TextField, UnknownOutcomeBanner } from '.'
+import { Button, DataTable, Dialog, EmptyState, FileUpload, ForbiddenState, StatusBadge, TextField, UnknownOutcomeBanner } from '.'
 
 describe('Button', () => {
   it('blocks repeat clicks while loading and keeps a visible label', async () => {
@@ -147,5 +148,49 @@ describe('honest states', () => {
     expect(document.body.textContent).not.toMatch(/fail/i)
     await userEvent.click(screen.getByRole('button', { name: 'Check status' }))
     expect(onCheck).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe('Dialog focus', () => {
+  function Opener() {
+    const [open, setOpen] = useState(false)
+    return (
+      <>
+        <button type="button" onClick={() => setOpen(true)}>
+          Record screening
+        </button>
+        <Dialog
+          open={open}
+          onOpenChange={setOpen}
+          title="Record screening for CEDA-2026-0009"
+          consequence="The applicant is told the outcome."
+          primaryLabel="Record screening"
+          onPrimary={() => setOpen(false)}
+        />
+      </>
+    )
+  }
+
+  it('moves focus into the dialog, and back to the button that opened it when Escape closes it (WCAG 2.4.3)', async () => {
+    const user = userEvent.setup()
+    render(<Opener />)
+    const opener = screen.getByRole('button', { name: 'Record screening' })
+    opener.focus()
+    await user.keyboard('{Enter}')
+    const dialog = await screen.findByRole('dialog')
+    expect(dialog.contains(document.activeElement)).toBe(true)
+    await user.keyboard('{Escape}')
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(document.activeElement).toBe(opener)
+  })
+
+  it('returns focus the same way after Cancel', async () => {
+    const user = userEvent.setup()
+    render(<Opener />)
+    const opener = screen.getByRole('button', { name: 'Record screening' })
+    await user.click(opener)
+    await user.click(await screen.findByRole('button', { name: 'Cancel' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+    expect(document.activeElement).toBe(opener)
   })
 })

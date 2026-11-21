@@ -1,5 +1,5 @@
 import { ArrowRight, CircleCheck } from "lucide-react";
-import cedaLogo from "@/assets/ceda-logo.png";
+import { brand } from "@/brand";
 import { ButtonLink } from "@/components";
 import { PUBLIC_STAGES } from "@/lib/status";
 import { ChallengeList } from "./ChallengeList";
@@ -43,10 +43,10 @@ export function PublicHome() {
         >
           <div className="flex flex-col gap-5">
             <img
-              src={cedaLogo}
+              src={brand.mark.src}
               alt=""
-              width={1432}
-              height={900}
+              width={brand.mark.width}
+              height={brand.mark.height}
               className="h-16 w-auto self-start"
             />
             <Eyebrow>Advancing Botswana through innovation</Eyebrow>
@@ -151,7 +151,7 @@ function HeroFrame() {
       <div className="relative rounded-[2.5rem] bg-brand-subtle p-3 md:p-4">
         <div className="aspect-[4/3] overflow-hidden rounded-[2rem] border-2 border-brand bg-[radial-gradient(circle_at_30%_30%,var(--brand-primary-subtle),transparent_60%),linear-gradient(135deg,var(--brand-primary),var(--brand-accent))]">
           <img
-            src={cedaLogo}
+            src={brand.mark.src}
             alt=""
             className="mx-auto mt-[18%] h-1/3 w-auto opacity-90 mix-blend-luminosity"
           />
