@@ -102,7 +102,7 @@ The full dated log is `docs/submission/research-log.md`. The main findings and w
 | **Real-time updates** | Supabase Realtime on notifications and case history, filtered by the same access rules | C-16 Passed on hosted: another applicant received 0 events |
 | **Feedback** | Clarification (a reply, no new version) and revision (a new version with the Feedback Roadmap) | C-13 Passed (V1 scores kept after V2) |
 | **Reporting dashboards** | Participation, outcomes and time in stage, from the case history, with CSV export | Built and tested, screens included; the CSV export guards against spreadsheet formulas in applicant text |
-| **Scalability and flexibility** | New roles, permissions and rubric criteria are data, not code; challenges carry their own form and rubric versions; stateless frontend on a CDN; Postgres indexes on hot paths | Scaling note (section 10) |
+| **Scalability and flexibility** | New roles, permissions and rubric criteria are data, not code; challenges carry their own form and rubric versions; stateless frontend on a CDN; key lookups indexed, with the remaining hot foreign-key indexes listed for real volumes | Scaling note (section 10) |
 | **Data integrity** | Versions, audit entries and history are append-only: triggers refuse change or deletion by any portal user, including administrators. Every transition is checked against the case's current state | C-06 Passed (database layer) |
 | **Ease of use for every user type** | Role-specific navigation, plain language, autosave and device copy, honest "not confirmed" states, 360 px layouts | Browser checks at 360 and 1280 px; **[confirm at release]** keyboard and timed-task log |
 
@@ -130,7 +130,7 @@ It is backed by a side-by-side comparison of V1 and V2 (INN-01) and a rule-based
 
 **Testing.**
 
-- **487 pgTAP assertions** in 12 suites, run in CI on the Supabase local stack on every database change. The suite was also run against the hosted project (460 assertions, all passed, 17 Nov, at migration 012); a later hosted run before code freeze is **[confirm at release]**. **Mutation checks** confirm the tests fail when a rule is broken.
+- **487 pgTAP assertions** in 12 suites, run in CI on the Supabase local stack on every database change. The latest run against the hosted project passed 482 of 482 (20 Nov, before migration 015); the release run is **[confirm at release]**. **Mutation checks** confirm the tests fail when a rule is broken.
 - A **two-connection concurrency test** for double submits.
 - **Vitest** for the frontend logic.
 - **Playwright** browser checks at 360 and 1280 px, and a security-header check against the deployed site.
