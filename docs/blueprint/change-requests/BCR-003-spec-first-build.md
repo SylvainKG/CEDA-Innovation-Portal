@@ -36,7 +36,7 @@ The code freeze is **22 Nov, 18:00**. Waiting for every screen to be drawn, expo
 |---|---|
 | Visual drift from the Make direction | Same tokens (D-04) and components as the Make frames; Sandra reviews every built screen |
 | Rework after review | Layout and wording only. The data layer, hooks and states don't change |
-| Judges see unreviewed screens | Staging only until reviewed; the judging build ships reviewed screens |
+| Judges see unreviewed screens | Screens Sandra hasn't reviewed by code freeze ship as **Provisional UI**, labelled in `screen-status.md` and in the judge guide; her review continues after judging |
 
 ## Order of build (frontend)
 
@@ -52,5 +52,5 @@ Then Slices 2–6 in blueprint order.
 | Role | Name | Decision | Date |
 |---|---|---|---|
 | Frontend & UI Implementation Lead | Obvious | Proposed | 17 Nov 2026 |
-| UI/UX & Figma Integration Lead | Sandra | | |
+| UI/UX & Figma Integration Lead | Sandra | Approved (PR review) | 18 Nov 2026 |
 | Integration, Testing & Documentation Lead | Sylvain | | |
