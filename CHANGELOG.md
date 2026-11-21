@@ -4,6 +4,10 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `design` **Shared error summary and REQUIRED tag, laid out to Sandra's 21 Nov frames** (#100). One `ErrorSummary` box (red left edge, light red background, "There is a problem", linked messages; an alert that takes focus) for the auth forms, the proposal form, the revise page and the scorecard; "REQUIRED" in small capitals at the right of labels in `TextField`, `Select`, `FileUpload` and the staff dialogs. No wording changes.
+
+  Evidence: 331 tests pass; lint and type-check pass; browser smoke suite 20 passed at 360 and 1280 px; register with empty fields checked at both widths (focus on the summary, no sideways scroll).
+
 - `design` **Peolwane replaces the CEDA logo, from one place (`src/brand`)** (team agreement, 21 Nov). The Peolwane mark replaces the CEDA logo in the header, the sign-in and register cards, the home page hero and the printed receipt. The favicons and the page title change too ("Peolwane · CEDA Innovation Portal"). From 768 px the header shows "Peolwane" with "CEDA Innovation Portal" under it. On phones it shows the mark alone, and screen readers always hear the full name. Every logo, name and tagline now comes from `src/brand/index.ts`, which also keeps the CEDA brand: switching back is the `ACTIVE` line, plus copying CEDA's icons into `public/` and the page title (`docs/design/brand.md`). A new test fails if the favicons or the title don't match the active brand. Colour tokens are unchanged. The Peolwane artwork is a raster from the team's concept PDF (Option 1), to be replaced by a vector file.
 
   Evidence: 6 new tests (brand selection; each favicon matches the active brand; page title; every brand keeps its icons). Setting `ACTIVE` without the icons and title fails 4 of them, as intended. The receipt test finds the print logo by the brand's full name.
