@@ -1,8 +1,9 @@
 import { forwardRef, useId, type ButtonHTMLAttributes, type ReactNode } from 'react'
 import { Loader2, type LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/cn'
+import { buttonClassName, type ButtonVariant } from './button-styles'
 
-export type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'destructive'
+export type { ButtonVariant }
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant
@@ -17,12 +18,6 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode
 }
 
-const VARIANTS: Record<ButtonVariant, string> = {
-  primary: 'bg-brand text-brand-on hover:bg-brand-hover',
-  secondary: 'bg-surface-card text-ink border border-line-input hover:bg-surface-sunken',
-  tertiary: 'bg-transparent text-brand-text underline underline-offset-2 hover:bg-brand-subtle',
-  destructive: 'bg-error-fill text-white hover:bg-error',
-}
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
   {
@@ -51,13 +46,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
         disabled={isDisabled}
         aria-busy={loading || undefined}
         aria-describedby={showReason ? reasonId : undefined}
-        className={cn(
-          'inline-flex min-h-touch items-center justify-center gap-2 rounded-md font-semibold transition-colors',
-          size === 'sm' ? 'px-3 text-sm' : 'px-4 text-base',
-          VARIANTS[variant],
-          isDisabled && 'cursor-not-allowed opacity-60',
-          className,
-        )}
+        className={buttonClassName(variant, size, cn(isDisabled && 'cursor-not-allowed opacity-60', className))}
         {...rest}
       >
         {loading ? (
