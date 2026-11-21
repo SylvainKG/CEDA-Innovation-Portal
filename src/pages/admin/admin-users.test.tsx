@@ -64,6 +64,8 @@ describe('T12 users and roles (IAM-01)', () => {
   it('invites staff by email, shows field errors, and inviting twice is safe', async () => {
     await as('admin')
     const user = renderAt('/admin/users')
+    // "Invite user" opens the invitation as a side sheet (Sandra's invite frame).
+    await user.click(await screen.findByRole('button', { name: 'Invite user' }, LOAD))
     await screen.findByRole('heading', { name: 'Invite staff' }, LOAD)
     await user.type(screen.getByLabelText(/^Email/), 'not-an-email')
     await user.click(screen.getByRole('button', { name: 'Send invitation' }))
@@ -73,7 +75,7 @@ describe('T12 users and roles (IAM-01)', () => {
     await user.clear(screen.getByLabelText(/^Email/))
     await user.type(screen.getByLabelText(/^Email/), 'new.reviewer@demo.ceda-portal.test')
     await user.type(screen.getByLabelText(/^Full name/), 'Demo Reviewer 4')
-    await user.selectOptions(screen.getByLabelText('Role'), 'reviewer')
+    await user.selectOptions(within(screen.getByRole('dialog')).getByLabelText(/^Role/), 'reviewer')
     await user.click(screen.getByRole('button', { name: 'Send invitation' }))
     expect(await screen.findByText('Invitation sent to new.reviewer@demo.ceda-portal.test.', {}, LOAD)).toBeInTheDocument()
     expect(await screen.findByRole('listitem', { name: 'Demo Reviewer 4' }, LOAD)).toBeInTheDocument()

@@ -13,6 +13,25 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
   - D-35: manual fallback.
 
   Stacey's re-check table is added to BCR-001, and the phase-00 record and claim C-18 are updated. Open follow-up: list the D-07 flag in the release notes.
+- `docs` **Submission documents brought up to date for the release** (judge guide, user manual, technical proposal):
+  - the line "Peolwane is the portal's name; it is built for CEDA's Innovation Fund" in all three;
+  - the four screenshots retaken with the Peolwane brand, from a mock build, without the development-only role switcher;
+  - the hosted browser journey filled in: the full journey passed on staging (run 44909107002) and the read-only part on the deployed site (run 44953549649);
+  - Peolwane AI, marked [confirm at release] until it is live;
+  - the two-step revise ("Review changes");
+  - the team line in the proposal (ABM; Sandra until 21 Nov).
+- `design` **All cases laid out to Sandra's 21 Nov frame** (#119 screen H; `ceda administrator screening.pdf`). Like the other work queues (#118): "WORK QUEUE" over "All cases" and "Filter cases and open a workspace to take action.", the shared filter card (search by reference or title, status, challenge) with removable chips, and the table: reference, idea, challenge, last update, reviewers assigned and the status badge. The status filter still lives in the address; committee members keep the status-only variant (D-08).
+
+  Evidence: all-cases and committee tests pass (10, wording unchanged); lint and type-check pass; checked in the browser as the administrator at 1280 and 360 px (no sideways scroll, controls at least 44 px).
+
+- `design` **Reports laid out to Sandra's 21 Nov frames** (#119 screen F; `ceda adjudicator reports.pdf` and its outcomes, timelines, impact and chats pages, `ceda administrator reporting.pdf`). "INNOVATION PORTAL" over "Reports", "Operational indicators for administrators and committee members." and Export CSV at the right; the filters in one card (challenge, "Date range (CAT)" from and to, Apply filters) with the applied ones as removable chips and "Clear all"; each chart in a card with "Filtered by the controls above" ("All time" for chat), a "Show as table" toggle with a steady label, and the bars on a light full-width track with the value at the right.
+
+  Evidence: report and chat tests pass (16); lint and type-check pass; checked in the browser as the administrator at 1280 and 360 px (chips apply and clear; no sideways scroll, controls at least 44 px).
+
+- `design` **Users and roles laid out to Sandra's 21 Nov frames** (#119 screen G; `ceda administrator users +roles.pdf`, `ceda administrator invite user.pdf`). "ADMIN SETTINGS" over the title and "Invite user" at the right, which opens the invitation as a side sheet ("A time-limited invitation is sent to the email address."; email, full name and role, each REQUIRED). Everyone registered in table-like rows from 768 px (NAME, EMAIL, ROLES, ACTIONS): roles as orange chips with a × to remove, and "Choose a role" + Grant role; your own row says "You can't change your own roles." once. People stack on phones; the list stays a list for screen readers. "Case stages (fixed for this MVP)" below.
+
+  Evidence: admin and routing tests pass (29; the invite test now opens the sheet first); lint and type-check pass; checked in the browser as the administrator at 1280 and 360 px (no sideways scroll, controls at least 44 px).
+
 - `design` **Ready for decision laid out to Sandra's 21 Nov adjudicator work-queue frame** (#119 screen D; `ceda adjudicator work cases.pdf`). The same pattern as the screening queue (#118): "WORK QUEUE" over the title and "Filter cases and open the score panel to decide.", the shared filter card (search by reference or title, challenge) with removable chips, and the table: reference (to the score panel), idea, challenge, submitted, waiting, the panel average with the spread flag and "2/2 reviews", and the status badge. Cards at 360 px.
 
   Evidence: 21 review and staff-home tests pass (heading, scores and panel link unchanged); lint and type-check pass; checked in the browser as the adjudicator at 1280 and 360 px (no sideways scroll, controls at least 44 px).
