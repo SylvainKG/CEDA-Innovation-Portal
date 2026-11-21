@@ -4,6 +4,10 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `design` **Adjudicator score panel laid out to Sandra's 21 Nov frame** (#119 screen B; `ceda adjudicator evaluation.pdf`). The case's title as the heading ("SCORE PANEL" above it), its challenge and status badge, "Version n · x of y reviews submitted" and "Open full case →" for staff who can read the case; reviewers keep "Score panel" as the heading. One table with CRITERION, each reviewer and SPREAD in small capitals: each score in a tinted box with its reason behind "Reason", "Reviewers disagree (spread n)" under a criterion that differs by 2 or more, the spread in large figures, and a weighted-score row ending in "Panel average x out of 5". "Version n scorecards (count), read only" under it; the large-spread warning above it as a banner; each reviewer's submission time and overall comment in "Each reviewer"; and, for an adjudicator once every review is in, "Record decision on the case page". The per-criterion mean column and the aggregate card give way to the frame's layout.
+
+  Evidence: panel test updated (title, score cells, panel average); 16 review tests pass; lint and type-check pass; checked in the browser as the adjudicator and as Reviewer 1 at 1280 and 360 px (no sideways scroll: only the table scrolls, with its hint; controls at least 44 px).
+
 - `repair` **Keyboard-log layout fixes** (QA-01, `artifacts/phase-07/browser-keyboard-log.md` §3). Two-step sign-in no longer scrolls sideways at 1280 px (a signed-in person doesn't see "Sign in" / "Submit an innovation" on public pages; long names truncate in the account button); Reports no longer scrolls sideways at 360 px; the Notifications filter buttons and the small text links (case references in staff tables, back links, "All notifications", challenge and rubric links, "Read the FAQs") are at least 44 px.
 
   Evidence: a measuring script over the log's 28 pages at 360 and 1280 px finds no sideways scroll and no control under 44 px; 334 tests pass; lint and type-check pass; browser smoke suite 20 passed.
