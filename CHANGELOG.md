@@ -4,6 +4,10 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `design` **Ready for decision laid out to Sandra's 21 Nov adjudicator work-queue frame** (#119 screen D; `ceda adjudicator work cases.pdf`). The same pattern as the screening queue (#118): "WORK QUEUE" over the title and "Filter cases and open the score panel to decide.", the shared filter card (search by reference or title, challenge) with removable chips, and the table: reference (to the score panel), idea, challenge, submitted, waiting, the panel average with the spread flag and "2/2 reviews", and the status badge. Cards at 360 px.
+
+  Evidence: 21 review and staff-home tests pass (heading, scores and panel link unchanged); lint and type-check pass; checked in the browser as the adjudicator at 1280 and 360 px (no sideways scroll, controls at least 44 px).
+
 - `design` **Submission receipt laid out to Sandra's 21 Nov frame** (#119 screen E; `ceda submittion.pdf`, T05 V2 snapshot). `ReceiptCard` now shows a tick in a green circle, "SUBMISSION RECEIPT" over the heading ("Version 2 submitted" or "Idea submitted") and "Your revised idea has been sent to CEDA.", then one card: the reference large in orange with a round copy button, and the details in rows (version, submitted "(server time)", challenge, form version, files, declaration). The receipt page is centred, with View my idea and Print receipt under the card and "What happens next" below.
 
   Evidence: 58 component and applicant tests pass (headings, reference and server time unchanged); lint and type-check pass; checked in the browser as Demo Applicant A at 1280 and 360 px (no sideways scroll, controls at least 44 px).
