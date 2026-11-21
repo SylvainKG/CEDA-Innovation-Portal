@@ -1,8 +1,10 @@
-# User manual: CEDA Innovation Portal
+# User manual: Peolwane · CEDA Innovation Portal
 
 **Owner:** Sylvain (documentation lead) · **Status:** Draft, finalised at the release (22 Nov 2026) · **Answers:** backlog DOC-02 (role manual)
 Screens still being built are marked **[confirm at release]**; that line is checked against the judging build before upload. For a short tour with the demo accounts, see `docs/submission/judge-guide.md`.
 
+> **Peolwane is the portal's name; it is built for CEDA's Innovation Fund.** On screen it appears as "Peolwane · CEDA Innovation Portal".
+>
 > Demonstration with fictional data. Wording marked **Sample** (privacy notice, declaration, FAQs, contacts) is a placeholder until CEDA supplies its own.
 
 ## Contents
@@ -30,6 +32,8 @@ Screens still being built are marked **[confirm at release]**; that line is chec
 
 **Notifications.** The bell in the header shows how many updates are unread; **Notifications** lists them. The count refreshes every so often while you are signed in. **Email alerts** are optional: switch them on or off on the Notifications page **[confirm at release]**. In this demonstration they are **Simulated** (queued but not sent).
 
+**Peolwane AI** **[confirm at release]**. The **Peolwane AI** button at the bottom right of every page opens an assistant for questions about using the portal. It starts in **Voice**: tap the microphone, speak, tap again, and the answer is shown and spoken. Choose **Text** to type instead. It only receives what you say or type in its panel, never your ideas or account, so don't share personal details with it. **Esc** closes it.
+
 **Help.** **Help** holds the FAQs, regulatory contacts and how to report a problem. All times are Gaborone time (CAT).
 
 **Staff home.** Staff accounts open on **Home**: counts for your role (for example ideas awaiting screening, reviews to do, chats waiting) and a list of what to do next. Each count and item links to the screen where you act.
@@ -48,11 +52,11 @@ Screens still being built are marked **[confirm at release]**; that line is chec
 
 **Your receipt.** You get a reference such as `CEDA-2026-0009`, the version and the time received. Keep the reference. If the screen says **"Not confirmed yet"**, your connection dropped; choose **Check status**. Submitting again is safe and can never create a second idea.
 
-**Track your idea.** **My ideas** shows each idea's status (for example Submitted, Under review, Action required, Approved, Awarded) and a timeline of the five public stages: **Submission → Review → Feedback → Approval → Award**. The Feedback stage appears only if CEDA asked you something. "Action required" means CEDA is waiting for you, with a deadline.
+**Track your idea.** **My ideas** (it greets you by name) shows each idea's status (for example Submitted, Under review, Action required, Approved, Awarded) and a timeline of the five public stages: **Submission → Review → Feedback → Approval → Award**. The Feedback stage appears only if CEDA asked you something. "Action required" means CEDA is waiting for you, with a deadline.
 
 **When CEDA asks you something.**
 - **Clarification:** answer the question in a short reply. No new version is created.
-- **Revision (Feedback Roadmap):** CEDA lists specific tasks. Choose **Revise your idea**, update your answers (replacing files in version 2 isn't available in this version), and for **each task** say whether you **Addressed** it, with a short explanation (up to 500 characters). Add a change note, then submit **version 2**. Your reference stays the same, and version 1 is kept.
+- **Revision (Feedback Roadmap):** CEDA lists specific tasks. Choose **Revise your idea**, update your answers (replacing files in version 2 isn't available in this version), and for **each task** say whether you **Addressed** it, with a short explanation (up to 500 characters). Then choose **Review changes**: add a note on what changed, accept the declaration and submit **version 2**. Your reference stays the same, and version 1 is kept.
 - After the deadline you can't reply until CEDA extends it.
 
 **Outcome.** When CEDA publishes the decision you see **Approved** or **Not approved**, the reason and next steps. An **award**, if any, appears after approval.

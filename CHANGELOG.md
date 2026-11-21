@@ -4,6 +4,13 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `docs` **Submission documents brought up to date for the release** (judge guide, user manual, technical proposal):
+  - the line "Peolwane is the portal's name; it is built for CEDA's Innovation Fund" in all three;
+  - the four screenshots retaken with the Peolwane brand, from a mock build, without the development-only role switcher;
+  - the hosted browser journey filled in: the full journey passed on staging (run 44909107002) and the read-only part on the deployed site (run 44953549649);
+  - Peolwane AI, marked [confirm at release] until it is live;
+  - the two-step revise ("Review changes");
+  - the team line in the proposal (ABM; Sandra until 21 Nov).
 - `design` **All cases laid out to Sandra's 21 Nov frame** (#119 screen H; `ceda administrator screening.pdf`). Like the other work queues (#118): "WORK QUEUE" over "All cases" and "Filter cases and open a workspace to take action.", the shared filter card (search by reference or title, status, challenge) with removable chips, and the table: reference, idea, challenge, last update, reviewers assigned and the status badge. The status filter still lives in the address; committee members keep the status-only variant (D-08).
 
   Evidence: all-cases and committee tests pass (10, wording unchanged); lint and type-check pass; checked in the browser as the administrator at 1280 and 360 px (no sideways scroll, controls at least 44 px).
