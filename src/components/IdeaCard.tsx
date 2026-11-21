@@ -1,5 +1,6 @@
 import { CalendarClock } from 'lucide-react'
 import type { CaseStatus, FeedbackKind } from '@/lib/api/types'
+import { cn } from '@/lib/cn'
 import { formatDateTimeCAT, relativeDays } from '@/lib/format'
 import { ButtonLink } from './ButtonLink'
 import { ReferencePill } from './ReferencePill'
@@ -31,8 +32,15 @@ export interface IdeaCardModel {
 
 export function IdeaCard({ idea, now }: { idea: IdeaCardModel; now?: Date }) {
   const headingId = `idea-${idea.id}-title`
+  const needsAction = idea.primaryAction && idea.deadline
   return (
-    <article aria-labelledby={headingId} className="flex flex-col gap-4 rounded-md bg-surface-card p-4 shadow-1">
+    <article
+      aria-labelledby={headingId}
+      className={cn(
+        'flex flex-col gap-4 rounded-md bg-surface-card p-4 shadow-1',
+        needsAction && 'border-t-4 border-t-status-action-fg',
+      )}
+    >
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="flex min-w-0 flex-col gap-1">
           <h3 id={headingId} className="text-h3 font-semibold">
@@ -43,13 +51,17 @@ export function IdeaCard({ idea, now }: { idea: IdeaCardModel; now?: Date }) {
         <StatusBadge status={idea.status} audience="applicant" context={{ feedbackKind: idea.feedbackKind }} />
       </div>
       {idea.reference ? <ReferencePill reference={idea.reference} /> : <p className="text-sm text-ink-muted">Draft: no reference yet</p>}
-      {idea.status !== 'draft' ? <StageTimeline stages={idea.stages} orientation="vertical" compact /> : null}
+      {idea.status !== 'draft' ? (
+        <div className="rounded-md bg-surface-card-secondary p-3">
+          <StageTimeline stages={idea.stages} orientation="responsive" compact />
+        </div>
+      ) : null}
       <div className="flex flex-col gap-1 text-sm text-ink-muted">
         <span>Updated {formatDateTimeCAT(idea.updatedAt)}</span>
         {idea.deadline ? (
           <span className="flex items-center gap-1 font-semibold text-ink">
             <CalendarClock aria-hidden className="h-4 w-4 text-status-action-fg" />
-            {idea.deadlineLabel ?? 'Respond by'} {formatDateTimeCAT(idea.deadline)} ({relativeDays(idea.deadline, now)})
+            Due {formatDateTimeCAT(idea.deadline)} · {relativeDays(idea.deadline, now)}
           </span>
         ) : null}
       </div>

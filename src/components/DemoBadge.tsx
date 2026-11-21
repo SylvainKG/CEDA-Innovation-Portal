@@ -1,12 +1,11 @@
 import { FlaskConical } from 'lucide-react'
 
-/** Shown in every shell: the portal is a demonstration with fictional data (spec §4). Dark pill (Sandra, 20 Nov). */
+/** Shown in every shell: the portal is a demonstration with fictional data (spec §4). Yellow pill (Figma, 21 Nov). */
 export function DemoBadge() {
   return (
-    <span className="inline-flex items-center gap-1 rounded-full bg-demo px-3 py-1 text-sm font-semibold text-demo-on">
-      <FlaskConical aria-hidden className="h-4 w-4" />
-      DEMO<span className="sr-only">: </span>
-      <span className="ml-1 hidden font-normal md:inline">fictional data</span>
+    <span className="inline-flex items-center gap-1.5 rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-900">
+      <FlaskConical aria-hidden className="h-3.5 w-3.5" />
+      DEMO · Demo environment — fictional data
     </span>
   )
 }

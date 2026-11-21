@@ -24,9 +24,8 @@ export function Brand() {
   return (
     <Link to="/" className="flex min-h-touch items-center gap-3 font-bold text-ink no-underline">
       {/* Official CEDA logo, upscaled from the supplied 447 px PNG; replace with CEDA's vector file when available. */}
-      <img src={cedaLogo} alt="CEDA" width={1432} height={900} className="h-10 w-auto" />
-      {/* Logo alone on phones so the text cannot collide with the DEMO badge; still read out as "CEDA Innovation Portal". */}
-      <span className="sr-only md:not-sr-only">Innovation Portal</span>
+      {/* Figma: logo only, no text (21 Nov). Text stays in accessible name. */}
+      <img src={cedaLogo} alt="CEDA Innovation Portal" width={1432} height={900} className="h-10 w-auto" />
     </Link>
   )
 }
@@ -34,13 +33,15 @@ export function Brand() {
 export function Footer() {
   return (
     <footer className="mt-12 border-t border-line bg-surface-card">
-      <nav aria-label="Footer" className="mx-auto flex max-w-content flex-wrap items-center gap-x-4 px-4 py-4 text-sm">
-        <Link to="/privacy" className="inline-flex min-h-touch min-w-touch items-center">Privacy</Link>
-        <Link to="/help/support" className="inline-flex min-h-touch min-w-touch items-center">Fault support</Link>
-        <Link to="/help/faqs" className="inline-flex min-h-touch min-w-touch items-center">FAQs</Link>
-        <Link to="/help/contacts" className="inline-flex min-h-touch min-w-touch items-center">Contacts</Link>
-        <span className="text-ink-muted">Demonstration prototype with fictional data.</span>
-      </nav>
+      <div className="mx-auto flex max-w-content flex-wrap items-center justify-between gap-4 px-4 py-4 text-sm">
+        <span className="text-ink-muted">CEDA Innovation Portal · Demo prototype</span>
+        <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-4">
+          <Link to="/privacy" className="inline-flex min-h-touch min-w-touch items-center text-ink no-underline hover:text-brand-text">Privacy</Link>
+          <Link to="/help/support" className="inline-flex min-h-touch min-w-touch items-center text-ink no-underline hover:text-brand-text">Fault support</Link>
+          <Link to="/help/faqs" className="inline-flex min-h-touch min-w-touch items-center text-ink no-underline hover:text-brand-text">FAQs</Link>
+          <Link to="/help/contacts" className="inline-flex min-h-touch min-w-touch items-center text-ink no-underline hover:text-brand-text">Contacts</Link>
+        </nav>
+      </div>
     </footer>
   )
 }
