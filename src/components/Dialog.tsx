@@ -23,7 +23,8 @@ export interface DialogProps {
 
 /**
  * Action dialog (spec §5, §7 T10) built on Radix Dialog: focus trap, Esc to close, focus returned on close.
- * Full screen on mobile, centred card from 768 px.
+ * Full screen on mobile, centred card from 768 px. The card never grows past the window (1 rem margin top and bottom)
+ * and its content scrolls, so a long form, such as a revision with several tasks, keeps every field and button reachable.
  *
  * Radix returns focus only to its own Trigger. These dialogs are opened by ordinary buttons through `open`, so the
  * element that had focus when the dialog opened is remembered and focused again on close (WCAG 2.4.3). If it has
@@ -63,7 +64,7 @@ export function Dialog({
               el.focus()
             }
           }}
-          className="fixed inset-0 flex flex-col bg-surface-card p-6 shadow-2 md:inset-auto md:left-1/2 md:top-1/2 md:w-full md:max-w-[560px] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-md">
+          className="fixed inset-0 flex flex-col overflow-y-auto bg-surface-card p-6 shadow-2 md:inset-auto md:left-1/2 md:top-1/2 md:max-h-[calc(100dvh-2rem)] md:w-full md:max-w-[560px] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-md">
           <div className="flex items-start justify-between gap-4">
             <RadixDialog.Title className="text-h3 font-semibold">{title}</RadixDialog.Title>
             <RadixDialog.Close asChild>
