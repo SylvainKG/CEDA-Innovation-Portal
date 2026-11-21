@@ -52,14 +52,15 @@ describe('T12 roles (ARC-01)', () => {
 
     const observer = (await screen.findByText('Programme observer', { selector: 'summary *' }, LOAD)).closest('li') as HTMLElement
     await user.click(within(observer).getByText('Programme observer', { selector: 'summary *' }))
-    await user.click(within(observer).getByRole('checkbox', { name: /Read case reference, stage and counts only/ }))
+    await user.click(await within(observer).findByRole('checkbox', { name: /Read case reference, stage and counts only/ }, LOAD))
     await user.click(screen.getByRole('button', { name: 'Save Programme observer' }))
     expect(await screen.findByText('Programme observer permissions saved.', {}, LOAD)).toBeInTheDocument()
     expect((await mockConfigAdmin.roleSetup()).roles.find((r) => r.key === 'programme_observer')!.permissions).toEqual(['case.read_status', 'report.read'])
 
     // Built-in roles: checkboxes disabled on screen, and the server refuses a change.
     const reviewer = screen.getByText('Reviewer', { selector: 'summary *' }).closest('li') as HTMLElement
-    expect(within(reviewer).getByRole('checkbox', { name: /Score assigned cases/ })).toBeDisabled()
+    await user.click(within(reviewer).getByText('Reviewer', { selector: 'summary *' }))
+    expect(await within(reviewer).findByRole('checkbox', { name: /Score assigned cases/ }, LOAD)).toBeDisabled()
     expect(await mockConfigAdmin.setRolePermissions('reviewer', ['audit.read'])).toMatchObject({ kind: 'refused', code: 'INVALID_STATE' })
   }, JOURNEY)
 })

@@ -15,7 +15,8 @@ const CASE_2 = '30000000-0000-4000-8000-000000000002' // in evaluation; Reviewer
 const CASE_8 = '30000000-0000-4000-8000-000000000008' // in evaluation; Reviewer 1 not declared
 const R1_ON_8 = '40000000-0000-4000-8000-000000080001'
 const LOAD = { timeout: 5000 }
-const JOURNEY = 20_000
+// The V2 journey types twelve answers and four reasons; on a loaded machine it can pass 20 s (seen in full runs).
+const JOURNEY = 30_000
 const LONG = 'A clear reason that is long enough.'
 
 function renderAt(path: string) {
