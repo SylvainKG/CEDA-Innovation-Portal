@@ -15,10 +15,10 @@ afterEach(() => {
 })
 
 describe('loading splash', () => {
-  it('stays at least 1.6 s from page start, then plays its exit and is removed', () => {
+  it('stays at least 1.8 s from page start, then fades out and is removed', () => {
     const el = addSplash()
     dismissSplash({ now: () => 200, reducedMotion: false })
-    vi.advanceTimersByTime(1399)
+    vi.advanceTimersByTime(1599)
     expect(el).not.toHaveClass('pw-splash--out')
     vi.advanceTimersByTime(1)
     expect(el).toHaveClass('pw-splash--out')

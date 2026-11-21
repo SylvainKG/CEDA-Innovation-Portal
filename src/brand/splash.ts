@@ -1,12 +1,12 @@
 /**
  * The loading splash in index.html (#pw-splash) covers the page while the app's code downloads. Once the app
  * has rendered underneath, this keeps the splash up for a minimum time from the start of the page load, so it
- * never just flashes, then plays its exit (the bird flies off as it fades) and removes it.
+ * never just flashes, then fades it out where it is and removes it.
  */
 
 export const SPLASH_ID = 'pw-splash'
-/** Long enough for the arc to finish drawing and the raindrops to land. */
-export const MIN_VISIBLE_MS = 1600
+/** The intro ends at 1.35 s (arc drawn, raindrops landed); the finished logo then holds still before fading. */
+export const MIN_VISIBLE_MS = 1800
 export const REDUCED_MIN_VISIBLE_MS = 400
 export const EXIT_MS = 500
 export const REDUCED_EXIT_MS = 200

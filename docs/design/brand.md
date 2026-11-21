@@ -14,7 +14,7 @@ Every logo, name and tagline the portal shows comes from one file, `src/brand/in
 | Printed receipt | Mark, named for screen readers | `brand.mark`, `brand.fullName` |
 | Browser tab and home-screen icon | Favicons | `public/favicon.ico`, `public/favicon-32.png`, `public/apple-touch-icon.png` |
 | Page title and description | Full name | `index.html` |
-| Loading splash, shown before the app's code loads | Animated mark (the bird glides, the arc draws itself, the raindrops fall in) with the name; a still mark for reduced motion. It fades in, stays at least 1.6 s, then the bird flies off as it fades (`src/brand/splash.ts`) | `index.html` (inline SVG from `src/brand/<brand>/mark.svg`) |
+| Loading splash, shown before the app's code loads | The mark and name appear in place and never move: the arc draws itself once and the raindrops fall into place; a still mark for reduced motion. It covers the whole window and hides the page's scrollbars until it fades, so the app loading underneath can't move it. It stays at least 1.8 s, then fades out where it is (`src/brand/splash.ts`) | `index.html` (inline SVG from `src/brand/<brand>/mark.svg`) |
 
 The footer, the judge guide and other documents name the "CEDA Innovation Portal" in words. That stays true under either brand.
 

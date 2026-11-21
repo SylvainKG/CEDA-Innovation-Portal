@@ -10,16 +10,29 @@
     <link rel="icon" href="/favicon-32.png" type="image/png" sizes="32x32" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <style>
+      /* Loading splash (src/brand/splash.ts removes it). Everything appears in its final place and stays there:
+         no movement, only opacity and the arc drawing itself. Sizes and line heights are fixed here so the app's
+         own styles, which load while the splash is showing, can't shift the layout. */
+      /* The page's scrollbars stay hidden while the splash is up; they come back as it fades. */
+      html:has(> body > #pw-splash:not(.pw-splash--out)) {
+        overflow: hidden;
+      }
       .pw-splash {
         position: fixed;
-        inset: 0;
+        top: 0;
+        left: 0;
+        /* Sized to the whole window, not the space inside the scrollbars, so the logo's centre never moves
+           when the app underneath renders and the page gains scrollbars. svh is the height with the
+           phone's address bar showing, which doesn't change as the bar hides. */
+        width: 100vw;
+        height: 100vh;
+        height: 100svh;
         display: flex;
-        flex-direction: column;
         align-items: center;
         justify-content: center;
-        gap: 6px;
         background: #f7f7f5;
         font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        line-height: 1.4;
         z-index: 1000;
       }
       .pw-splash-inner {
@@ -27,21 +40,10 @@
         flex-direction: column;
         align-items: center;
         gap: 6px;
-        animation: pw-splash-in 0.4s ease-out both;
+        animation: pw-fade 0.35s ease-out both;
       }
-      @keyframes pw-splash-in {
-        from { opacity: 0; transform: scale(0.96); }
-        to { opacity: 1; transform: scale(1); }
-      }
-      .pw-splash.pw-splash--out { animation: pw-splash-out 0.5s ease-in forwards; pointer-events: none; }
-      @keyframes pw-splash-out { from { opacity: 1; } to { opacity: 0; } }
-      .pw-splash--out .pw-bird { animation: pw-fly-out 0.5s ease-in forwards; }
-      @keyframes pw-fly-out {
-        from { transform: translate(0, 0) scale(1); opacity: 1; }
-        to { transform: translate(22px, -18px) scale(0.8); opacity: 0; }
-      }
-      .pw-splash--out .pw-splash-inner { animation: none; }
       .pw-splash .pw-mark {
+        display: block;
         width: min(34vw, 132px);
         height: auto;
         overflow: visible;
@@ -49,61 +51,60 @@
       .pw-splash .pw-name {
         margin: 10px 0 0;
         font-size: 20px;
+        line-height: 26px;
         font-weight: 700;
         letter-spacing: 0.04em;
         color: #143451;
-        animation: pw-fade 0.6s ease-out 0.2s both;
+        animation: pw-fade 0.5s ease-out 0.3s both;
       }
       .pw-splash .pw-sub {
         margin: 0;
         font-size: 13px;
+        line-height: 18px;
         letter-spacing: 0.12em;
         text-transform: uppercase;
         color: #5b6570;
-        animation: pw-fade 0.6s ease-out 0.2s both;
+        animation: pw-fade 0.5s ease-out 0.4s both;
       }
-      .pw-splash .pw-bird {
-        transform-box: fill-box;
-        transform-origin: center;
-        animation: pw-glide 2.4s ease-in-out infinite;
-      }
+      /* The arc draws itself once, then stays. */
       .pw-splash .pw-arc-sweep {
         stroke-dasharray: 100;
-        animation: pw-arc-draw 2.4s ease-out infinite;
+        animation: pw-arc-draw 0.9s cubic-bezier(0.4, 0, 0.2, 1) 0.15s both;
       }
+      /* Each raindrop falls once, gently, into its exact place, then stays. */
       .pw-splash .pw-drop {
         transform-box: fill-box;
-        opacity: 0;
-        animation: pw-drop 2.4s ease-out infinite;
+        animation: pw-drop 0.5s cubic-bezier(0.33, 0, 0.2, 1) both;
       }
-      .pw-splash .pw-drop-1 { animation-delay: 0.35s; }
-      .pw-splash .pw-drop-2 { animation-delay: 0.55s; }
-      .pw-splash .pw-drop-3 { animation-delay: 0.75s; }
-      @keyframes pw-glide {
-        0%, 100% { transform: translateY(1.5px) rotate(-2deg); }
-        50% { transform: translateY(-3px) rotate(2deg); }
-      }
-      @keyframes pw-arc-draw {
-        0% { stroke-dashoffset: 100; }
-        45%, 100% { stroke-dashoffset: 0; }
-      }
-      @keyframes pw-drop {
-        0% { opacity: 0; transform: translateY(-5px); }
-        15% { opacity: 1; transform: translateY(0); }
-        75% { opacity: 1; transform: translateY(0); }
-        100% { opacity: 0; transform: translateY(2px); }
-      }
+      .pw-splash .pw-drop-1 { animation-delay: 0.55s; }
+      .pw-splash .pw-drop-2 { animation-delay: 0.7s; }
+      .pw-splash .pw-drop-3 { animation-delay: 0.85s; }
       @keyframes pw-fade {
         from { opacity: 0; }
         to { opacity: 1; }
+      }
+      @keyframes pw-arc-draw {
+        from { stroke-dashoffset: 100; }
+        to { stroke-dashoffset: 0; }
+      }
+      @keyframes pw-drop {
+        from { opacity: 0; transform: translateY(-3px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      /* Exit: the whole splash fades away where it is. */
+      .pw-splash.pw-splash--out {
+        animation: pw-fade-out 0.5s ease-in-out forwards;
+        pointer-events: none;
+      }
+      @keyframes pw-fade-out {
+        from { opacity: 1; }
+        to { opacity: 0; }
       }
       @media (prefers-reduced-motion: reduce) {
         .pw-splash *, .pw-splash *::before, .pw-splash *::after {
           animation: none !important;
         }
-        .pw-splash .pw-drop { opacity: 1; }
-        .pw-splash .pw-arc-sweep { stroke-dashoffset: 0; }
-        .pw-splash.pw-splash--out { animation: pw-splash-out 0.2s linear forwards !important; }
+        .pw-splash.pw-splash--out { animation: pw-fade-out 0.2s linear forwards; }
       }
     </style>
   </head>
