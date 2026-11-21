@@ -1,5 +1,5 @@
-import cedaLogo from '@/assets/ceda-logo.png'
 import { Printer } from 'lucide-react'
+import { brand } from '@/brand'
 import { useParams, useSearchParams } from 'react-router-dom'
 import { Button, ErrorState, LoadingState, NotFoundState, ReceiptCard, ButtonLink } from '@/components'
 import { useReceipt } from '@/features/submission/queries'
@@ -24,7 +24,7 @@ export function ReceiptPage() {
     <div className="flex max-w-form flex-col gap-6">
       {/* The DEMO badge is in the header, which is not printed; a printed receipt must still say it is fictional. */}
       {/* The header (with the logo) is not printed, so the printed receipt carries the logo itself. */}
-      <img src={cedaLogo} alt="CEDA" width={1432} height={900} className="hidden h-16 w-auto self-start print:block" />
+      <img src={brand.mark.src} alt={brand.fullName} width={brand.mark.width} height={brand.mark.height} className="hidden h-16 w-auto self-start print:block" />
       <p className="hidden border-2 border-ink p-2 font-semibold print:block">DEMO — fictional data. This is not a real CEDA receipt.</p>
       <ReceiptCard
         headingLevel="h1"

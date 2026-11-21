@@ -1,6 +1,6 @@
 import { Bell, LogOut } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
-import cedaLogo from '@/assets/ceda-logo.png'
+import { brand } from '@/brand'
 import { DemoBadge } from '@/components/DemoBadge'
 import { useNotifications } from '@/features/oversight/queries'
 import { apiMode } from '@/lib/api'
@@ -23,10 +23,14 @@ export function SkipLink() {
 export function Brand() {
   return (
     <Link to="/" className="flex min-h-touch items-center gap-3 font-bold text-ink no-underline">
-      {/* Official CEDA logo, upscaled from the supplied 447 px PNG; replace with CEDA's vector file when available. */}
-      <img src={cedaLogo} alt="CEDA" width={1432} height={900} className="h-10 w-auto" />
-      {/* Logo alone on phones so the text cannot collide with the DEMO badge; still read out as "CEDA Innovation Portal". */}
-      <span className="sr-only md:not-sr-only">Innovation Portal</span>
+      {/* The mark and names come from src/brand (one place to change the brand). */}
+      <img src={brand.mark.src} alt="" width={brand.mark.width} height={brand.mark.height} className="h-10 w-auto" />
+      {/* Read out as the full name at every width; the text shows from 768 px so it can't collide with the DEMO badge. */}
+      <span className="sr-only">{brand.fullName}</span>
+      <span aria-hidden className="hidden flex-col leading-tight md:flex">
+        <span>{brand.header.title}</span>
+        {brand.header.subtitle ? <span className="text-sm font-normal text-ink-muted">{brand.header.subtitle}</span> : null}
+      </span>
     </Link>
   )
 }
