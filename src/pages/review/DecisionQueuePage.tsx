@@ -35,7 +35,7 @@ export function DecisionQueuePage() {
       header: 'Reference',
       primary: true,
       cell: (r) => (
-        <Link to={`/staff/cases/${r.id}/panel`} className="whitespace-nowrap font-mono">
+        <Link to={`/staff/cases/${r.id}/panel`} className="inline-flex min-h-touch items-center whitespace-nowrap font-mono">
           {r.reference}
         </Link>
       ),

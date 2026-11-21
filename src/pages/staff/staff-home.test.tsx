@@ -45,10 +45,11 @@ describe('T06 staff home', () => {
   it('gives the screening officer the screening count and the oldest cases to screen', async () => {
     await as('screening_officer')
     renderAt('/staff')
-    expect(await screen.findByRole('heading', { name: 'Welcome, Demo Screening Officer' }, LOAD)).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: /^Good (morning|afternoon|evening), Demo Screening Officer$/ }, LOAD)).toBeInTheDocument()
+    expect(within(screen.getByRole('main')).getByText('Screening officer portal')).toBeInTheDocument()
     expect(within(tile('Awaiting screening')).getByText('1')).toBeInTheDocument()
     const tasks = screen.getByRole('list', { name: 'Your next tasks' })
-    expect(within(tasks).getByRole('link', { name: /Screen CEDA-2026-0001/ })).toHaveAttribute('href', '/staff/cases/30000000-0000-4000-8000-000000000001')
+    expect(within(tasks).getByRole('link', { name: /CEDA-2026-0001 · Awaiting screening/ })).toHaveAttribute('href', '/staff/cases/30000000-0000-4000-8000-000000000001')
     // Staff without decision rights see no decision figures.
     expect(screen.queryByText('Ready for decision')).not.toBeInTheDocument()
   })
@@ -56,8 +57,9 @@ describe('T06 staff home', () => {
   it("gives the reviewer their own reviews and recent activity, and nothing about other people's work", async () => {
     await as('reviewer')
     renderAt('/staff')
-    expect(await screen.findByRole('heading', { name: 'Welcome, Demo Reviewer 1' }, LOAD)).toBeInTheDocument()
-    expect(screen.getByText('Reviews to do', { selector: 'span' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: /^Good (morning|afternoon|evening), Demo Reviewer 1$/ }, LOAD)).toBeInTheDocument()
+    expect(screen.getByText(/^Assigned · \d+ overdue$/, { selector: 'span' })).toBeInTheDocument()
+    expect(screen.getByText('Declaration needed', { selector: 'span' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /CEDA-2026-0008/ })).toHaveAttribute('href', '/staff/cases/30000000-0000-4000-8000-000000000008/score')
     expect(screen.queryByText('Awaiting screening')).not.toBeInTheDocument()
     expect(screen.getAllByText('New case to review').length).toBeGreaterThan(0)
@@ -66,9 +68,9 @@ describe('T06 staff home', () => {
   it('gives the adjudicator the cases ready for decision', async () => {
     await as('adjudicator')
     renderAt('/staff')
-    await screen.findByRole('heading', { name: 'Welcome, Demo Adjudicator' }, LOAD)
+    await screen.findByRole('heading', { level: 1, name: /^Good (morning|afternoon|evening), Demo Adjudicator$/ }, LOAD)
     expect(within(tile('Ready for decision')).getByText('1')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Decide CEDA-2026-0004/ })).toHaveAttribute('href', '/staff/cases/30000000-0000-4000-8000-000000000004/panel')
+    expect(screen.getByRole('link', { name: /CEDA-2026-0004 · Ready for decision/ })).toHaveAttribute('href', '/staff/cases/30000000-0000-4000-8000-000000000004/panel')
   })
 
   it('shows consultants waiting chats, and an empty state when nothing is waiting', async () => {
