@@ -1,7 +1,7 @@
 import { useId, useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link, Navigate, useParams } from 'react-router-dom'
-import { Banner, Button, DeclarationPanel, ReferencePill, Select, TextField } from '@/components'
+import { Banner, Button, DeclarationPanel, ReferencePill, Select, TextField, ErrorSummary } from '@/components'
 import { ErrorState, LoadingState, NotFoundState, UnknownOutcomeBanner } from '@/components/states/States'
 import { useRoadmap } from '@/features/feedback/queries'
 import { useSubmitRevision } from '@/features/feedback/useSubmitRevision'
@@ -111,10 +111,9 @@ function ReviseForm({ c, request }: { c: MyCase; request: FeedbackRequest }) {
       {s.kind === 'unknown' ? <UnknownOutcomeBanner what="Your revision" checking={s.checking} onCheckStatus={() => void revision.checkStatus()} /> : null}
       {s.kind === 'refused' && !s.fields ? <Banner kind="error">{s.message ?? 'Your revision was not submitted.'}</Banner> : null}
       {errorList.length ? (
-        <div id={`${id}-errors`} tabIndex={-1} role="alert" className="flex max-w-form flex-col gap-2 rounded-md bg-error-subtle p-4 outline-none">
-          <h2 className="font-semibold">Your revision wasn't submitted yet</h2>
+        <ErrorSummary id={`${id}-errors`} title="Your revision wasn't submitted yet" className="max-w-form">
           {s.kind === 'refused' && s.message ? <p>{s.message}</p> : null}
-          <ul className="list-disc pl-6">
+          <ul>
             {errorList.map(([key, msg]) => (
               <li key={key}>
                 <a href={`#${id}-${key.replace(':', '-')}`}>
@@ -123,7 +122,7 @@ function ReviseForm({ c, request }: { c: MyCase; request: FeedbackRequest }) {
               </li>
             ))}
           </ul>
-        </div>
+        </ErrorSummary>
       ) : null}
 
       {request.tasks.length ? (
