@@ -1,6 +1,6 @@
 # BCR-004 — Peolwane AI: a site-help assistant from an outside AI service (proposes D-46, narrows D-25)
 
-**Status:** Proposed · **Author:** Sylvain (Integration, Testing & Documentation Lead) · **Date:** 21 Nov 2026
+**Status:** Approved by Sylvain (team lead, 21 Nov 2026); awaiting Stacey's sign-off · **Author:** Sylvain (Integration, Testing & Documentation Lead) · **Date:** 21 Nov 2026
 **Affects:** D-25 (no external AI), D-41, R-11, claim C-17, `customHttp.yml`, the privacy page
 **Approval rule:** as BCR-001. Needs Sylvain (integration) and Stacey (security and backend). ABM (acting design owner since #123) and Obvious for information.
 **Schedule impact:** none on the lifecycle. Code is ready on its branch. It needs Leseding's key and origin allowlist before it can go live. If those don't arrive by the 22 Nov code freeze, the build ships without the assistant: with no key, nothing is shown.
@@ -45,5 +45,5 @@ The team lead asked for a voice-first assistant on every page, with text as an o
 
 | Who | Role | Decision | Date |
 |---|---|---|---|
-| Sylvain | Integration, Testing & Documentation Lead | Proposed | 21 Nov 2026 |
+| Sylvain | Integration, Testing & Documentation Lead | Approved (team lead) | 21 Nov 2026 |
 | Stacey | Backend & Security | | |
