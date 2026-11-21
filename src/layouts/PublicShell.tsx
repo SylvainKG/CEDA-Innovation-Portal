@@ -3,6 +3,7 @@ import { Menu, X } from 'lucide-react'
 import { ButtonLink } from '@/components/ButtonLink'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { Brand, Footer, MockRoleSwitcher, SkipLink, TopBarEnd } from './ShellParts'
+import { PeolwaneAssistant } from '@/features/assistant/PeolwaneAssistant'
 
 const LINKS = [
   { to: '/challenges', label: 'Challenges' },
@@ -67,7 +68,8 @@ export function PublicShell() {
       <div className="mx-auto w-full max-w-content px-4">
         <MockRoleSwitcher />
       </div>
-      <Footer />
+      <Footer chatSpace />
+      <PeolwaneAssistant />
     </div>
   )
 }

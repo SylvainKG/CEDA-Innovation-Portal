@@ -45,7 +45,7 @@ const FOOTER_LINKS = [
 
 /**
  * Footer (Sandra's 21 Nov frames): the portal's name on the left, the links on the right. `chatSpace` keeps the right
- * end clear of the floating "Chat with CEDA" button on applicant pages.
+ * end clear of the floating buttons: "Peolwane AI" on every page, and "Chat with CEDA" on applicant pages.
  */
 export function Footer({ chatSpace = false }: { chatSpace?: boolean }) {
   return (
