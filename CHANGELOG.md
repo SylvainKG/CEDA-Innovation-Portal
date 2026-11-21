@@ -8,6 +8,10 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
   Evidence: 2 new tests (the picker fills the email only and focuses the password without signing in; intro, Forgot password and Register links) and the wrong-credentials test now checks the linked summary.
 
+- `design` **Five-step stepper** (#100 decision 2; Sandra's My ideas and case view frames). `StageTimeline` now always shows Submission, Review, Feedback, Approval and Award, with numbered circles and a tick once done. Feedback is no longer hidden. When an idea went past it without a request, it is greyed with a dashed circle, screen readers hear "Feedback: not needed", and the progress line runs through it. `stagesFor` marks any stage before the furthest one reached as `skipped` if it never happened. This applies on My ideas cards, the applicant case view and the staff case page.
+
+  Evidence: 3 new tests (five numbered stages; skipped Feedback announced as not needed; `stagesFor` gives skipped, done or upcoming), replacing the old "hides Feedback" test.
+
 - `feature` Real-backend browser journey (issue #61; N-a, N-k; C-01, C-11): `tests/e2e/hosted-journey.spec.ts` signs in every demo account, checks a wrong password and the Forbidden screens, checks that Applicant B gets Not found for A's idea and receipt, and submits an idea where the `submit_proposal` reply is dropped after the server applied it, expecting "Not confirmed yet", recovery through Check status and exactly one case. Skipped unless asked; the E2E workflow's `journey` input passes `DEMO_PASSWORD` from the Actions secret on manual runs only.
 - `docs` **Blueprint: ABM joins the team** (D-31, §7). The header, D-31, the named-owners table, the responsibility matrix (new ABM column) and the parallel-development rules now include ABM as Frontend Developer from 21 Nov 2026. First tasks: sign in, create account, applicant case view and the five-step stepper (issue #100). Changes to shared components still go through Obvious.
 
