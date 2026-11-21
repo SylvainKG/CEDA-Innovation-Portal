@@ -4,6 +4,10 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `design` **Record decision laid out to Sandra's 21 Nov frame** (#119 screen C; `ceda adjudicatorsave decision.pdf`). The side sheet from #118 already gives the frame's "WORKFLOW ACTION" title, consequence strip, audit line and buttons; this adds the frame's order: Outcome and Reason, each with REQUIRED at the right, then "Assessed version" in a grey box with the version's real submission date ("Version 1 (current) · submitted 20 Oct 2026").
+
+  Evidence: 42 staff tests pass; lint and type-check pass; checked in the browser as the adjudicator (side sheet, then full screen on a narrow window; no sideways scroll).
+
 - `design` **Screening frames: side sheet, queue and staff case** (Sandra's 21 Nov exports). Workflow action dialogs are now the frame's side sheet ("WORKFLOW ACTION", consequence strip, audit note and buttons at the bottom; full screen on phones); tables are bordered cards with small uppercase headings; the screening queue has "WORK QUEUE", a search and challenge filter with removable chips (`QueueFilters`); the staff case puts its actions at the right, the stepper in a card and the proposal in one "Submitted proposal · Version N" card.
 
   Evidence: 334 tests pass; lint and type-check pass; browser smoke suite 20 passed; hosted-journey spec (mock) 3 passed; local check at 360 and 1280 px (no sideways scroll; sheet 480 px on the right, full screen on phones; focus returns to the opening button).
