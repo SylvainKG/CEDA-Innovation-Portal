@@ -33,12 +33,12 @@ export function DataTable<Row>({ caption, columns, rows, getRowKey, empty }: Dat
 
   return (
     <div>
-      <table className="hidden w-full border-collapse overflow-hidden rounded-md bg-surface-card shadow-1 md:table">
+      <table className="hidden w-full border-separate border-spacing-0 overflow-hidden rounded-md border border-line bg-surface-card md:table">
         <caption className="sr-only">{caption}</caption>
         <thead className="sticky top-0 bg-surface-sunken">
           <tr>
             {columns.map((c) => (
-              <th key={c.key} scope="col" className="border-b border-line px-4 py-3 text-left text-sm font-semibold text-ink">
+              <th key={c.key} scope="col" className="border-b border-line px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-ink-muted">
                 {c.header}
               </th>
             ))}
@@ -46,9 +46,9 @@ export function DataTable<Row>({ caption, columns, rows, getRowKey, empty }: Dat
         </thead>
         <tbody>
           {rows.map((row) => (
-            <tr key={getRowKey(row)} className="border-b border-line last:border-b-0">
+            <tr key={getRowKey(row)} className="hover:bg-surface-sunken [&:last-child>td]:border-b-0">
               {columns.map((c) => (
-                <td key={c.key} className={cn('px-4 py-3 align-top text-base', c.className)}>
+                <td key={c.key} className={cn('border-b border-line px-4 py-2 align-middle text-sm', c.className)}>
                   {c.cell(row)}
                 </td>
               ))}
@@ -59,7 +59,7 @@ export function DataTable<Row>({ caption, columns, rows, getRowKey, empty }: Dat
 
       <ul className="flex flex-col gap-3 md:hidden" aria-label={caption}>
         {rows.map((row) => (
-          <li key={getRowKey(row)} className="rounded-md bg-surface-card p-4 shadow-1">
+          <li key={getRowKey(row)} className="rounded-md border border-line bg-surface-card p-4">
             {primary ? <div className="mb-2 font-semibold">{primary.cell(row)}</div> : null}
             <dl className="grid grid-cols-[auto,1fr] gap-x-3 gap-y-1">
               {rest.map((c) => (

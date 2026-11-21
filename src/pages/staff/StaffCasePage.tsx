@@ -88,18 +88,21 @@ export function StaffCasePage() {
         )}
       </p>
 
-      <header className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <ReferencePill reference={c.reference} copyable />
-          <StatusBadge status={c.status} audience="staff" context={{ decisionDrafted: Boolean(activeDecision(c) && !activeDecision(c)?.published_at) }} />
-        </div>
-        <h1 className="text-h1 font-semibold">{c.title}</h1>
-        <p className="text-ink-muted">
-          {c.challenge.title} · Submitted {formatDateTimeCAT(c.submitted_at)}
-        </p>
-        <StageTimeline stages={stages} compact />
-        {closedReason ? <Banner kind="info" title="Closed">{closedReason}</Banner> : null}
-        {notice ? <Banner kind="success">{notice}</Banner> : null}
+      {/* Laid out to Sandra's 21 Nov staff case frame: pills, title and challenge on the left, the actions on the right,
+          the five-step stepper in a card below. */}
+      <header className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex min-w-0 flex-col gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <ReferencePill reference={c.reference} copyable />
+              <StatusBadge status={c.status} audience="staff" context={{ decisionDrafted: Boolean(activeDecision(c) && !activeDecision(c)?.published_at) }} />
+            </div>
+            <h1 className="break-words text-h1 font-semibold">{c.title}</h1>
+            <p className="text-sm text-ink-muted">
+              {c.challenge.title} · Submitted {formatDateTimeCAT(c.submitted_at)}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 md:justify-end">
         <PrimaryAction
           c={c}
           canScreen={canScreen}
@@ -112,7 +115,7 @@ export function StaffCasePage() {
           onDialog={setDialog}
         />
         {canAsk || canClose ? (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 md:justify-end">
             {canAsk ? (
               <>
                 <Button variant="secondary" size="sm" onClick={() => setDialog('clarify')}>
@@ -130,6 +133,13 @@ export function StaffCasePage() {
             ) : null}
           </div>
         ) : null}
+          </div>
+        </div>
+        <div className="rounded-md border border-line bg-surface-card p-4">
+          <StageTimeline stages={stages} compact />
+        </div>
+        {closedReason ? <Banner kind="info" title="Closed">{closedReason}</Banner> : null}
+        {notice ? <Banner kind="success">{notice}</Banner> : null}
       </header>
 
       <Tabs
@@ -349,26 +359,31 @@ function ProposalTab({ c }: { c: StaffCase }) {
   const answers = c.version.data
   const docLabel = (key: string | null) => c.required_docs.find((d) => d.key === key)?.label
   return (
-    <div className="flex max-w-form flex-col gap-6">
-      <p className="text-sm text-ink-muted">
-        Version {c.version.version_no} · submitted {formatDateTimeCAT(c.version.submitted_at)} · declaration {c.version.declaration_version}
-      </p>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-5 rounded-md border border-line bg-surface-card p-5">
+        <div>
+          <h2 className="text-h3 font-semibold">Submitted proposal · Version {c.version.version_no}</h2>
+          <p className="text-sm text-ink-muted">
+            Submitted {formatDateTimeCAT(c.version.submitted_at)} · declaration {c.version.declaration_version}
+          </p>
+        </div>
       {c.form_schema.sections.map((section) => (
-        <section key={section.key} aria-labelledby={`sec-${section.key}`} className="flex flex-col gap-3 rounded-md bg-surface-card p-4 shadow-1">
-          <h2 id={`sec-${section.key}`} className="text-h3 font-semibold">
+        <section key={section.key} aria-labelledby={`sec-${section.key}`} className="flex flex-col gap-3 border-t border-line pt-4">
+          <h3 id={`sec-${section.key}`} className="font-semibold">
             {section.title}
-          </h2>
+          </h3>
           <dl className="flex flex-col gap-3">
             {section.fields.map((f) => (
               <div key={f.key} className="flex flex-col gap-1">
-                <dt className="text-sm font-semibold text-ink-muted">{f.label}</dt>
+                <dt className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{f.label}</dt>
                 <dd className="whitespace-pre-wrap break-words">{answers[f.key]?.trim() ? answers[f.key] : <span className="text-ink-muted">Not answered</span>}</dd>
               </div>
             ))}
           </dl>
         </section>
       ))}
-      <section aria-labelledby="sec-files" className="flex flex-col gap-3 rounded-md bg-surface-card p-4 shadow-1">
+      </div>
+      <section aria-labelledby="sec-files" className="flex flex-col gap-3 rounded-md border border-line bg-surface-card p-5">
         <h2 id="sec-files" className="text-h3 font-semibold">
           Files
         </h2>
