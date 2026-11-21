@@ -29,6 +29,15 @@ describe('idea view rules (spec T06, §6)', () => {
     expect(stages.find((s) => s.stage === 'submission')?.state).toBe('done')
     expect(stages.find((s) => s.stage === 'review')?.state).toBe('current')
     expect(stages.find((s) => s.stage === 'approval')?.state).toBe('upcoming')
+    expect(stages.find((s) => s.stage === 'feedback')?.state).toBe('upcoming')
+  })
+
+  it('marks Feedback skipped once the idea went past it without a request, and done when one happened', () => {
+    const at = '2026-11-10T00:00:00Z'
+    const past = stagesFor({ status: 'approved', stages: [{ stage: 'submission', at }, { stage: 'review', at }, { stage: 'approval', at }] })
+    expect(past.map((s) => s.state)).toEqual(['done', 'done', 'skipped', 'current', 'upcoming'])
+    const asked = stagesFor({ status: 'approved', stages: [{ stage: 'submission', at }, { stage: 'review', at }, { stage: 'feedback', at }, { stage: 'approval', at }] })
+    expect(asked.find((s) => s.stage === 'feedback')?.state).toBe('done')
   })
 
   it('gives one primary action that matches what the applicant has to do', () => {
