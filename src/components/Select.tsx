@@ -1,6 +1,7 @@
 import { useId, type SelectHTMLAttributes } from 'react'
 import { AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/cn'
+import { RequiredTag } from './ErrorSummary'
 
 export interface SelectOption {
   value: string
@@ -27,7 +28,7 @@ export function Select({ label, options, placeholder, help, error, required, cla
     <div className="flex flex-col gap-1">
       <label htmlFor={id} className="font-semibold">
         {label}
-        {required ? <span className="ml-2 text-sm font-normal text-ink-muted">Required</span> : null}
+        {required ? <RequiredTag /> : null}
       </label>
       {help ? (
         <p id={helpId} className="text-sm text-ink-muted">

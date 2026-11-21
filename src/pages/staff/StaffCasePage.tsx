@@ -17,6 +17,7 @@ import { formatBWP } from '@/lib/money'
 import type { CaseAssignment, ScreeningResult, StaffCase } from '@/lib/api/types'
 import { formatBytes, formatDateCAT, formatDateTimeCAT } from '@/lib/format'
 import { useSession } from '@/lib/session'
+import { RequiredTag } from '@/components/ErrorSummary'
 
 /**
  * T08 staff case workspace (spec T08), built from the written spec (BCR-003; design review pending). Slice 2:
@@ -504,7 +505,7 @@ function ScreeningDialog({
       ) : null}
       <fieldset className="flex flex-col gap-2" aria-describedby={errors.result || serverFields?.result ? `${groupId}-err` : undefined}>
         <legend className="font-semibold">
-          Result <span className="text-sm font-normal text-ink-muted">Required</span>
+          Result <RequiredTag />
         </legend>
         {(
           [

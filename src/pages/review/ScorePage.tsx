@@ -1,7 +1,7 @@
 import { useId, useMemo, useState } from 'react'
 import { VersionCompare } from '@/pages/staff/VersionCompare'
 import { Link, useParams } from 'react-router-dom'
-import { Banner, Button, Dialog, ReferencePill, TextField } from '@/components'
+import { Banner, Button, Dialog, ReferencePill, TextField, ErrorSummary } from '@/components'
 import { ErrorState, LoadingState, NotFoundState } from '@/components/states/States'
 import { useDeclare, useReviewQueue, useSaveScorecard, useSubmitScorecard, useVerifyTask, useWorkspace } from '@/features/review/queries'
 import type { ReviewActionState } from '@/features/review/queries'
@@ -337,9 +337,8 @@ function ScorecardForm({ w }: { w: ReviewWorkspace }) {
       {savedNote ? <Banner kind="info">{savedNote}</Banner> : null}
       <ActionBanner state={save.state.kind !== 'idle' ? save.state : submit.state} failed="Your scores were not saved." />
       {errorList.length ? (
-        <div id={`${id}-errors`} tabIndex={-1} role="alert" className="flex flex-col gap-2 rounded-md bg-error-subtle p-4 outline-none">
-          <h3 className="font-semibold">Some scores need attention</h3>
-          <ul className="list-disc pl-6">
+        <ErrorSummary id={`${id}-errors`} title="Some scores need attention" level={3}>
+          <ul>
             {errorList.map(([key, msg]) => {
               const c = w.criteria.find((x) => x.key === key)
               const task = key.startsWith('task:') ? key.split(':')[1] : null
@@ -350,7 +349,7 @@ function ScorecardForm({ w }: { w: ReviewWorkspace }) {
               )
             })}
           </ul>
-        </div>
+        </ErrorSummary>
       ) : null}
 
       {w.change_note ? (
