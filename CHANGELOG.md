@@ -4,6 +4,10 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `design` **Users and roles laid out to Sandra's 21 Nov frames** (#119 screen G; `ceda administrator users +roles.pdf`, `ceda administrator invite user.pdf`). "ADMIN SETTINGS" over the title and "Invite user" at the right, which opens the invitation as a side sheet ("A time-limited invitation is sent to the email address."; email, full name and role, each REQUIRED). Everyone registered in table-like rows from 768 px (NAME, EMAIL, ROLES, ACTIONS): roles as orange chips with a × to remove, and "Choose a role" + Grant role; your own row says "You can't change your own roles." once. People stack on phones; the list stays a list for screen readers. "Case stages (fixed for this MVP)" below.
+
+  Evidence: admin and routing tests pass (29; the invite test now opens the sheet first); lint and type-check pass; checked in the browser as the administrator at 1280 and 360 px (no sideways scroll, controls at least 44 px).
+
 - `design` **Ready for decision laid out to Sandra's 21 Nov adjudicator work-queue frame** (#119 screen D; `ceda adjudicator work cases.pdf`). The same pattern as the screening queue (#118): "WORK QUEUE" over the title and "Filter cases and open the score panel to decide.", the shared filter card (search by reference or title, challenge) with removable chips, and the table: reference (to the score panel), idea, challenge, submitted, waiting, the panel average with the spread flag and "2/2 reviews", and the status badge. Cards at 360 px.
 
   Evidence: 21 review and staff-home tests pass (heading, scores and panel link unchanged); lint and type-check pass; checked in the browser as the adjudicator at 1280 and 360 px (no sideways scroll, controls at least 44 px).
