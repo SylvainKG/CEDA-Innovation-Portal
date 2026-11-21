@@ -84,7 +84,7 @@ Nothing about the database, RLS, RPCs or Edge Functions changes. Four things dep
 Prepared on branch `ops/amplify-build`. It opens as a pull request once the frontend scaffold (PR #6) is on `main`, so Amplify's first real build has something to build.
 
 - **`amplify.yml`:** uses the Node version from `.nvmrc`, `npm ci` with an npm cache, a check that `VITE_API_MODE` is set, `npm run build`, and publishes `dist/`.
-- **`customHttp.yml`:** security headers on every response: HSTS, no MIME sniffing, no framing, a strict referrer policy, no camera, microphone or location access, and a **Content-Security-Policy** that allows only the site itself plus Supabase (`https://*.supabase.co`, `wss://*.supabase.co`). The policy was proposed by Obvious and checked against the production build with no violations.
+- **`customHttp.yml`:** security headers on every response: HSTS, no MIME sniffing, no framing, a strict referrer policy, no camera or location access (the microphone only for this site, for Peolwane AI's voice questions), and a **Content-Security-Policy** that allows only the site itself plus Supabase (`https://*.supabase.co`, `wss://*.supabase.co`) and, for Peolwane AI, the Leseding AI Engine (`https://lesedingaiengine.co.bw`; spoken replies play from `blob:`; docs/process/peolwane-ai.md). The policy was proposed by Obvious and checked against the production build with no violations.
 
 ## 7. Done when
 
