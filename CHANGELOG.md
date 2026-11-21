@@ -4,6 +4,7 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `docs` **Sandra's design duties handed to ABM** (blueprint D-31, §7.1, §7.2, §8.4; owners of D-34–D-36). Sandra is unavailable and her tasks were not moving before the 22 Nov freeze. ABM is acting UI/UX & Figma lead: the open design decisions, the staging review of each screen against its frame, marking screens Approved, the final snapshots and design reconciliation, and the design owner's sign-off on change requests (approvals from `ABM-IX` only). Obvious stays UI backup. The tracker moves Sandra's open tasks to ABM.
 - `design` **My ideas laid out to Sandra's 21 Nov frame** (T06, #100). "MY IDEAS" above "Welcome, <name>"; a red "An idea needs your response" banner with the earliest deadline and that idea's action; two-column cards with the status pill and reference, the five-step stepper, "Updated … ago" with the deadline, and the one action; a red top edge on cards that need a response. The page's h1 is now "Welcome, <name>" (tests updated, including the hosted journey and the smoke suite).
 
   Evidence: 325 tests pass; lint and type-check pass; browser smoke suite 20 passed at 360 and 1280 px; no sideways scroll.
