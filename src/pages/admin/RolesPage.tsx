@@ -80,17 +80,20 @@ function Checklist({ id, permissions, value, onChange, disabled }: { id: string;
 
 function RoleRow({ role, permissions, busy, onSave }: { role: AdminRole; permissions: PermissionOption[]; busy: boolean; onSave: (p: string[]) => Promise<boolean> }) {
   const [value, setValue] = useState(role.permissions)
+  // The checklist renders only while the role is open: ten roles × twenty permissions is a lot of controls.
+  const [open, setOpen] = useState(false)
   const changed = [...value].sort().join() !== role.permissions.join()
   return (
     <li className="rounded-md bg-surface-card p-4 shadow-1">
-      <details>
+      <details onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}>
         <summary className="flex min-h-touch cursor-pointer flex-wrap items-baseline gap-x-3">
           <span className="font-semibold">{role.label}</span>
           <span className="text-sm text-ink-muted">
             {role.is_system ? 'Built-in' : 'Added'} · {role.permissions.length} permissions{role.requires_mfa ? ' · two-step sign-in' : ''}
           </span>
         </summary>
-        <div className="mt-3 flex flex-col gap-3">
+        {open ? (
+          <div className="mt-3 flex flex-col gap-3">
           {role.is_system ? <p className="text-sm text-ink-muted">Built-in roles keep their permissions. Add a new role to combine them differently.</p> : null}
           <fieldset>
             <legend className="sr-only">{role.label} permissions</legend>
@@ -103,7 +106,8 @@ function RoleRow({ role, permissions, busy, onSave }: { role: AdminRole; permiss
               </Button>
             </div>
           ) : null}
-        </div>
+          </div>
+        ) : null}
       </details>
     </li>
   )

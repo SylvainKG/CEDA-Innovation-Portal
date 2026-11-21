@@ -40,4 +40,12 @@ node --env-file=.env tools/pglite-db-tests/staging-reset.mjs reset <same-file> -
 
 `snapshot` is read-only. `reset` removes only the rows and Storage objects that are **not** in the snapshot, inside one transaction (protective triggers paused, then re-enabled), restores the reference sequence, and **commits only if every table is identical to the snapshot row by row**; otherwise it rolls back and nothing changes. It never edits rows that existed in the snapshot. Files need `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (the JWT service-role key; Storage refuses the `sb_secret_` key). **Guards:** `STAGING_PROJECT_REF` is required and must match the project in `SUPABASE_DB_URL` (and `SUPABASE_URL`); refs listed in `JUDGING_PROJECT_REFS` (comma-separated) are refused; `reset` refuses after code freeze (22 Nov 2026, 18:00 CAT) unless `--after-freeze-override` is given, and that use is printed for the run record. Never on the judging project. Delete the snapshot afterwards (it holds account e-mails). First used on 20 Nov for the #61 main journey (record in `artifacts/phase-00/hosted-supabase.md`).
 
+## Restore drill (OPS-01)
+
+```bash
+node --env-file=.env tools/pglite-db-tests/restore-drill.mjs <backup-dir-outside-the-repo>
+```
+
+It takes a read-only, consistent logical backup of the hosted data (TLS verified; no password hashes), rebuilds an empty Postgres from `supabase/migrations/`, loads the backup, and verifies it: every table row by row, every foreign key, `health()`, the sequence, then all pgTAP suites. It prints the recovery point and recovery time. `DRILL_SELFTEST=1` damages the restored copy on purpose, and the drill must then report FAILED. The record is in `artifacts/phase-07/restore-drill.md`. Delete the backup file afterwards; it holds account e-mails.
+
 **Mutation check:** `MUTATE="<sql>" npm test` applies extra SQL after the seed. For example, replacing `private.can_read_case` with `select true` should make the isolation tests fail.

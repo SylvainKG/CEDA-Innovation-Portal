@@ -62,7 +62,7 @@ Each case is tested at **every entry route** that applies: the page, the PostgRE
 | S4 | Applicant cannot edit tasks or verifications | pgTAP | Not run |
 | S4 | Unassigned reviewer cannot verify a task | pgTAP | Not run |
 | S5 | **Full main journey (steps 0–17) passes on staging** | Playwright | Not run |
-| S6 | Report counts reconcile with seed data; CSV matches screen | Playwright + SQL | Not run |
+| S6 | Report counts reconcile with seed data; CSV matches screen | pgTAP (`013_report_reconciliation`) + Playwright | **Passed (database layer)**: 14 assertions, PGlite stand-in 21 Nov; mutation check (report drops closed cases) fails 6. Browser comparison of screen and downloaded CSV: Not run |
 | S6 | OpenAPI export generated; scaling note written | Manual | Not run |
 
 ## 4. Main journey (blueprint §3.2) as one Playwright suite
