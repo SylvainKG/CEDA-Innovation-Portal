@@ -104,5 +104,14 @@ jobs:
           name: npm-audit-report
           path: npm-audit-report.json
           retention-days: 30
-      - name: Fail on high or critical findings
-        run: npm audit --audit-level=high
+      - name: List high or critical findings in dev-only tooling (visible, does not fail)
+        run: |
+          {
+            echo "### npm audit: dev-only tooling (not in the built site)"
+            echo '```'
+            npm audit --audit-level=high || true
+            echo '```'
+            echo "Each high or critical dev-only finding must be recorded in ADR-001 with a reason (ci-and-environments.md §2)."
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Fail on high or critical findings in shipped packages
+        run: npm audit --omit=dev --audit-level=high
