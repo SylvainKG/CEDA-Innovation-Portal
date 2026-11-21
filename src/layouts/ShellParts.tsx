@@ -1,11 +1,13 @@
-import { Bell } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Bell, LogOut } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import cedaLogo from '@/assets/ceda-logo.png'
 import { DemoBadge } from '@/components/DemoBadge'
+import { useNotifications } from '@/features/oversight/queries'
 import { apiMode } from '@/lib/api'
 import { MOCK_ROLE_OPTIONS, mockRoleOf } from '@/lib/api/mock/session'
 import type { Role } from '@/lib/api/types'
 import { roleLabel } from '@/navigation/role-labels'
-import { useSession, useSwitchDemoRole } from '@/lib/session'
+import { useSession, useSignOut, useSwitchDemoRole } from '@/lib/session'
 
 export function SkipLink() {
   return (
@@ -20,9 +22,11 @@ export function SkipLink() {
 
 export function Brand() {
   return (
-    <Link to="/" className="flex min-h-touch items-center gap-2 font-bold text-ink no-underline">
-      <span aria-hidden className="inline-block h-6 w-6 rounded-sm bg-brand" />
-      CEDA Innovation Portal
+    <Link to="/" className="flex min-h-touch items-center gap-3 font-bold text-ink no-underline">
+      {/* Official CEDA logo, upscaled from the supplied 447 px PNG; replace with CEDA's vector file when available. */}
+      <img src={cedaLogo} alt="CEDA" width={1432} height={900} className="h-10 w-auto" />
+      {/* Logo alone on phones so the text cannot collide with the DEMO badge; still read out as "CEDA Innovation Portal". */}
+      <span className="sr-only md:not-sr-only">Innovation Portal</span>
     </Link>
   )
 }
@@ -41,12 +45,31 @@ export function Footer() {
   )
 }
 
+/**
+ * The bell (spec T11, NTF-01): the unread count as a badge, refreshed every 30 seconds and on returning to the tab.
+ * The accessible name says the count ("Notifications, 3 unread"); the badge is only a visual repeat of it.
+ */
 export function NotificationsLink() {
+  const list = useNotifications()
+  const unread = (list.data ?? []).filter((n) => !n.read_at).length
+  const name = unread ? `Notifications, ${unread} unread` : 'Notifications'
   return (
-    <Link to="/notifications" className="inline-flex min-h-touch min-w-touch items-center justify-center gap-2 rounded-md px-2 text-ink no-underline hover:bg-surface-sunken">
-      <Bell aria-hidden className="h-5 w-5" />
-      <span className="hidden md:inline">Notifications</span>
-      <span className="sr-only md:hidden">Notifications</span>
+    <Link
+      to="/notifications"
+      aria-label={name}
+      className="relative inline-flex min-h-touch min-w-touch items-center justify-center gap-2 rounded-md px-2 text-ink no-underline hover:bg-surface-sunken"
+    >
+      <span className="relative inline-flex">
+        <Bell aria-hidden className="h-5 w-5" />
+        {unread ? (
+          <span aria-hidden className="absolute -right-2 -top-2 min-w-[1.25rem] rounded-full bg-brand px-1 text-center text-xs font-semibold leading-5 text-brand-on">
+            {unread > 9 ? '9+' : unread}
+          </span>
+        ) : null}
+      </span>
+      <span aria-hidden className="hidden md:inline">
+        Notifications
+      </span>
     </Link>
   )
 }
@@ -61,7 +84,7 @@ export function MockRoleSwitcher({ compact = false }: { compact?: boolean }) {
   if (apiMode !== 'mock') return null
   const current = mockRoleOf(user?.id)
   return (
-    <label className="flex items-center gap-2 text-sm">
+    <label data-print="hide" className="flex items-center gap-2 text-sm">
       <span className={compact ? 'sr-only' : 'text-ink-muted'}>Mock session (development only)</span>
       <select
         className="min-h-touch rounded-sm border border-line-input bg-surface-card px-2 text-base"
@@ -82,10 +105,34 @@ export function MockRoleSwitcher({ compact = false }: { compact?: boolean }) {
 export function TopBarEnd() {
   const { data: user } = useSession()
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex shrink-0 items-center gap-1 md:gap-2">
       <DemoBadge />
       {user ? <NotificationsLink /> : null}
       {user ? <span className="hidden text-sm text-ink-muted lg:inline">{user.displayName}</span> : null}
+      {user ? <SignOutButton /> : null}
     </div>
+  )
+}
+
+/** Ends the session and makes this device forget the person's drafts, pending keys and cached data. */
+function SignOutButton() {
+  const signOut = useSignOut()
+  const navigate = useNavigate()
+  return (
+    <button
+      type="button"
+      data-print="hide"
+      disabled={signOut.isPending}
+      onClick={() => {
+        // Leave the signed-in page first, so its guard does not bounce to sign-in when the session ends.
+        navigate('/')
+        signOut.mutate()
+      }}
+      className="inline-flex min-h-touch min-w-touch shrink-0 items-center justify-center gap-2 rounded-md px-2 text-ink hover:bg-surface-sunken"
+    >
+      {/* Icon only below md, like Notifications, so the 360 px staff header does not scroll sideways (#47 e2e). */}
+      <LogOut aria-hidden className="h-5 w-5" />
+      <span className="sr-only md:not-sr-only">Sign out</span>
+    </button>
   )
 }

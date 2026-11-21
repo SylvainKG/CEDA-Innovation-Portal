@@ -100,6 +100,19 @@ jobs:
             echo "::error title=supabase test db failed::$(grep -E 'not ok|Failed|ERROR|planned|Result' test.log | tail -n 40 | sed -e 's/%/%25/g' -e 's/\r//g' | sed ':a;N;$!ba;s/\n/%0A/g')"
             exit 1
           }
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: tools/pglite-db-tests/package-lock.json
+      - name: Concurrent submits (claim C-11)
+        # Two connections submit the same draft at once; needs real Postgres, so it runs on this stack only.
+        working-directory: tools/pglite-db-tests
+        env:
+          LOCAL_DB_URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+        run: |
+          npm ci
+          node concurrency.mjs
       - name: Generate TypeScript types from the migrated schema
         # The frontend copies this file into src/lib/api/ (contract §8). Download it from the run's artifacts.
         run: |
