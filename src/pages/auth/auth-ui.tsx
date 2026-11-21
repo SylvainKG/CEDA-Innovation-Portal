@@ -1,5 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react'
-import cedaLogo from '@/assets/ceda-logo.png'
+import { brand } from '@/brand'
 import { DemoBadge } from '@/components'
 
 /**
@@ -16,8 +16,8 @@ export function AuthCard({ title, children, intro }: { title: string; intro?: Re
   return (
     <div className="mx-auto flex w-full max-w-[440px] flex-col gap-4 rounded-md bg-surface-card p-6 shadow-1">
       <div className="flex flex-col items-center gap-3 text-center">
-        {/* Spec T02: logo above the title. Decorative here: the header's logo link already names CEDA. */}
-        <img src={cedaLogo} alt="" width={1432} height={900} className="h-14 w-auto" />
+        {/* Spec T02: logo above the title. Decorative here: the header's logo link already names the portal. */}
+        <img src={brand.mark.src} alt="" width={brand.mark.width} height={brand.mark.height} className="h-14 w-auto" />
         <DemoBadge />
         <h1 ref={heading} tabIndex={-1} className="text-h1 font-semibold outline-none">
           {title}
