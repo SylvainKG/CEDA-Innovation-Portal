@@ -1,6 +1,6 @@
 import * as RadixDialog from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { useRef, type ReactNode } from 'react'
 import { Button, type ButtonVariant } from './Button'
 
 export interface DialogProps {
@@ -24,6 +24,10 @@ export interface DialogProps {
 /**
  * Action dialog (spec §5, §7 T10) built on Radix Dialog: focus trap, Esc to close, focus returned on close.
  * Full screen on mobile, centred card from 768 px.
+ *
+ * Radix returns focus only to its own Trigger. These dialogs are opened by ordinary buttons through `open`, so the
+ * element that had focus when the dialog opened is remembered and focused again on close (WCAG 2.4.3). If it has
+ * gone (for example a "Remove" button whose row was removed), Radix's default applies.
  */
 export function Dialog({
   open,
@@ -37,11 +41,29 @@ export function Dialog({
   audited = false,
   children,
 }: DialogProps) {
+  // Read the focused element while rendering the change to open, before Radix moves focus into the dialog
+  // (the dialog's own effects run before any effect here would).
+  const returnTo = useRef<HTMLElement | null>(null)
+  const wasOpen = useRef(false)
+  if (open && !wasOpen.current && typeof document !== 'undefined') {
+    const el = document.activeElement
+    returnTo.current = el instanceof HTMLElement && el !== document.body ? el : null
+  }
+  wasOpen.current = open
   return (
     <RadixDialog.Root open={open} onOpenChange={(next) => (!busy ? onOpenChange(next) : undefined)}>
       <RadixDialog.Portal>
         <RadixDialog.Overlay className="fixed inset-0 bg-black/40" />
-        <RadixDialog.Content className="fixed inset-0 flex flex-col bg-surface-card p-6 shadow-2 md:inset-auto md:left-1/2 md:top-1/2 md:w-full md:max-w-[560px] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-md">
+        <RadixDialog.Content
+          onCloseAutoFocus={(event) => {
+            const el = returnTo.current
+            returnTo.current = null
+            if (el && el.isConnected) {
+              event.preventDefault()
+              el.focus()
+            }
+          }}
+          className="fixed inset-0 flex flex-col bg-surface-card p-6 shadow-2 md:inset-auto md:left-1/2 md:top-1/2 md:w-full md:max-w-[560px] md:-translate-x-1/2 md:-translate-y-1/2 md:rounded-md">
           <div className="flex items-start justify-between gap-4">
             <RadixDialog.Title className="text-h3 font-semibold">{title}</RadixDialog.Title>
             <RadixDialog.Close asChild>

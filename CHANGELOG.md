@@ -4,6 +4,10 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `repair` **Dialogs return keyboard focus to the button that opened them** (WCAG 2.4.3, QA-01). Closing an action dialog (Record screening, Assign reviewers, Remove role and every other `Dialog`) with Escape, Cancel or the close button left nothing focused, so keyboard and screen-reader users were sent back to the top of the page. Radix returns focus only to its own Trigger; ours are opened by ordinary buttons. The shared `Dialog` now remembers the focused element as it opens and focuses it again on close, falling back to Radix's default when that element has gone.
+
+  Evidence: 2 new tests (Escape and Cancel) fail without the fix and pass with it; 317 in total; lint, type-check and build pass. Local Chromium check at 1280 px, keyboard only: in Record screening, Assign reviewers and Remove role, focus moves into the dialog, Tab stays inside, Escape closes, focus returns to the opening button.
+
 - `feature` **E-mail alerts switch** (NTF-02, spec T11). The notifications page has an **Email alerts** section with a switch that saves as soon as it changes: "Email me when there's an update on my ideas (free)" for applicants, "Email me when something needs my attention" for staff, with the explanation "Emails say an update is waiting; they never include your idea's content." It changes only the reader's own setting (`set_alert_preference`, migration 015 in #88); setting the same value twice is harmless, so after a lost reply the setting is re-read and the switch shows what is saved. In the demo a banner says e-mail delivery is simulated. `OversightPort` gains `alertPreference` (own `profiles.alerts_opt_in`) and `setAlertPreference`.
 
   Evidence: 4 new tests (on and off with the setting kept after a reload; another person's setting untouched; a lost reply confirmed by re-reading; the adapter sends no user id and maps a refusal); 314 in total; lint, type-check and build pass. Local browser check at 360 px: switch saves, no sideways scroll, no console errors.
