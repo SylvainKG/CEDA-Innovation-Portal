@@ -1,6 +1,6 @@
 # Brand: logo, name and how to change them
 
-**Owner:** ABM · **Updated:** 21 Nov 2026 · **Active brand:** CEDA Innovation Portal (for judging, team lead decision on #100). Peolwane is ready: switching is the steps below.
+**Owner:** ABM · **Updated:** 21 Nov 2026 · **Active brand:** Peolwane · CEDA Innovation Portal, as the team agreed. Switching back to CEDA is the steps below.
 
 Every logo, name and tagline the portal shows comes from one file, `src/brand/index.ts`. Screens never import a logo file directly. A test (`src/brand/brand.test.ts`) fails if the favicons or the page title don't match the active brand, so a half-done change can't ship.
 

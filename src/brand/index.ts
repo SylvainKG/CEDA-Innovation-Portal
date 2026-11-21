@@ -54,8 +54,8 @@ export const BRANDS = {
 
 /**
  * The brand in use. To change brand, change this one line and follow docs/design/brand.md.
- * CEDA for judging (team lead decision on #100, 21 Nov 2026); Peolwane is ready for after it.
+ * Peolwane, as the team agreed (21 Nov 2026); CEDA stays one line away.
  */
-export const ACTIVE: keyof typeof BRANDS = 'ceda'
+export const ACTIVE: keyof typeof BRANDS = 'peolwane'
 
 export const brand: Brand = BRANDS[ACTIVE]
