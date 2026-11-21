@@ -36,7 +36,7 @@ The blueprint was written from the backlog but before the backlog was in the rep
 
 | Member | Items 1–8 | Date |
 |---|---|---|
-| Sandra | | |
-| Obvious | | |
-| Stacey | | |
-| Sylvain | | |
+| Sandra | Agree all items 1–8 | 21 Nov 2026 |
+| Obvious | Agree all items 1–8 | 21 Nov 2026 |
+| Stacey | Agree all items 1–8 | 21 Nov 2026 |
+| Sylvain | Agree all items 1–8 | 21 Nov 2026 |
