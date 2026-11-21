@@ -13,4 +13,39 @@ npm test -- 002     # only files whose name contains "002"
 
 **What it does not prove:** Auth, Storage, PostgREST, Realtime and Edge Functions are stubbed (`supabase-stub.sql`). Supabase runs Postgres 17. The authoritative run is `supabase db reset && supabase test db` on the real local stack (CI stage 3). Record results from this tool as "PGlite stand-in", never as a staging or CI run.
 
+## Running the same tests on the hosted project
+
+```bash
+# from the repo root; SUPABASE_DB_URL in .env is the session-pooler URL (never committed)
+node --env-file=.env tools/pglite-db-tests/run-hosted.mjs          # every file
+node --env-file=.env tools/pglite-db-tests/run-hosted.mjs 002      # only "002"
+```
+
+It needs two settings in `.env` (both outside git): `SUPABASE_DB_URL`, the session-pooler URL, and `SUPABASE_CA_CERT`, the path to the project's CA certificate (Dashboard → Database settings → SSL configuration). The server certificate is always verified; without the certificate the runner stops.
+
+Each test file rolls itself back. The case-reference sequence is restored afterwards, never below the highest reference that exists. Record the output as **hosted**, with the commit, the UTC time and the `TOTAL` line (for example `artifacts/phase-00/hosted-supabase.md`).
+
+**Rules:**
+- **Staging only, when nobody is using it.** The tests change rows inside their own transactions.
+- **Never against the judging project after code freeze (22 Nov 2026, 18:00 CAT).** For judging, use `health()` and read-only checks.
+- Apply only migrations that are already on `main` before running it, so the hosted project matches the repository.
+
+## Snapshot and exact reset around a staging test run
+
+```bash
+node --env-file=.env tools/pglite-db-tests/staging-reset.mjs snapshot <file-outside-the-repo>
+# ... run the tests that write real data (for example the browser journey, issue #61) ...
+node --env-file=.env tools/pglite-db-tests/staging-reset.mjs reset <same-file> --confirm
+```
+
+`snapshot` is read-only. `reset` removes only the rows and Storage objects that are **not** in the snapshot, inside one transaction (protective triggers paused, then re-enabled), restores the reference sequence, and **commits only if every table is identical to the snapshot row by row**; otherwise it rolls back and nothing changes. It never edits rows that existed in the snapshot. Files need `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (the JWT service-role key; Storage refuses the `sb_secret_` key). **Guards:** `STAGING_PROJECT_REF` is required and must match the project in `SUPABASE_DB_URL` (and `SUPABASE_URL`); refs listed in `JUDGING_PROJECT_REFS` (comma-separated) are refused; `reset` refuses after code freeze (22 Nov 2026, 18:00 CAT) unless `--after-freeze-override` is given, and that use is printed for the run record. Never on the judging project. Delete the snapshot afterwards (it holds account e-mails). First used on 20 Nov for the #61 main journey (record in `artifacts/phase-00/hosted-supabase.md`).
+
+## Restore drill (OPS-01)
+
+```bash
+node --env-file=.env tools/pglite-db-tests/restore-drill.mjs <backup-dir-outside-the-repo>
+```
+
+It takes a read-only, consistent logical backup of the hosted data (TLS verified; no password hashes), rebuilds an empty Postgres from `supabase/migrations/`, loads the backup, and verifies it: every table row by row, every foreign key, `health()`, the sequence, then all pgTAP suites. It prints the recovery point and recovery time. `DRILL_SELFTEST=1` damages the restored copy on purpose, and the drill must then report FAILED. The record is in `artifacts/phase-07/restore-drill.md`. Delete the backup file afterwards; it holds account e-mails.
+
 **Mutation check:** `MUTATE="<sql>" npm test` applies extra SQL after the seed. For example, replacing `private.can_read_case` with `select true` should make the isolation tests fail.

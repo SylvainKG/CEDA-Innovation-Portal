@@ -18,7 +18,8 @@ export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement
 
 /** Native select: the most accessible and mobile-friendly option for short lists (spec §5). */
 export function Select({ label, options, placeholder, help, error, required, className, ...rest }: SelectProps) {
-  const id = useId()
+  const generatedId = useId()
+  const id = rest.id ?? generatedId
   const helpId = `${id}-help`
   const errorId = `${id}-error`
   const describedBy = [help && helpId, error && errorId].filter(Boolean).join(' ') || undefined

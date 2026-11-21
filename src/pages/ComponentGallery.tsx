@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { SubmissionPlayground } from './SubmissionPlayground'
 import { BarChart3, ClipboardCheck, Gavel, Send } from 'lucide-react'
 import {
   AutosaveIndicator,
@@ -263,6 +264,10 @@ export function ComponentGallery() {
           <NotificationItem title="CEDA asked you to revise your idea" reference="CEDA-2026-0006" createdAt="2026-11-15T10:00:00Z" unread to="/ideas/0006" />
           <NotificationItem title="Your idea was submitted" reference="CEDA-2026-0009" createdAt="2026-11-15T08:20:00Z" unread={false} to="/ideas/0009" />
         </div>
+      </Section>
+
+      <Section title="Try it: submit an idea (Slice 1 hooks, mock)">
+        <SubmissionPlayground />
       </Section>
 
       <Section title="States">
