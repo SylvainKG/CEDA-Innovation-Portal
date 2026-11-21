@@ -46,7 +46,7 @@ const FOOTER_LINKS = [
 
 /**
  * Footer (Sandra's 21 Nov frames, with the team's 21 Nov decision: Peolwane is a CEDA product). Three columns from
- * 768 px: what Peolwane is and a link to CEDA's main website; CEDA's head office; CEDA's branch towns with a link
+ * 768 px: what Peolwane is and a link to CEDA's main website; CEDA's head office; a pointer to CEDA's offices with a link
  * to CEDA's page for each office. Below: the portal links and the demo note. `chatSpace` keeps the bottom row clear
  * of the floating "Chat with CEDA" button on applicant pages. CEDA's details come from `src/brand/ceda-info.ts`.
  */
@@ -95,7 +95,7 @@ export function Footer({ chatSpace = false }: { chatSpace?: boolean }) {
           <h2 id="footer-branches" className="font-semibold">
             {CEDA.shortName} offices
           </h2>
-          <p className="text-ink-muted">{CEDA.branches.join(' · ')}</p>
+          <p className="text-ink-muted">{CEDA.shortName} has offices across Botswana.</p>
           <a href={CEDA.contactPage} target="_blank" rel="noopener noreferrer" className={`inline-flex min-h-touch items-center ${ext}`}>
             Addresses and phone numbers on ceda.co.bw<span className="sr-only"> (opens in a new tab)</span>
           </a>

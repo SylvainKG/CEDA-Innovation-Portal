@@ -63,7 +63,7 @@ describe('shared shell, laid out to Sandra\'s 21 Nov frames', () => {
     expect(site).toHaveAttribute('rel', 'noopener noreferrer')
     expect(footer.getByText('Four Thirty Square, Plot 54350')).toBeInTheDocument()
     expect(footer.getByRole('link', { name: 'Tel +267 317 0895' })).toHaveAttribute('href', 'tel:+2673170895')
-    expect(footer.getByText(/Francistown · Selebi-Phikwe/)).toBeInTheDocument()
+    expect(footer.getByRole('link', { name: /Addresses and phone numbers on ceda.co.bw/ })).toHaveAttribute('href', 'https://www.ceda.co.bw/contact-us')
   })
 
   it('hides the chat button on the chat page itself', async () => {
