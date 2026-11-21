@@ -4,7 +4,7 @@
 **Sources:** `requirements/Portal_Backlog.md` (10 Nov), *User requirements* (10 Nov), *User stories, tech stack and security design*, *Journey and data flow* (14 Nov), *What to adopt from each reference platform* (10 Nov), *Botswana Innovation Ecosystem research brief* (Nov 2026)
 **Not yet read:** the whiteboard photos (the journey document is derived from them)
 **Terminology:** this blueprint uses the backlog's terms, **challenge** and **case/proposal**. The reference analysis calls the same things "Programme" and "Idea".
-**Team:** Sandra (UI/UX & Figma), Obvious (frontend), Stacey (backend & database), Sylvain (integration, testing & documentation); see §7.
+**Team:** Sandra (UI/UX & Figma), Obvious (frontend), Stacey (backend & database), Sylvain (integration, testing & documentation), ABM (frontend, joined 21 Nov 2026); see §7.
 **Design source of truth:** the shared CEDA Figma project for visual design; this blueprint for functional behaviour (§8.1).
 **Deadline:** Upload by 12:00 CAT on 23 Nov 2026 (hard cut-off 17:00). Today is day 2 of 11.
 
@@ -99,7 +99,7 @@ Legend: **Full** = working end to end with real state · **Simplified** = real b
 | D-28 | Screen inventory | **CONFIRMED** (14 Nov) | No new standalone screens. v0.2 features are placed inside templates T04–T10 | New screens | Keeps the 15-template set | — |
 | D-29 | Readiness Passport | **CONFIRMED** (14 Nov) | Optional. Starts only after the required workflow and SEC-02 negative suite pass on staging | — | Protects the core lifecycle | — |
 | D-30 | Opportunity Navigator | **CONFIRMED** (14 Nov) | Sample-information panel on the published decision only | Separate module | Scope control | — |
-| D-31 | Named ownership | **CONFIRMED** (14 Nov) | Sandra UI/UX & Figma · Obvious frontend · Stacey backend & database · Sylvain integration, testing & documentation. Primary responsibility, not exclusive permission (§7) | Track letters A–D (v0.2) | Clear accountability for a four-person team | — |
+| D-31 | Named ownership | **CONFIRMED** (14 Nov); ABM added 21 Nov | Sandra UI/UX & Figma · Obvious frontend · Stacey backend & database · Sylvain integration, testing & documentation · ABM frontend (from 21 Nov: applicant screens to the approved frames, issue #100). Primary responsibility, not exclusive permission (§7) | Track letters A–D (v0.2) | Clear accountability for a team of five | ABM's first tasks: issue #100 |
 | D-32 | Source-of-truth split | **CONFIRMED** (14 Nov) | Figma = visual design; blueprint + API contracts = functional behaviour; `02-figma-ui-ux-spec.md` = behavioural detail, with its placeholder tokens used only where Figma has none; CEDA brand guidance overrides both (§8.1) | Spec-only design | Preserves the existing Figma direction without losing approved behaviour | — |
 | D-33 | Figma vs blueprint conflicts | **CONFIRMED** (14 Nov) | Logged in `handoff-notes.md`, resolved by the team; functionality follows the blueprint until resolved | Silent alignment | No silent functional change | — |
 | D-34 | Shared Figma access | **CONFIRMED** requirement; setup OPEN | Team-controlled Figma project; ≥ 2 editors (Sandra, Obvious); ≥ 2 team-level owners; Stacey and Sylvain view/Dev Mode | Personal drafts | No single-account dependency | Sandra, 15 Nov |
@@ -379,6 +379,7 @@ In this order, stopping wherever time runs out. The schedule is never extended f
 | **Obvious** | Frontend & UI Implementation Lead | Implement approved Figma designs in React and TypeScript; maintain reusable components and navigation; implement responsive layouts and every interface state; integrate screens with approved backend operations; **primary UI backup when Sandra cannot access Figma** |
 | **Stacey** | Backend & Database Lead | Supabase schema, authentication and role-based permissions; guarded workflow operations (screening, evaluation, feedback, resubmission, adjudication, award); database integrity, access controls and backend tests (pgTAP); coordinating API contracts with the frontend |
 | **Sylvain** | Integration, Testing & Documentation Lead | Integration across frontend, backend and Figma specs; the traceability matrix and this implementation checklist; end-to-end demo scenarios; testing coordination, documentation and evidence; demo readiness, deployment preparation and submission documents; handovers; UI help when required |
+| **ABM** (from 21 Nov) | Frontend Developer | Implement screens to the approved Figma frames (first: sign in, create account, applicant case view, the five-step stepper; issue #100); use the shared components in `src/components/` and route any change to them through Obvious's review; keep each screen's unit tests in step with its wording; check each screen at 360 and 1280 px, keyboard only |
 
 These assignments define **primary responsibility, not exclusive permission**. Anyone may take an outstanding task once it is agreed in the checklist and delivered through a pull request.
 
@@ -386,24 +387,24 @@ These assignments define **primary responsibility, not exclusive permission**. A
 
 Key: **P** primary owner · **B** backup owner · **R** required reviewer · **C** contributes.
 
-| Area | Sandra | Obvious | Stacey | Sylvain |
-|---|---|---|---|---|
-| Figma inventory, frame mapping, design backlog | P | C | — | R (scope check) |
-| Missing screens and dashboards in Figma | P | B | — | R (scope check) |
-| Design tokens, components, responsive rules (Figma) | P | B | — | — |
-| Handoff artefacts `docs/design/figma-handoff/` | P | B | — | R |
-| React shell, navigation, shared components `src/components/` | R (visual) | P | — | B |
-| Screen implementation and UI states | R (visual QA) | P | — | C |
-| Frontend integration with RPCs `src/lib/api/` | — | P | R | C |
-| Supabase schema, migrations, RLS, RPCs, Edge Functions | — | — | P | B |
-| API contracts and permission matrix | — | R | P | C |
-| Backend tests (pgTAP) | — | — | P | C |
-| End-to-end and negative tests (Playwright) | — | C | C | P |
-| Traceability matrix, implementation checklist, decision register entries | C | C | C | P |
-| Evidence artifacts `artifacts/phase-NN/` | C | C | C | P |
-| Deployment preparation (Vercel, Supabase environments) | — | C | P (Supabase) | P (release) |
-| README, user manual, judge guide, technical proposal | C | C | C | P |
-| Demo script and video | C | C | C | P |
+| Area | Sandra | Obvious | Stacey | Sylvain | ABM |
+|---|---|---|---|---|---|
+| Figma inventory, frame mapping, design backlog | P | C | — | R (scope check) | — |
+| Missing screens and dashboards in Figma | P | B | — | R (scope check) | — |
+| Design tokens, components, responsive rules (Figma) | P | B | — | — | — |
+| Handoff artefacts `docs/design/figma-handoff/` | P | B | — | R | C |
+| React shell, navigation, shared components `src/components/` | R (visual) | P | — | B | C |
+| Screen implementation and UI states | R (visual QA) | P | — | C | C |
+| Frontend integration with RPCs `src/lib/api/` | — | P | R | C | C |
+| Supabase schema, migrations, RLS, RPCs, Edge Functions | — | — | P | B | — |
+| API contracts and permission matrix | — | R | P | C | — |
+| Backend tests (pgTAP) | — | — | P | C | — |
+| End-to-end and negative tests (Playwright) | — | C | C | P | C |
+| Traceability matrix, implementation checklist, decision register entries | C | C | C | P | — |
+| Evidence artifacts `artifacts/phase-NN/` | C | C | C | P | — |
+| Deployment preparation (Vercel, Supabase environments) | — | C | P (Supabase) | P (release) | — |
+| README, user manual, judge guide, technical proposal | C | C | C | P | — |
+| Demo script and video | C | C | C | P | — |
 
 ### 7.3 Parallel development rules
 
@@ -413,6 +414,7 @@ Key: **P** primary owner · **B** backup owner · **R** required reviewer · **C
 - **Dependencies are tracked** in the checklist (§5) and `screen-status.md`: each screen lists its RPCs and its design status.
 - **One branch per task.** Naming: `ui/<template>-<topic>`, `db/<topic>`, `test/<topic>`, `docs/<topic>`. Small pull requests; nothing pushed directly to `main`.
 - **One migration sequence** (Stacey). Others propose schema changes through Stacey rather than adding migrations in parallel.
+- **New members start on contained screens.** ABM (from 21 Nov) builds whole screens in `src/pages/` against approved frames; changes to shared components go through Obvious (below).
 - **Shared code has a reviewer.** Changes to `src/components/` need Obvious's review; `supabase/migrations/` needs Stacey's; `docs/design/figma-handoff/` needs Sandra's; `docs/blueprint/` needs Sylvain's plus one other member (D-38).
 
 ---
