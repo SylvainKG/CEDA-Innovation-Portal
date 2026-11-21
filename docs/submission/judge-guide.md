@@ -1,8 +1,10 @@
-# Judge guide: CEDA Innovation Portal (demonstration)
+# Judge guide: Peolwane · CEDA Innovation Portal (demonstration)
 
 **Owner:** Sylvain (documentation lead) · **Status:** Draft, finalised at the release (22 Nov 2026) · **Answers:** DOC-02, REL-01, D-07, D-17
 Items marked **[confirm at release]** are filled in or checked on the release build. Nothing here may claim more than the claim register (`docs/testing/claim-register.md`) shows as Passed.
 
+> **Peolwane is the portal's name; it is built for CEDA's Innovation Fund.** On screen it appears as "Peolwane · CEDA Innovation Portal".
+>
 > This is a **demonstration with fictional data only.** Every person, organisation, idea and contact is invented and labelled DEMO or Sample. Please don't enter real personal data.
 
 ## 1. Access
@@ -47,7 +49,7 @@ The demo data holds eight earlier cases (`CEDA-2026-0001` to `0008`), so **your 
 | 6 | `admin` | The case → **Record award** (for example BWP 250,000.50) | The applicant sees the award |
 | 7 | `applicant.a` | My ideas → the idea | The stage timeline, decision, award and next steps |
 
-Every step above runs through the screens. Each step was also verified against the hosted backend through the API (claim C-15); the browser run against the hosted backend is **[confirm at release]**.
+Every step above runs through the screens. Each step was also verified against the hosted backend through the API, and the **full journey passed through the real screens against the hosted backend** on 21 Nov ([run 44909107002](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44909107002); claim C-15). Against the deployed site, the read-only part passed ([run 44953549649](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44953549649)).
 
 Also worth trying:
 - **Revision and roadmap:** as `screening`, ask for a revision with tasks on a case. The applicant answers each task in version 2, each reviewer verifies each task, and version 1's scores stay with version 1 (C-13). Staff can put the two versions side by side on the case page (**Compare versions**), with each change named.
@@ -55,6 +57,7 @@ Also worth trying:
 - **Live chat:** as `applicant.a`, open **Chat** (09:00–16:00 CAT on working days; outside those hours it says it is closed); as `consultant`, answer it in the **Support inbox**.
 - **Administration:** as `admin`, open **Users and roles** (grant or remove a role with a reason; invite staff by email, which is Simulated), **Challenges** (edit a challenge, its application form and its rubric; weights must total 100%), **Content** (FAQs, contacts, notices; only published pages are public) and **Chat settings** (opening hours and closures). Every change is recorded in the audit log.
 - **Notifications:** the bell in the header shows unread notifications; **Notifications** lists them, and the email alerts setting there is stored, but emails are Simulated.
+- **Peolwane AI** **[confirm at release]**: the button at the bottom right of every page opens a voice-first assistant (tap the microphone, speak, tap again; or switch to Text). It answers questions about using the portal and never sees accounts or ideas.
 - **Clarification:** case `CEDA-2026-0003` has an open question for `applicant.e`. A reply returns the case to its stage without creating a new version.
 
 ## 3. Access control you can check yourself
