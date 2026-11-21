@@ -12,25 +12,27 @@ This is a plan. Nothing here is set up yet; every item is **Not run** until it h
 |---|---|---|---|---|
 | **Local** | `npm run dev` + Supabase CLI local stack (Docker) | Local Postgres from migrations + seed | Each developer | Fictional seed |
 | **CI** | GitHub Actions on every PR and push to `main` | Disposable local Supabase stack inside the job | Automatic | Fictional seed / test fixtures |
-| **Preview** | Vercel preview per PR (frontend only) | Staging Supabase project | Automatic (Vercel) | Fictional seed |
-| **Staging** | Vercel deployment of `main` | Staging Supabase project | Automatic on merge to `main` | Fictional seed + demo runs |
-| **Judging** | Vercel production deployment of the release commit | Supabase **Pro** project, region per D-14 | Sylvain (release), Stacey (Supabase) | Fresh fictional seed; wiped after judging (D-15) |
+| **Preview** | None: Amplify pull request previews are off (`hosting-aws-amplify.md` §3) | — | — | — |
+| **Staging** | AWS Amplify deployment of `main` | Staging Supabase project | Automatic on merge to `main` | Fictional seed + demo runs |
+| **Judging** | AWS Amplify deployment of the `release` branch (the release commit) | Supabase **Pro** project, region per D-14 | Sylvain (release), Stacey (Supabase) | Fresh fictional seed; wiped after judging (D-15) |
 
-**ASSUMED, to verify:** Vercel previews pointing at the staging database is acceptable because all data is fictional. If not, previews use mocks only.
+**Hosting:** AWS Amplify replaces Vercel (proposed D-44). Set-up, ownership and the Supabase side are in [`hosting-aws-amplify.md`](hosting-aws-amplify.md).
 
 ## 2. CI pipeline (D-42)
 
-One workflow file, `.github/workflows/ci.yml`, added in Phase 0 by Sylvain. Node version pinned in `.nvmrc` (proposed: current Node LTS). Dependencies installed with `npm ci` from the committed lockfile.
+One workflow file, `.github/workflows/ci.yml`, maintained by Sylvain. **Stage 1** (`secrets`) is live. **Stage 2** (`lint`, `typecheck`, `unit`, `build`, `audit`) arrives after the frontend scaffold. **Stage 3** (`db`) arrives with migration 001. Node version comes from `.nvmrc`; dependencies are installed with `npm ci` from the committed lockfile.
 
 | Job | Command (proposed) | Required for merge from | Notes |
 |---|---|---|---|
 | `lint` | `npm run lint` (ESLint) | Scaffold merge | Includes a rule forbidding `supabase-js` imports outside `src/lib/api/` (evidence skill, architecture mapping) |
 | `typecheck` | `npm run typecheck` (`tsc --noEmit`) | Scaffold merge | |
 | `unit` | `npm run test` (Vitest, run mode) | Scaffold merge | |
-| `db` | `supabase start` → `supabase db reset` (migrations + seed) → `supabase test db` (pgTAP) | Migration 001 merge | Disposable database; needs no secrets. Seed reads `DEMO_PASSWORD` from a CI-only dummy value |
+| `build` | `npm run build` (type-check + Vite production build), with `VITE_API_MODE=mock` set explicitly | Scaffold merge | Catches build-only failures the other jobs miss |
+| `db` (`.github/workflows/db.yml`: PGlite stand-in, Supabase local stack with `supabase test db`, `deno check`) | Migrations + seed + pgTAP; Edge Function type check | **Require only the `Database gate` check** in the `main` ruleset | Runs on every pull request. The gate passes at once when no file under `supabase/`, `tools/pglite-db-tests/` or `db.yml` changed, and otherwise only when all three database jobs pass, so a required database check never blocks other PRs (issue #14, item 1). Disposable database; needs no secrets. Seed reads `DEMO_PASSWORD` from a CI-only dummy value |
 | `secrets` | Secret scanner over the PR diff and full history (e.g. gitleaks) | **Immediately**, even before code exists | Covers R-10 |
-| `audit` | `npm audit --audit-level=high`, report saved as a job artifact | Scaffold merge | The report feeds SEC-02. A finding blocks merge unless recorded with a reason in the PR |
+| `audit` | `npm audit --omit=dev --audit-level=high` (packages that ship in the built site); the full report, dev tooling included, is saved as a job artifact and listed in the job summary | Scaffold merge | The report feeds SEC-02. A high or critical finding in a shipped package blocks merge. One in dev-only tooling (build, test, lint) does not block, but must be recorded with a reason in ADR-001 and upgraded once a fix exists (since 18 Nov 2026: GHSA-fc5q-39xc-vjpf in `picomatch`, no patched version) |
 | `e2e` | Playwright against staging, `--trace off` | **Not required** for merge; runs after deploy to staging and on demand | Chrome, Edge, Firefox + one mobile viewport (QA-01). Results go to `artifacts/phase-NN/` |
+| `keep-alive` (`.github/workflows/keep-alive.yml`) | `POST /rest/v1/rpc/health` with the publishable key, every second day at 06:17 UTC, and on demand | Not a merge check | Keeps the Free-plan project from pausing until judging ends (OPS-03). Needs the `SUPABASE_URL` variable and the `SUPABASE_PUBLISHABLE_KEY` secret, set by a repository admin. Fails if the project does not answer `ok: true` |
 
 **Rules:**
 - CI never receives production or staging secrets for the jobs above. The `e2e` job needs staging demo account passwords, held in GitHub Actions secrets, never in the repo.
@@ -43,11 +45,12 @@ One workflow file, `.github/workflows/ci.yml`, added in Phase 0 by Sylvain. Node
 
 | Variable | Used by | Where the real value lives | Reaches the browser? |
 |---|---|---|---|
-| `VITE_SUPABASE_URL` | Frontend | Vercel project settings; local `.env` | Yes (public by design) |
-| `VITE_SUPABASE_ANON_KEY` | Frontend | Vercel project settings; local `.env` | Yes (public by design; RLS protects data) |
+| `VITE_SUPABASE_URL` | Frontend | Amplify environment variables (per branch); local `.env` | Yes (public by design) |
+| `VITE_SUPABASE_ANON_KEY` | Frontend | Amplify environment variables (per branch); local `.env` | Yes (public by design; RLS protects data) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Edge Functions only | Supabase Edge Function secrets | **Never** |
 | `DEMO_PASSWORD` | Seed script only | Local `.env`; CI secret; set once per environment | **Never** |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Email relay Edge Function | Supabase Edge Function secrets | **Never** |
+| `VITE_API_MODE` | Frontend: `mock` or `supabase`; production builds fail if it is missing | Amplify environment variables (per branch); local `.env` | Yes (not secret) |
 | `DEMO_MFA_EXEMPT` | Feature flag for D-07 | Environment config | No |
 
 The frontend validates its configuration at startup (Zod) and fails with a clear message if a value is missing.

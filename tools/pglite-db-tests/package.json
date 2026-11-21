@@ -1,0 +1,14 @@
+{
+  "name": "ceda-pglite-db-tests",
+  "private": true,
+  "type": "module",
+  "description": "Runs the Supabase migrations, seed and pgTAP tests in PGlite on machines without Docker. Stand-in only; CI runs the real stack.",
+  "scripts": {
+    "test": "node run.mjs"
+  },
+  "dependencies": {
+    "@electric-sql/pglite": "0.5.16",
+    "@electric-sql/pglite-pgtap": "0.0.17",
+    "pg": "8.13.1"
+  }
+}

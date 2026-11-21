@@ -1,5 +1,5 @@
-# Continuous integration: stage 1 (docs/process/ci-and-environments.md §2, D-42).
-# Stage 2 (lint, type-check, unit tests, npm audit) is added with the app scaffold.
+# Continuous integration (docs/process/ci-and-environments.md §2, D-42).
+# Stage 1: secret scan. Stage 2: lint, type-check, unit tests, build, dependency audit.
 # Stage 3 (migrations + seed + pgTAP on a throwaway database) is added with migration 001.
 name: CI
 
@@ -31,3 +31,87 @@ jobs:
         uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ---- Stage 2: frontend checks. Node version comes from .nvmrc; dependencies from the lockfile.
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+
+  typecheck:
+    name: typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+
+  unit:
+    name: unit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm run test
+
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Production build
+        run: npm run build
+        env:
+          VITE_API_MODE: mock   # explicit until the backend adapters exist
+
+  audit:
+    name: audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - name: Save full audit report (all severities, for SEC-02 evidence)
+        run: npm audit --json > npm-audit-report.json || true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: npm-audit-report
+          path: npm-audit-report.json
+          retention-days: 30
+      - name: List high or critical findings in dev-only tooling (visible, does not fail)
+        run: |
+          {
+            echo "### npm audit: dev-only tooling (not in the built site)"
+            echo '```'
+            npm audit --audit-level=high || true
+            echo '```'
+            echo "Each high or critical dev-only finding must be recorded in ADR-001 with a reason (ci-and-environments.md §2)."
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Fail on high or critical findings in shipped packages
+        run: npm audit --omit=dev --audit-level=high
