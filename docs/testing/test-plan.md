@@ -26,26 +26,29 @@ Every check starts as **Not run**. A check becomes Passed or Failed only with a 
 - **Run:** `npm run test:e2e -- --trace off`. By default it builds the app in mock mode and serves the production build. `E2E_BASE_URL=https://… npm run test:e2e -- --trace off` runs the same tests against a deployed site (staging or judging). The `E2E` workflow can do the same through *Run workflow* with a `base_url`.
 - **Projects:** Chromium at **360 px** and **1280 px** (spec §3.3). Edge and Firefox are added for QA-01 (§5).
 - **Specs:** `tests/e2e/`. `shell-smoke.spec.ts` covers what exists today: page heading and DEMO label, no horizontal scroll, skip link, signed-out redirect, Forbidden and Not-found states, 44 px targets.
+- `hosting-headers.spec.ts` (deployed site only, skipped locally): HTTPS, the six security headers from `customHttp.yml` and the single-page-app rewrite (`/`, `/staff`, `/ideas/123` answer 200 with HTML, no redirect) on Amplify.
 - **What it does not prove:** the route guard is a UI convenience. **Access control is evidenced only by the N-tests against the real backend** (pgTAP now, Playwright once screens call the RPCs).
 - **CI:** `.github/workflows/e2e.yml`, separate from `ci.yml`. Not a required check until the N1–N11 suite runs against the backend.
 
 ## 2. Negative suite (blueprint §3.3), required on video and automated
 
+Status 21 Nov 2026: every N-test passes at the database layer, both in CI on the Supabase local stack and on the hosted project. On 21 Nov hosted and `main` had the same migrations (001–015), and every suite from `main` (`694dc65`) passed: CI `Files=13, Tests=507`, `Result: PASS`; hosted **507/507** at 10:29 UTC (run record `artifacts/phase-00/hosted-supabase.md` §2). The files are `supabase/tests/database/0NN_*.test.sql`. Browser runs against hosted staging (21 Nov; `artifacts/phase-01/` to `phase-05/`, #99) cover N1 and part of N7. The other browser attempts are still Not run.
+
 Each case is tested at **every entry route** that applies: the page, the PostgREST table/view, the RPC, Storage and Realtime.
 
 | # | Attempt | Expected | Accounts | pgTAP | Playwright | Slice | Status |
 |---|---|---|---|---|---|---|---|
-| N1 | Applicant B opens A's case and calls the REST endpoint | 403 page / zero rows | applicant.b | ✓ | ✓ | S1 | Not run |
-| N2 | Applicant B requests A's attachment URL; an expired 60 s link | Refused; expired link fails | applicant.b, applicant.a | ✓ | ✓ | S1 | Not run |
-| N3 | Unassigned Reviewer 3 opens the case | Zero rows, no file link | reviewer.3 | ✓ | ✓ | S2 | Not run |
-| N4 | Applicant A queries the decision before publication | Nothing returned (not in payload) | applicant.a | ✓ | ✓ | S5 | Not run |
-| N5 | Admin awards a case that is not approved | `CASE_NOT_APPROVED`; no rows change | admin | ✓ | ✓ | S5 | Not run |
-| N6 | Any role updates V1 or deletes an audit row | Trigger refuses | every role | ✓ | — | S1 (V1), S5 (full) | Not run |
-| N7 | Support consultant calls proposal/score endpoints | Zero rows | consultant | ✓ | ✓ | S2 | Not run |
-| N8 | Admin grants a role to themself | Refused + audited | admin | ✓ | ✓ | S2 | Not run |
-| N9 | Submit to the closed challenge | Refused; draft preserved | applicant.a | ✓ | ✓ | S1 | Not run |
-| N10 | Assigned reviewer requests proposal/files before declaring | Zero rows / no file link | reviewer.1 | ✓ | ✓ | S3 | Not run |
-| N11 | Reviewer declares a conflict, then reopens the case | Assignment revoked; zero rows; audit entry | reviewer.2 | ✓ | ✓ | S3 | Not run |
+| N1 | Applicant B opens A's case and calls the REST endpoint | 403 page / zero rows | applicant.b | ✓ | ✓ | S1 | pgTAP **Passed** (002; [CI run 44894464018 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44894464018)); browser **Passed** on staging, 21 Nov (N-a: A's idea and receipt show "We can't find this page" to Applicant B; run 44886380703) |
+| N2 | Applicant B requests A's attachment URL; an expired 60 s link | Refused; expired link fails | applicant.b, applicant.a | ✓ | ✓ | S1 | pgTAP: refusal **Passed** (002; [CI run 44894464018 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44894464018)); 60-second expiry **Passed through the hosted function** on 20 Nov (403 for B; the owner's link works at once and is refused 62 s later; `hosted-supabase.md` §3d); browser Not run |
+| N3 | Unassigned Reviewer 3 opens the case | Zero rows, no file link | reviewer.3 | ✓ | ✓ | S2 | pgTAP **Passed** (001, 002, 003, 005; [CI run 44894464018 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44894464018)); Playwright Not run |
+| N4 | Applicant A queries the decision before publication | Nothing returned (not in payload) | applicant.a | ✓ | ✓ | S5 | pgTAP **Passed** (001, 006; [CI run 44894464018 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44894464018)); Playwright Not run |
+| N5 | Admin awards a case that is not approved | `CASE_NOT_APPROVED`; no rows change | admin | ✓ | ✓ | S5 | pgTAP **Passed** (001, 006; [CI run 44894464018 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44894464018)); Playwright Not run |
+| N6 | Any role updates V1 or deletes an audit row | Trigger refuses | every role | ✓ | — | S1 (V1), S5 (full) | pgTAP **Passed** (001, 002, 006; [CI run 44894464018 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44894464018)); Playwright Not run |
+| N7 | Support consultant calls proposal/score endpoints | Zero rows | consultant | ✓ | ✓ | S2 | pgTAP **Passed** (001, 002, 003; [CI run 44894464018 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44894464018)); browser Partly, on staging, 21 Nov (the consultant gets "You don't have access to this page" on All cases; run 44886380703) |
+| N8 | Admin grants a role to themself | Refused + audited | admin | ✓ | ✓ | S2 | pgTAP **Passed** (001, 003; [CI run 44894464018 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44894464018)); Playwright Not run |
+| N9 | Submit to the closed challenge | Refused; draft preserved | applicant.a | ✓ | ✓ | S1 | pgTAP **Passed** (002; [CI run 44894464018 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44894464018)); Playwright Not run |
+| N10 | Assigned reviewer requests proposal/files before declaring | Zero rows / no file link | reviewer.1 | ✓ | ✓ | S3 | pgTAP **Passed** (001, 003, 004; [CI run 44894464018 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44894464018)); Playwright Not run |
+| N11 | Reviewer declares a conflict, then reopens the case | Assignment revoked; zero rows; audit entry | reviewer.2 | ✓ | ✓ | S3 | pgTAP **Passed** (004; [CI run 44894464018 on `main`](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44894464018)); Playwright Not run |
 
 ## 3. Slice tests owned by Sylvain (blueprint §5)
 
