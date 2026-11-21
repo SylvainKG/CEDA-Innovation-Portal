@@ -14,14 +14,15 @@ export interface ReceiptModel {
 }
 
 /** Submission receipt (spec §5 ReceiptCard, §7 T05). The same reference is shown for a retried submit. */
-export function ReceiptCard({ receipt }: { receipt: ReceiptModel }) {
+export function ReceiptCard({ receipt, headingLevel = 'h2' }: { receipt: ReceiptModel; /** 'h1' when the card is the page (T05). */ headingLevel?: 'h1' | 'h2' }) {
   const resubmission = receipt.version > 1
+  const Heading = headingLevel
   return (
     <section aria-labelledby="receipt-heading" className="flex flex-col gap-4 rounded-md bg-surface-card p-6 shadow-1">
-      <h2 id="receipt-heading" className="flex items-center gap-2 text-h2 font-semibold">
+      <Heading id="receipt-heading" className={`flex items-center gap-2 font-semibold ${headingLevel === 'h1' ? 'text-h1' : 'text-h2'}`}>
         <CheckCircle2 aria-hidden className="h-6 w-6 text-success" />
         {resubmission ? `Version ${receipt.version} submitted` : 'Idea submitted'}
-      </h2>
+      </Heading>
       <dl className="grid grid-cols-1 gap-x-6 gap-y-3 md:grid-cols-[auto,1fr]">
         <dt className="text-sm text-ink-muted">Reference</dt>
         <dd>

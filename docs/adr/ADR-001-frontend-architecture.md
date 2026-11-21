@@ -37,6 +37,9 @@ The design source is a Figma Make prototype (TASK-01). Its colours and typeface 
 - Router tests use `MemoryRouter` + `useRoutes` with the same route table: the data router's `Request`/`AbortSignal` does not work under jsdom on Node 24.
 - ESLint 9 is end-of-life upstream (npm warns). We stay on 9 until the React plugins support 10.
 - `npm audit` leaves 7 **moderate** findings in development-only lint tooling (typescript-eslint → minimatch). `npm audit --audit-level=high` passes. Recorded as debt, to revisit when typescript-eslint ships a fix.
+- **17 Nov 2026: GHSA-fc5q-39xc-vjpf** (picomatch ReDoS through repeated extglobs, **high**) affects every published picomatch (≤ 4.0.7), so `npm audit --audit-level=high` now fails on `main` and every branch. No patched version exists; `npm audit fix` changes nothing useful, and its suggested "fixes" are downgrades (Vite 6.2.7, Vitest 3.1.4) that would bring back the critical Tinypool advisory.
+  - **Exposure:** picomatch is used only by build, test and lint tooling (Vite, Vitest, Tailwind's file watcher, typescript-eslint) to match the repository's own file paths. It is **not in the built site** (checked: no `dist/assets` file contains picomatch, micromatch or tinyglobby), and no user input ever reaches it.
+  - **Treatment:** accepted as dev-only debt, recorded here and in the PR as the CI rules require. Upgrade as soon as a patched picomatch is published (`npm update picomatch`, then re-run the audit).
 
 ## Required evidence
 
