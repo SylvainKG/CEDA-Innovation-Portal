@@ -6,7 +6,8 @@ import { formatBytes } from '@/lib/format'
 
 export type UploadState =
   | { kind: 'idle' }
-  | { kind: 'uploading'; fileName: string; percent: number }
+  /** `percent` only when real progress is known; otherwise the bar is indeterminate (never a made-up number). */
+  | { kind: 'uploading'; fileName: string; percent?: number }
   | { kind: 'uploaded'; fileName: string; sizeBytes: number }
   | { kind: 'failed'; fileName: string; message: string }
   | { kind: 'rejected'; fileName: string; reason: string }
@@ -75,7 +76,7 @@ export function FileUpload({ label, accept, maxSizeBytes, required, state, onFil
           </Button>
         )}
         {state.kind === 'uploading' && (
-          <ProgressIndicator label={`Uploading ${state.fileName}`} value={state.percent} />
+          <ProgressIndicator label={`Uploading ${state.fileName}`} value={state.percent} valueText={state.percent === undefined ? 'Uploading…' : undefined} />
         )}
         {state.kind === 'uploaded' && (
           <div className="flex flex-wrap items-center justify-between gap-3">

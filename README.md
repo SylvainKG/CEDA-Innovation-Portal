@@ -50,3 +50,40 @@ src/
   pages/            screens (unbuilt routes show an honest "Not built yet" placeholder)
   styles/           design tokens (tokens.css) and base styles
 ```
+
+## Backend (Supabase)
+
+Postgres schema, row-level security, workflow functions and the demo seed live in `supabase/`. Reads go through tables protected by RLS; every change goes through a database function (blueprint D-02). Contracts, error codes and the permission matrix: [`docs/blueprint/03-api-contracts-and-permissions.md`](docs/blueprint/03-api-contracts-and-permissions.md).
+
+```
+supabase/
+  migrations/       one numbered sequence (owner: backend lead)
+  seed.sql          fictional demo data: one account per role, 8 cases (demo case becomes CEDA-2026-0009)
+  tests/database/   pgTAP tests (access isolation, negatives N1–N10, idempotency, append-only history)
+  functions/        Edge Functions (attachment-url: 60-second download links; email-relay: outbox sender; invite-staff)
+scripts/            set-demo-passwords.mjs (sets DEMO_PASSWORD on seeded accounts through the Auth admin API)
+tools/pglite-db-tests/  runs migrations + seed + pgTAP without Docker (stand-in, not the Supabase stack)
+```
+
+### Local database (needs Docker and the Supabase CLI)
+```bash
+supabase start
+supabase db reset          # migrations + seed
+supabase test db           # pgTAP
+node --env-file=.env scripts/set-demo-passwords.mjs   # needs SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, DEMO_PASSWORD
+```
+
+### Without Docker
+```bash
+cd tools/pglite-db-tests && npm install && npm test
+```
+
+### Backend environment variables (names only)
+| Name | Where | Purpose |
+|---|---|---|
+| `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | Local `.env` for scripts; Supabase injects them into Edge Functions | Admin operations. **Never** in the browser or the repo |
+| `DEMO_PASSWORD` | Local `.env`; CI secret | Password for seeded demo accounts (D-17) |
+| `APP_ORIGINS` | Edge Function secret | Comma-separated browser origins allowed to call `attachment-url` |
+| `RELAY_SECRET` | Edge Function secret | Shared secret the scheduler sends as `x-relay-secret` to `email-relay` |
+| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Edge Function secrets | SMTP for `email-relay`. Unset = no email is sent and the outbox is shown as Simulated |
+| `PORTAL_URL` | Edge Function secret | Link in emails and the staff invitation redirect |
