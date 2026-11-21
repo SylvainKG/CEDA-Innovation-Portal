@@ -77,7 +77,7 @@ export function StaffCasePage() {
     <div className="flex flex-col gap-6">
       <p>
         {canScreen ? (
-          <Link to="/staff/queue/screening">← Screening queue</Link>
+          <Link to="/staff/queue/screening" className="inline-flex min-h-touch items-center">← Screening queue</Link>
         ) : canAssign ? (
           <Link to="/staff/cases">← All cases</Link>
         ) : user?.roles.includes('adjudicator') ? (
