@@ -41,7 +41,7 @@ export function NotificationsPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div role="group" aria-label="Show" className="flex gap-2">
           {(['all', 'unread'] as const).map((f) => (
-            <Button key={f} size="sm" variant={filter === f ? 'primary' : 'secondary'} aria-pressed={filter === f} onClick={() => setFilter(f)}>
+            <Button key={f} size="sm" className="min-w-touch" variant={filter === f ? 'primary' : 'secondary'} aria-pressed={filter === f} onClick={() => setFilter(f)}>
               {f === 'all' ? 'All' : 'Unread'}
             </Button>
           ))}
