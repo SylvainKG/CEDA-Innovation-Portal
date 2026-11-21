@@ -1,8 +1,10 @@
-# CEDA Innovation Portal: technical proposal
+# Peolwane · CEDA Innovation Portal: technical proposal
 
-**Team:** Sandra (UI/UX), Obvious (frontend), Stacey (backend and database), Sylvain (integration, testing and documentation) · **Version:** draft 1, 20 Nov 2026 · **Answers:** backlog DOC-01
+**Team:** Sandra (UI/UX, until 21 Nov), Obvious (frontend), Stacey (backend and database), Sylvain (integration, testing and documentation), ABM (frontend; acting UI/UX from 21 Nov) · **Version:** draft 1, 20 Nov 2026 · **Answers:** backlog DOC-01
 **Status:** Draft for team review. It becomes final at the release (22 Nov 2026), when every **[confirm at release]** mark is resolved against the judging build. The proposal makes no claim that `docs/testing/claim-register.md` does not show as Passed.
 
+> **Peolwane is the portal's name; it is built for CEDA's Innovation Fund.** On screen it appears as "Peolwane · CEDA Innovation Portal".
+>
 > This is a demonstration prototype with fictional data only. It is designed with reference to Botswana's Data Protection Act, 2024; it makes no claim of compliance.
 
 ## 1. Summary
@@ -115,13 +117,13 @@ A typical challenge portal ends a weak application with a decision and a paragra
 3. Each assigned reviewer **verifies** each task on the V2 scorecard (Verified or Not verified, with a note). Version 1's scores stay with version 1, so progress is visible and fair.
 4. Reports can then show something most portals can't: how many ideas improved after feedback and reached a later stage.
 
-It is backed by a side-by-side comparison of V1 and V2 (INN-01) and a rule-based completeness helper on the form (INN-03). **No proposal data goes to any external AI service (D-25).** All four steps are built in the screens, and the database enforces them (C-13).
+It is backed by a side-by-side comparison of V1 and V2 (INN-01) and a rule-based completeness helper on the form (INN-03). **No proposal or case data goes to any external AI service (D-25, narrowed by BCR-004).** The one AI feature is **Peolwane AI**, an optional voice-first site-help assistant (Leseding AI Engine, Google Gemini) that receives only what a person types or says in its panel, never page, form or account data; it is shown only when its key is configured. Whether it is live on the judging build is **[confirm at release]**. All four steps are built in the screens, and the database enforces them (C-13).
 
 ## 9. Security and privacy
 
 - **Authentication:** Supabase Auth with verified email, a 12-character minimum password, a neutral "if an account exists" recovery message, rate limits and TOTP for staff. Seeded demo staff accounts are exempt behind a setting so that judges can sign in (D-07); it is switched off for any real use.
 - **Authorisation:** described in section 5, and tested from the side of the person being refused.
-- **Transport and headers:** HTTPS only (HSTS), a Content-Security-Policy that allows only our origin and Supabase, `X-Frame-Options: DENY`, `nosniff`, and strict Referrer and Permissions policies. An automated browser test confirmed all six headers on the deployed staging site (24 passed, 16 Nov, E2E run 44051061592).
+- **Transport and headers:** HTTPS only (HSTS), a Content-Security-Policy that allows only our origin, Supabase and, for Peolwane AI, the Leseding AI Engine (no third-party script), `X-Frame-Options: DENY`, `nosniff`, and strict Referrer and Permissions policies. An automated browser test confirmed all six headers on the deployed staging site (24 passed, 16 Nov, E2E run 44051061592).
 - **Secrets:** no credentials in the repository (a secret scan runs on every PR). The browser holds only the public key, and the service-role key never reaches it. Demo passwords come from the environment (D-17).
 - **Dependencies:** an audit on every PR. One high-severity advisory affects build tooling only and doesn't ship; it is recorded with a reason (ADR-001).
 - **Privacy:** purpose, access, proposed retention, processors and breach handling are described in `docs/submission/data-handling-note.md`. It is designed with reference to the Data Protection Act, 2024, with no compliance claim (D-18). Data leaves Botswana because no African Supabase region exists; this is recorded as a limitation for real use.
@@ -134,7 +136,7 @@ It is backed by a side-by-side comparison of V1 and V2 (INN-01) and a rule-based
 - A **two-connection concurrency test** for double submits.
 - **Vitest** for the frontend logic.
 - **Playwright** browser checks at 360 and 1280 px, and a security-header check against the deployed site.
-- A **real-backend browser journey**: **[confirm at release]** its result.
+- A **real-backend browser journey**: the **full main journey, steps 0–17**, passed through the real screens against the hosted staging project on 21 Nov ([run 44909107002](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44909107002), 6 passed; app built in CI), between a snapshot and a verified exact reset. Against the **deployed** staging site, the read-only part passed ([run 44953549649](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44953549649), 4 passed). Registration of a new address is Not run (no SMTP).
 
 Every claim is in `docs/testing/claim-register.md`, with its evidence and what is still Not run.
 
@@ -175,4 +177,6 @@ Every claim is in `docs/testing/claim-register.md`, with its evidence and what i
 | Region comparison with Mumbai | **Not run** |
 | Restore into a full Supabase project, and file storage backup | **Not run** |
 | Settings screens for the review quorum and the demo two-step exemption | **Not built:** stored settings changed by the backend team |
-| Hosted browser journey result, design review, plan and contact details | **[confirm at release]** |
+| Hosted browser journey | **Passed** on staging: full journey [run 44909107002](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44909107002); read-only on the deployed site [run 44953549649](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44953549649) |
+| Peolwane AI live on the judging build (Leseding key and allowlist) | **[confirm at release]** |
+| Design review, plan and contact details | **[confirm at release]** |
