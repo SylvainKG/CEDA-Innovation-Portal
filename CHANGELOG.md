@@ -4,6 +4,16 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `docs` **Phase 0 decisions closed: D-01, D-02, D-07, D-14, D-16, D-35** (blueprint §1.3, §5 Phase 0, §12; BCR-001 Part C). Each register row now records the agreed result and the evidence it was checked against on 22 Nov:
+  - D-01: the stack on `main`, with Amplify hosting instead of Vercel (D-44);
+  - D-02: on hosted, no browser write grants on the 33 tables, RLS on all of them, pinned by `010_security_privileges`;
+  - D-07: `demo_mfa_exempt` on, with all 13 accounts seeded demo accounts, and the flag must be off for real use;
+  - D-14: EU Central, p95 315 ms from Gaborone, Mumbai Not run;
+  - D-16: values agreed, measurement Not run;
+  - D-35: manual fallback.
+
+  Stacey's re-check table is added to BCR-001, and the phase-00 record and claim C-18 are updated. Open follow-up: list the D-07 flag in the release notes.
+
 - `design` **Reviewer declaration and scorecard laid out to Sandra's 21 Nov frames** (#119 screen A; `ceda pre review.pdf`, `ceda scoreboard.pdf`; after #112). Declaration: one card with CASE, CHALLENGE and DUE in small capitals (plus the proposal title and organisation, which the contract shows so a conflict can be recognised), "Before you open this proposal", two option cards ("I have a conflict" with "You will be withdrawn from this assignment.") and the button on the right. Scorecard: the proposal on the left as one card per form section and an Attachments card (file type and size; no Open button, because there is no download route yet); the scorecard pinned on the right with its own scroll on wide screens: "Your scorecard · Version n" with the due date, each criterion's weight as a percentage, a joined 1–5 scale (the chosen score in brand orange with dark text, which keeps AA contrast where the frame's white text would not), the chosen anchor under it, "Reason" with the REQUIRED tag, the dark weighted-score card with "How this is calculated" from the rubric's weights, and Save draft / Submit scorecard on the right. Behaviour is unchanged; the labels the hosted journey uses stay ("Your scorecard" heading, "Reason for your … score", the buttons, the gate sentence).
 
   Evidence: review tests updated to the new wording (16 pass); lint and type-check pass; checked in the browser at 1280 and 360 px (no sideways scroll, every control at least 44 px).
