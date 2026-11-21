@@ -21,9 +21,14 @@ const CURRENT_STAGE: Partial<Record<CaseStatus, PublicStage>> = {
 export function stagesFor(idea: Pick<MyIdea, 'status' | 'stages'>): StageEntry[] {
   const reached = new Map(idea.stages.map((s) => [s.stage, s.at]))
   const current = CURRENT_STAGE[idea.status]
-  return PUBLIC_STAGES.map(({ id }) => {
+  const order = PUBLIC_STAGES.map((p) => p.id)
+  // The furthest stage the case is in or has reached; a stage before it that never happened was skipped
+  // (Feedback when CEDA asked nothing, #100 decision 2).
+  const furthest = Math.max(current ? order.indexOf(current) : -1, ...idea.stages.map((s) => order.indexOf(s.stage)))
+  return PUBLIC_STAGES.map(({ id }, i) => {
     if (id === current) return { stage: id, state: 'current' as const, at: reached.get(id) }
     if (reached.has(id)) return { stage: id, state: 'done' as const, at: reached.get(id) }
+    if (i < furthest) return { stage: id, state: 'skipped' as const }
     return { stage: id, state: 'upcoming' as const }
   })
 }
