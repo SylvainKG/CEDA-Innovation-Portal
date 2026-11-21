@@ -9,7 +9,10 @@ import { defineConfig, devices } from '@playwright/test'
  * Run with traces off unless debugging one failure: `npm run test:e2e -- --trace off`.
  */
 const externalBaseURL = process.env.E2E_BASE_URL || undefined // empty means "not set" (CI passes an empty input)
-const port = 4173
+// E2E_LOCAL_SUPABASE=1: build the app against the real Supabase project (public URL and publishable key only) and serve it
+// on 5173, the local origin already allowed by the project (issue #61). Used by the real-backend journey.
+const localSupabase = !externalBaseURL && process.env.E2E_LOCAL_SUPABASE === '1'
+const port = localSupabase ? 5173 : 4173
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -33,6 +36,12 @@ export default defineConfig({
         port,
         reuseExistingServer: !process.env.CI,
         timeout: 120_000,
-        env: { VITE_API_MODE: 'mock' },
+        env: localSupabase
+          ? {
+              VITE_API_MODE: 'supabase',
+              VITE_SUPABASE_URL: process.env.VITE_SUPABASE_URL ?? '',
+              VITE_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY ?? '',
+            }
+          : { VITE_API_MODE: 'mock' },
       },
 })
