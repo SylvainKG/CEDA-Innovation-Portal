@@ -104,3 +104,6 @@ cd tools/pglite-db-tests && npm ci && npm test   # npm ci keeps the committed lo
 | `RELAY_SECRET` | Edge Function secret | Shared secret the scheduler sends as `x-relay-secret` to `email-relay` |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Edge Function secrets | SMTP for `email-relay`. Unset = no email is sent and the outbox is shown as Simulated |
 | `PORTAL_URL` | Edge Function secret | Link in emails and the staff invitation redirect |
+| `SUPABASE_DB_URL` | Local `.env` only (backend lead) | Session-pooler URL of the hosted project, for the hosted test runner, the restore drill and the reset tool |
+| `SUPABASE_CA_CERT` | Local `.env` only | Path to the Supabase CA certificate file (kept outside the repo); those tools verify TLS with it and stop without it |
+| `STAGING_PROJECT_REF` | Local `.env` only | The project the staging reset tool may act on; it refuses any other project, and refuses after code freeze (#68) |
