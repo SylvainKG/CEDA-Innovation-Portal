@@ -24,6 +24,8 @@ select set_eq(
     -- identity and Slice 1
     'health', 'my_access', 'record_consent', 'save_draft', 'submit_proposal', 'get_submission_receipt',
     'register_attachment', 'remove_attachment', 'authorize_attachment_download',
+    'list_my_ideas',
+    'set_alert_preference',
     -- Slice 2
     'record_screening', 'assign_reviewers', 'revoke_assignment', 'grant_role', 'revoke_role',
     'add_internal_note', 'list_case_status', 'case_stage_counts',
