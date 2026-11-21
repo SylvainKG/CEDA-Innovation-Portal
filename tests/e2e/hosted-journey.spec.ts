@@ -428,7 +428,7 @@ test('Steps 5-17: the case goes from screening through revision, decision and aw
     await a.goto(`/ideas/${id}`)
     await a.getByRole('tab', { name: 'Decision' }).click()
     const panel = a.getByRole('tabpanel')
-    await expect(panel.getByRole('heading', { name: 'Decision: Approved' })).toBeVisible({ timeout: 20_000 })
+    await expect(panel.getByRole('heading', { name: 'Approved', exact: true })).toBeVisible({ timeout: 20_000 })
     await expect(panel.getByText('Strong scores and a credible pilot plan (browser test).')).toBeVisible()
     await expect(panel.getByRole('heading', { name: 'Award: BWP 250,000.00' })).toBeVisible()
     await expect(a.getByText('Fits the challenge (browser test).')).toHaveCount(0) // the screening reason is a staff note
