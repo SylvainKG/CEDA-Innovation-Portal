@@ -9,7 +9,8 @@ Every shot uses screens that are on `main` (20 Nov) and follows the main journey
 |---|---|
 | **Length and format** confirmed with the organisers (briefing, BCR-002 item 7) | The script runs about **8 minutes**; the short cut in the last section runs about **4** |
 | Record the **release build** on the judging URL, in Supabase mode | The video must match what judges can use (REL-01) |
-| A **fresh snapshot** of staging is taken first, and the backend lead resets afterwards (`staging-reset.mjs`, #68) | The recording creates a real case, `CEDA-2026-0009` |
+| **Record before code freeze** (by Sun 22 Nov, 18:00 CAT) on the release candidate. Tell the backend lead on #61 first: they take a **snapshot**, and reset afterwards (`staging-reset.mjs`, #68) | The recording creates a real case, `CEDA-2026-0009`. The reset tool refuses after the freeze, and nobody deletes rows on the judging project, so a later recording would stay in the data |
+| If it can only be recorded **after** the freeze: **don't reset**. Keep the recorded case as an awarded example, and change the judge guide's "your first submission becomes `CEDA-2026-0009`" to "references continue from the last one shown in the video" | The judge guide must match the data judges find |
 | Chat open (09:00–16:00 CAT on a working day), or the demo chat override set to "open" | Shot 7 |
 | Browser at **1280 × 800**, zoom 100%, no bookmarks bar, notifications off; one **private window per account** | Clean frames; each account signed in separately |
 | The demo password typed off-camera, **never shown** (D-17) | No credentials in the video |
@@ -46,5 +47,5 @@ Shots **2–3** (submit and receipt), **5** (declaration, then scoring; Reviewer
 
 - [ ] A teammate watches the whole video and checks playback, sound and **link permissions** (DEM-01).
 - [ ] No password, real personal data or browser autofill appears in any frame.
-- [ ] The backend lead resets staging to the snapshot (`staging-reset.mjs reset`) and records it in the run record.
+- [ ] Recorded before freeze: the backend lead resets staging to the snapshot (`staging-reset.mjs reset`) and records it in the run record. Recorded after freeze: no reset, and the judge guide is updated (see "Before recording").
 - [ ] The file name and length go into `docs/submission/release-checklist.md` §6.
