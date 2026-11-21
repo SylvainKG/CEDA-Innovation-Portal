@@ -13,6 +13,7 @@ The run records behind the hosted results in the runbook (§1), the data-handlin
 | 17 Nov, ~15:15 (17:15) | `5820cca` (migration 012, PR #35) | Same, after a dry run listing only 012 | **Passed:** 12 migrations; `health()` reported `20261123100000` |
 | 17 Nov, 17:36 (19:36) | `ae1aaa6` (migration 013, PR #40) | Same, from a temporary checkout of `main` + 012 + 013 (the branch alone lacked 012); dry run listed only 013 | **Passed:** 13 migrations; `health()` reported `20261123110000` |
 | 20 Nov, 13:47 (15:47) | `c71ae04` (migration 014, PR #42, merged) | Same, from a temporary checkout of `main` + the 013 file (013 is on hosted but not yet merged, #40); dry run listed only 014 | **Passed:** 14 migrations; `list_my_ideas()` live |
+| 21 Nov, 08:30 (10:30) | `ee53f8b` (migration 015, PR #88, merged) | Same, from a temporary checkout of `main` (`f42e31d`) + the 013 file; dry run listed only 015 | **Passed:** 15 migrations; `set_alert_preference` live |
 
 ## 2. pgTAP on the hosted database
 
@@ -29,6 +30,8 @@ Each test file runs in its own transaction and rolls back. The case-reference se
 | 17 Nov, 17:37 (19:37) | `main` + 012 + 013 tests (after 013) | Local `pg` runner | `TOTAL 468 assertions, 0 failed`; sequence restored to 8 |
 | 18 Nov, 04:22 (06:22) | this branch, `010` only | `run-hosted.mjs` with **TLS verified** against the Supabase Root 2021 CA | `TOTAL 11 assertions, 0 failed (hosted, 2.9 s)`; with a wrong CA the connection is refused (`self-signed certificate in certificate chain`) |
 | 20 Nov, 13:47:44 (15:47:44) | `main` + 013 tests (after 014) | `run-hosted.mjs`, TLS verified with the dashboard CA (`prod-ca-2021.crt`) | `TOTAL 482 assertions, 0 failed (hosted, 14.2 s)`; sequence `8 -> restored to 8` |
+| 21 Nov, 08:30:07 (10:30:07) | `main` (`f42e31d`) + 013's suite, after 015 | `run-hosted.mjs`, TLS verified | `TOTAL 492 assertions, 4 failed`: `009` #7, #8, #15 and `007` #24 counted genuine history on hosted (0003's real expiry at 14:00 UTC and its extension at 14:06 UTC on 20 Nov). Not a defect: the checks assumed a fresh seed |
+| 21 Nov, 08:38:49 (10:38:49) | branch `db/tests-hold-on-live-data` (#97) + 013's suite | Same | **`TOTAL 493 assertions, 0 failed`**: the four checks now count only their own transaction's rows; sequence 8 |
 
 Output of the last run (all files `ok`):
 
