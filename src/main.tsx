@@ -1,5 +1,6 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { dismissSplash } from '@/brand/splash'
 import '@/styles/index.css'
 
 const rootElement = document.getElementById('root')
@@ -15,6 +16,7 @@ import('./App')
         <App />
       </StrictMode>,
     )
+    requestAnimationFrame(() => dismissSplash())
   })
   .catch((error: unknown) => {
     console.error(error)
@@ -25,4 +27,5 @@ import('./App')
         <p className="text-sm text-ink-muted">{error instanceof Error ? error.message : 'Unknown configuration error.'}</p>
       </main>,
     )
+    requestAnimationFrame(() => dismissSplash())
   })
