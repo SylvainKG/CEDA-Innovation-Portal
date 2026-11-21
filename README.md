@@ -14,6 +14,7 @@ Planning documents: `docs/blueprint/` (MVP blueprint, UI/UX specification) and `
 | Install and run it locally | `scripts/install.sh --serve` (below) |
 | Deploy or operate it | [`docs/runbook.md`](docs/runbook.md) and [`docs/process/hosting-aws-amplify.md`](docs/process/hosting-aws-amplify.md) |
 | Read the data-handling note | [`docs/submission/data-handling-note.md`](docs/submission/data-handling-note.md) |
+| Change the logo or brand name | [`docs/design/brand.md`](docs/design/brand.md) (one file, `src/brand/index.ts`, plus favicons and the page title) |
 
 **Quick install** (Node.js 20.19 or later, npm 10 or later; no backend, Docker or credentials needed):
 
@@ -65,6 +66,7 @@ src/
   lib/api/          typed API ports and adapters (the only place allowed to talk to Supabase)
   lib/              status wording, CAT date formatting, helpers
   pages/            screens, one folder per area (public, auth, applicant, staff, review, admin, support, oversight, help)
+  brand/            the logo, name and tagline, in one place (docs/design/brand.md)
   styles/           design tokens (tokens.css) and base styles
 ```
 

@@ -8,6 +8,7 @@ import { mockSession } from '@/lib/api/mock/session'
 import { mockSubmission, mockSubmissionControls } from '@/lib/api/mock/submission'
 import type { DraftData } from '@/lib/api/types'
 import { routes } from '@/routes/router'
+import { brand } from '@/brand'
 
 // T04 and T05 through the real route table, as the applicant uses them (mock adapter).
 
@@ -115,8 +116,8 @@ describe('T04 proposal form', () => {
     expect(screen.getByTestId('location')).toHaveTextContent(`/ideas/${id}/receipt`)
     expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
     expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
-    // The printed receipt carries the CEDA logo and the DEMO line (the header is not printed).
-    const printLogo = screen.getAllByRole('img', { name: 'CEDA' }).find((img) => img.className.includes('print:block'))
+    // The printed receipt carries the brand mark and the DEMO line (the header is not printed).
+    const printLogo = screen.getAllByRole('img', { name: brand.fullName }).find((img) => img.className.includes('print:block'))
     expect(printLogo).toBeDefined()
     expect(screen.getByText('DEMO — fictional data. This is not a real CEDA receipt.')).toBeInTheDocument()
   })
