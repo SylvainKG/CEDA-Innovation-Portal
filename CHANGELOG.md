@@ -4,6 +4,9 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `design` **My ideas laid out to Sandra's 21 Nov frame** (T06, #100). "MY IDEAS" above "Welcome, <name>"; a red "An idea needs your response" banner with the earliest deadline and that idea's action; two-column cards with the status pill and reference, the five-step stepper, "Updated … ago" with the deadline, and the one action; a red top edge on cards that need a response. The page's h1 is now "Welcome, <name>" (tests updated, including the hosted journey and the smoke suite).
+
+  Evidence: 325 tests pass; lint and type-check pass; browser smoke suite 20 passed at 360 and 1280 px; no sideways scroll.
 - `design` **Revise idea laid out to Sandra's 21 Nov frames** (T04 V2, #100). "REVISE YOUR IDEA" over the idea's title; "CEDA's message" with the deadline; "Your roadmap" with segmented Addressed / Not addressed and an Explanation per task; then two steps: the Version N form and "Review changes" ("What changed?", the declaration, Back and Submit Version N, disabled with the reason until every task is answered). Autosave is not built (roadmap answers need a migration; see #100).
 
   Evidence: revise tests and the hosted journey's step 10 updated; 331 tests pass; lint and type-check pass; browser smoke suite 20 passed; a mock-mode browser run with the journey's step 10 selectors submits Version 2 at 1280 and 360 px with no sideways scroll.

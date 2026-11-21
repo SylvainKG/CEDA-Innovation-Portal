@@ -222,7 +222,7 @@ test('Applicant A submits an idea; a lost reply is recovered without a second ca
   // Exactly one case with this reference: the recovery replayed the receipt rather than submitting twice.
   // Through the app's own navigation, as a person would (a reload would also empty the mock's in-memory data).
   await page.getByRole('link', { name: 'My ideas' }).first().click()
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('My ideas')
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText(/^Welcome, /) // My ideas greets the applicant (Sandra's frame)
   await expect(page.getByText(reference, { exact: true })).toHaveCount(1, { timeout: 20_000 })
   test.info().annotations.push({ type: 'reference', description: reference })
   await page.close()
