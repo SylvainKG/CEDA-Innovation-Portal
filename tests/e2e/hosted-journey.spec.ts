@@ -455,6 +455,8 @@ test('Steps 5-17: the case goes from screening through revision, decision and aw
     await expect(c.getByRole('heading', { name: 'Chat with Demo Applicant A' })).toBeVisible({ timeout: 20_000 })
     await c.getByLabel('Your message').fill('Use the Documents step of the form (browser test).')
     await c.getByRole('button', { name: 'Send' }).click()
+    // Wait until the message is saved and shown before leaving: closing at once can cancel the request on a slower network.
+    await expect(c.getByRole('list', { name: 'Conversation' }).getByText('Use the Documents step of the form (browser test).')).toBeVisible({ timeout: 20_000 })
     await c.close()
 
     await expect(a.getByText('Use the Documents step of the form (browser test).')).toBeVisible({ timeout: 30_000 })
