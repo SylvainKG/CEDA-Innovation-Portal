@@ -4,6 +4,11 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `docs` **UI-only demo plan for the toolkits** (`docs/plans/toolkits-demo/`, eight documents; proposed, nothing implemented). It is the same plan as a clickable demonstration on sample data in the existing mock mode: no database, access rules, server functions or AI services; behind `VITE_TOOLKIT_DEMO` and never on the judging site.
+  - 273 h expected, split Stacey 139 h (50.9%) / Shawnjembu 134 h (49.1%).
+  - A core demo in 3–4 weeks at 20 h a week, and all 22 tools in about 8 weeks.
+
+  The full production plan stays in `docs/plans/toolkits/`.
 - `docs` **Plan for the innovator and reviewer toolkits** (`docs/plans/toolkits/`, eight documents; proposed, nothing implemented). It contains:
   - an audit of what the repository already has for the 14 innovator and 8 reviewer tools;
   - a task-by-task estimate (726 h expected) split Stacey 372 h (51.2%) / Shawnjembu 354 h (48.8%);
