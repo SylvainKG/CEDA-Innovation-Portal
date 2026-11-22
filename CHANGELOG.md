@@ -4,6 +4,11 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `docs` **Release note: D-14 and D-15 wording, and the pre-freeze staging checks** (`artifacts/phase-07/release.md`; #137 review). Changes:
+  - the Mumbai row now reads "EU Central, chosen; latency acceptable", as D-14 was closed;
+  - the demo data is "wiped after judging", as D-15 says;
+  - the release checks record the 22 Nov N9 staging run with its snapshot and reset, and the hosted pgTAP run, which must happen before the 18:00 CAT freeze.
+
 - `test` **N9 through the real screens, and the phase 01–05 evidence audit** (ABM's request).
   - **N9:** `hosted-journey.spec.ts` test 7. Applicant A drafts a complete idea, the admin closes the challenge while the form is open, and the submit is refused (`CHALLENGE_CLOSED`, "Your draft is saved."). The draft stays in My ideas with no reference, and the challenge is reopened. It passed 7/7 on a throwaway stack (run 44994702069) and **7/7 on hosted staging** (run 44996202242), between Stacey's snapshot and her verified exact reset (#61). The journey's sign-in wait is now 30 s, and the seven-account sign-in test has 150 s, since each sign-in now waits for the loading splash.
   - **Audit:** the phase 01–05 records now cite the latest evidence: CI 507/507 on `0973233` (run 44991618847), hosted 507/507 on `694dc65` (run record §2), and every browser run with its commit and environment. N3, N10 and C-12 gain their browser layer from the staging run. Phase 04's refusals stay Not run in the browser (allowed paths only). The test plan's N9 row, claim C-09 and the blueprint's Slice 1 checklist line are reconciled.
