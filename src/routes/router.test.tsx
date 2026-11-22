@@ -66,7 +66,7 @@ describe('routing and role shells (UI convenience; the server enforces access)',
     ['/admin/settings/roles', 'Roles'],
     ['/admin/settings/chat', 'Chat settings'],
     ['/admin/challenges', 'Challenges'],
-    ['/admin/users', 'Users and roles'],
+    ['/admin/users', 'Users & roles'],
   ])('builds every admin screen: %s', async (path, heading) => {
     renderAt(path, 'admin')
     expect(await screen.findByRole('heading', { level: 1, name: heading })).toBeInTheDocument()
