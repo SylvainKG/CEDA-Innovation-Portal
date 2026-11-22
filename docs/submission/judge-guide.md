@@ -28,7 +28,7 @@ All addresses end in `@demo.ceda-portal.test`. Each account sees only what its r
 | `reviewer.1`, `reviewer.2` | Reviewers | My reviews | Declare no conflict, then score against the rubric |
 | `reviewer.3` | Reviewer, not assigned to the demo case | My reviews | Sees nothing of cases they aren't assigned to |
 | `adjudicator` | Adjudicator | Ready for decision | Compare scores, record and publish a decision |
-| `admin` | Administrator and auditor | All cases | Assign reviewers, record an award, Reports (CSV export), Audit log; the admin screens: Users and roles, Roles, Challenges and rubrics, Content, Chat settings |
+| `admin` | Administrator and auditor | All cases | Assign reviewers, record an award, Reports (CSV export), Audit log; the admin screens: Users & roles, and under Settings: Challenges and rubrics, Roles, Content, Chat settings |
 | `consultant` | Support consultant and lead | Support inbox | Take and answer chats; chat statistics under Reports. Can't see proposals or scores |
 | `committee.ext` | External committee member | Home, then All cases | Counts by stage, and each case's reference, challenge, stage and last update only. No proposal text, scores or notes (D-08) |
 | `applicant.c`, `.d`, `.e` | Applicants | My ideas | Owners of the background cases |
@@ -55,7 +55,7 @@ Also worth trying:
 - **Revision and roadmap:** as `screening`, ask for a revision with tasks on a case. The applicant answers each task in version 2, each reviewer verifies each task, and version 1's scores stay with version 1 (C-13). Staff can put the two versions side by side on the case page (**Compare versions**), with each change named.
 - **Reports and audit:** as `admin`, open **Reports** (participation, outcomes, time in stage; CSV export) and the **Audit log** (filter by case, action and date).
 - **Live chat:** as `applicant.a`, open **Chat** (09:00–16:00 CAT on working days; outside those hours it says it is closed); as `consultant`, answer it in the **Support inbox**.
-- **Administration:** as `admin`, open **Users and roles** (grant or remove a role with a reason; invite staff by email, which is Simulated), **Challenges** (edit a challenge, its application form and its rubric; weights must total 100%), **Content** (FAQs, contacts, notices; only published pages are public) and **Chat settings** (opening hours and closures). Every change is recorded in the audit log.
+- **Administration:** as `admin`, open **Users & roles** (grant or remove a role with a reason; invite staff by email, which is Simulated), **Challenges** (edit a challenge, its application form and its rubric; weights must total 100%), **Content** (FAQs, contacts, notices; only published pages are public) and **Chat settings** (opening hours and closures). Every change is recorded in the audit log.
 - **Notifications:** the bell in the header shows unread notifications; **Notifications** lists them, and the email alerts setting there is stored, but emails are Simulated.
 - **Peolwane AI** **[confirm at release]**: the button at the bottom right of every page opens a voice-first assistant (tap the microphone, speak, tap again; or switch to Text). It answers questions about using the portal and never sees accounts or ideas.
 - **Clarification:** case `CEDA-2026-0003` has an open question for `applicant.e`. A reply returns the case to its stage without creating a new version.
@@ -71,7 +71,7 @@ These are refused **by the server**, not only hidden in the screens.
 | As `reviewer.3`, look for the demo case | Not listed; no proposal and no files (N3) |
 | As `reviewer.1`, open an assigned case **before** declaring | No proposal and no files until the declaration (N10) |
 | As `consultant`, look for proposals or scores | None (N7) |
-| As `admin`, open **Users and roles** and find your own row | The role controls are disabled: "You can't change your own roles." The server also refuses the change if it is sent directly, and records the attempt (N8, proven at the database layer) |
+| As `admin`, open **Users & roles** and find your own row | The role controls are disabled: "You can't change your own roles." The server also refuses the change if it is sent directly, and records the attempt (N8, proven at the database layer) |
 | As `applicant.a`, look for a decision before it is published | Nothing (N4) |
 
 Evidence for each: the negative suite in `docs/testing/test-plan.md` §2 and the run records in `artifacts/phase-00/hosted-supabase.md`.

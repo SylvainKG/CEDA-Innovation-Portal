@@ -70,7 +70,7 @@ Screens still being built are marked **[confirm at release]**; that line is chec
 3. **Record screening:**
    - **Eligible** moves the case to evaluation. Your reason stays with staff as an internal note, and the applicant sees only that the idea is under review.
    - **Ineligible** closes the case, and the applicant sees your reason.
-4. **Request a clarification** (a question and deadline) or **a revision** (tasks and deadline) when needed.
+4. **Request clarification** (a question and deadline) or **Request revision** (tasks and deadline) when needed.
 5. **Internal notes** are visible to staff only, never to the applicant.
 
 ## 4. Reviewer
@@ -79,7 +79,7 @@ Screens still being built are marked **[confirm at release]**; that line is chec
 2. **Declare first.** Before the proposal opens, confirm you have **no conflict of interest** and will keep it confidential. If you have a conflict, declare it: your assignment is removed, the administrator reassigns the case, and the declaration is recorded.
 3. **Score** each criterion from **1 to 5** using the anchored definitions, with a reason of **at least 20 characters**. Drafts are saved; **Submit** when complete.
 4. You **can't see other reviewers' scores until you have submitted your own** on the same version.
-5. **Version 2:** for a revised idea, verify each roadmap task as **Verified** or **Not verified**, with a note. **Compare with version 1** shows both versions side by side, with each change named. Version 1's scores stay with version 1.
+5. **Version 2:** for a revised idea, verify each roadmap task as **Verified** or **Not verified**, with a note. **Compare versions** shows both versions side by side, with each change named. Version 1's scores stay with version 1.
 
 ## 5. Adjudicator
 
@@ -90,12 +90,14 @@ Screens still being built are marked **[confirm at release]**; that line is chec
 
 ## 6. Administrator
 
+The navigation has **All cases**, **Users & roles** and **Settings**. Settings opens **Challenges**; links at the top of every settings page lead to **Roles**, **Content** and **Chat settings**.
+
 - **All cases:** every case with its stage; **assign reviewers** (at least two), see each reviewer's load, and remove a reviewer.
-- **Record an award** on an approved case (amount in BWP and a description), and **close** a case with a reason.
+- **Record award** on an approved case (amount in BWP and a description), and **close** a case with a reason.
 - **Challenges:** edit a challenge's details, publish, unpublish or close it to new ideas. Build its **application form** (sections and fields: short text, long text, choice, email), save it as a draft, then publish it. A submitted idea keeps the form version it used.
 - **Rubrics:** add the criteria reviewers score, each with a weight and a description of what a 1, a 3 and a 5 look like. The weights must total 100%.
 - **Content:** FAQs, contacts, referrals, the support page, the privacy notice, the declaration and other pages. Save as a draft or publish; only published pages are shown to the public.
-- **Users and roles:** everyone registered, with their roles. Grant a role, remove one (with a reason), or **invite** staff by email (the email is Simulated in this demonstration). **You can't change your own roles:** the controls on your own row are disabled, and the server refuses and records the attempt anyway.
+- **Users & roles:** everyone registered, with their roles. Grant a role, remove one (with a reason), or **invite** staff by email (the email is Simulated in this demonstration). **You can't change your own roles:** the controls on your own row are disabled, and the server refuses and records the attempt anyway.
 - **Roles:** what each role can do. Built-in roles keep their permissions; add a new role to combine permissions differently, and choose whether it needs two-step sign-in.
 - **Chat settings:** whether chat is always open, always closed or follows the opening hours; the hours for each day of the week; and closure days (for example public holidays).
 - **Other settings:** the review quorum (2 reviews) and the demo two-step exemption are configuration values with no screen; only the backend team can change them. Switch the exemption **off** for any real use.
