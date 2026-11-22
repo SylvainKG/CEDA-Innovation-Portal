@@ -5,6 +5,9 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 ## [Unreleased]
 
 - `design` **Scorecard criteria in ink, weights in orange** (visual polish, 22 Nov), as in Sandra's 21 Nov scorecard frame. Each criterion's name was orange like its weight; now the name is ink and only the weight stays orange (`#B65C0E`, F2). Styling only.
+- `repair` **Admin settings reachable from the navigation** (handoff-notes #40, found in the P7-04 design reconciliation). Before this, "Settings" opened Challenges and nothing in the app linked to Users and roles, Content, Roles or Chat settings: an admin reached them only by typing the address. Now "Users & roles" is in the admin navigation, as in Sandra's 21 Nov admin frame, and each settings page starts with links to the four settings pages (Challenges, Roles, Content, Chat settings). "Settings" stays marked as the current page on all of them, and the Roles page links to Users and roles. `navigation-map.md` updated.
+
+  Evidence: 2 new tests (the admin's navigation items; the settings links, the current page and moving between them).
 - `repair` **Status badges name an open revision correctly** (handoff-notes #39, found in the P7-04 V2 check). While a revision was open, the staff case page said "Waiting on applicant (clarification)" and the applicant's case page said "Action required: answer a question", because neither passed the request's kind to the badge, which then assumed a clarification. Both pages now pass the open request's kind (from the roadmap the page already reads), so a revision reads "Waiting on applicant (revision)" and "Action required: revise your idea", as in spec §6. Staff lists, which don't carry the kind, now say "Waiting on applicant" instead of guessing.
 
   Evidence: the revision journey test now checks both badges, the clarification test checks the staff badge, and a unit test covers the label without a kind.

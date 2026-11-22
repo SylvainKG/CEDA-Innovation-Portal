@@ -33,6 +33,29 @@ beforeEach(async () => {
   await as(null)
 })
 
+describe('T12 settings navigation (handoff-notes #40)', () => {
+  it('links every settings page, and Users & roles, from the navigation', async () => {
+    await as('admin')
+    const user = renderAt('/admin/content')
+    const settings = await screen.findByRole('navigation', { name: 'Settings pages' }, LOAD)
+    const links = within(settings).getAllByRole('link')
+    expect(links.map((l) => [l.textContent, l.getAttribute('href')])).toEqual([
+      ['Challenges', '/admin/challenges'],
+      ['Roles', '/admin/settings/roles'],
+      ['Content', '/admin/content'],
+      ['Chat settings', '/admin/settings/chat'],
+    ])
+    expect(within(settings).getByRole('link', { name: 'Content' })).toHaveAttribute('aria-current', 'page')
+    // The staff navigation marks Settings as the current page on every settings page, and offers Users & roles.
+    const staff = screen.getAllByRole('navigation', { name: 'Staff' })[0]!
+    expect(within(staff).getByRole('link', { name: 'Settings' })).toHaveAttribute('aria-current', 'page')
+    expect(within(staff).getByRole('link', { name: 'Users & roles' })).toHaveAttribute('href', '/admin/users')
+
+    await user.click(within(settings).getByRole('link', { name: 'Chat settings' }))
+    expect(await screen.findByRole('heading', { name: 'Chat settings' }, LOAD)).toBeInTheDocument()
+  })
+})
+
 describe('T12 roles (ARC-01)', () => {
   it('adds a role as data, edits its permissions, and keeps built-in roles read only', async () => {
     await as('admin')
