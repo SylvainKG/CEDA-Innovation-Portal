@@ -68,7 +68,8 @@ async function signIn(page: Page, account: Account) {
   await page.getByLabel('Email address').fill(account.email)
   await page.getByLabel(/^Password/).fill(password)
   await page.getByRole('button', { name: 'Sign in' }).click()
-  await page.waitForURL((url) => !url.pathname.startsWith('/auth/'), { timeout: 20_000 })
+  // 30 s: the loading splash (#138) and Auth on a cold stack can together take most of 20 s (run 44994702069, attempt 1).
+  await page.waitForURL((url) => !url.pathname.startsWith('/auth/'), { timeout: 30_000 })
 }
 
 /**
@@ -119,6 +120,8 @@ async function fillSection(page: Page) {
 }
 
 test('each demo account signs in and lands on its own home, never on Forbidden', async ({ browser }) => {
+  // Seven sign-ins, each behind the loading splash (#138): more than the default 30 s on hosted staging (run 44996020945).
+  test.setTimeout(150_000)
   for (const account of Object.values(ACCOUNTS)) {
     const page = await asAccount(browser, account)
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
@@ -488,4 +491,68 @@ test('Steps 5-17: the case goes from screening through revision, decision and aw
     }
     await adm.close()
   })
+})
+
+test('N9: a challenge that closes while an idea is being drafted refuses the submit and keeps the draft', async ({ browser }) => {
+  test.skip(!writes, 'Closes and reopens the open challenge and leaves one draft: run with E2E_JOURNEY_WRITE=1 after a snapshot of staging (#65, #68)')
+  test.skip(mock, 'Needs the real backend: the refusal comes from submit_proposal (CHALLENGE_CLOSED)')
+  test.setTimeout(240_000)
+  const TITLE = 'N9 draft kept after closing (browser test)'
+  const CHALLENGE = 'Water-Smart Agriculture Challenge 2026'
+
+  // 1. Applicant A drafts a complete idea on the open challenge, up to the review step.
+  const a = await asAccount(browser, ACCOUNTS.applicantA)
+  await a.goto('/ideas')
+  const start = a.locator('a[href^="/ideas/new?challenge="]').first()
+  await expect(start).toBeVisible({ timeout: 20_000 })
+  await start.click()
+  const stepHeading = a.locator('#step-heading')
+  for (let step = 0; step < 12; step++) {
+    await expect(stepHeading).toBeVisible()
+    const title = a.getByLabel(/^Idea title/)
+    if (await title.isVisible().catch(() => false)) await title.fill(TITLE)
+    await fillSection(a)
+    const next = a.getByRole('button', { name: /^Continue: / })
+    if ((await next.count()) === 0) break
+    const target = (await next.innerText()).replace(/^Continue:\s*/, '').trim()
+    await next.click()
+    await expect(stepHeading).toHaveText(target)
+  }
+  await a.getByLabel('I have read and accept the declaration above.').check()
+  // The server has the draft: the first save moves the address to /ideas/<id>/edit, and no save is pending or
+  // kept on the device only.
+  await expect(a).toHaveURL(/\/ideas\/[0-9a-f-]{36}\/edit/, { timeout: 20_000 })
+  await expect(a.getByText('Saving…')).toHaveCount(0, { timeout: 20_000 })
+  await expect(a.getByText('Saved on this device, not sent')).toHaveCount(0)
+  const draftId = new URL(a.url()).pathname.split('/')[2]!
+
+  // 2. The administrator closes the challenge to new ideas while the applicant's form is still open.
+  const adm = await asAccount(browser, ACCOUNTS.admin)
+  await adm.goto('/admin/challenges')
+  await adm.getByRole('link', { name: CHALLENGE }).click()
+  await adm.getByRole('button', { name: 'Close to new ideas' }).click()
+  await expect(adm.getByText('Challenge closed to new ideas.')).toBeVisible({ timeout: 20_000 })
+
+  try {
+    // 3. The applicant submits from the open form: the server refuses, and says the draft is kept.
+    await a.getByRole('button', { name: 'Submit idea' }).click()
+    await expect(a.getByText('This challenge is no longer accepting submissions. Your draft is saved.').first()).toBeVisible({ timeout: 30_000 })
+    await expect(a).not.toHaveURL(/\/receipt$/)
+
+    // 4. The draft is preserved: still listed in My ideas, as a draft with no reference, with its title.
+    const list = await asAccount(browser, ACCOUNTS.applicantA)
+    await list.goto('/ideas')
+    const card = list.getByRole('article').filter({ has: list.getByRole('heading', { name: TITLE }) })
+    await expect(card).toHaveCount(1, { timeout: 20_000 })
+    await expect(card).toContainText('Draft: no reference yet')
+    test.info().annotations.push({ type: 'n9-draft', description: draftId })
+    await list.close()
+  } finally {
+    // 5. Reopen the challenge (Publish), so the demo's open challenge is open again. On staging the exact reset
+    //    afterwards also restores the row's timestamps and removes the draft.
+    await adm.getByRole('button', { name: 'Publish challenge' }).click()
+    await expect(adm.getByText('Challenge published.')).toBeVisible({ timeout: 20_000 })
+    await adm.close()
+    await a.close()
+  }
 })
