@@ -57,14 +57,14 @@ select set_eq(
   $$select distinct p.proname::text from pg_proc p join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'private' and has_function_privilege('authenticated', p.oid, 'execute')$$,
   array['has_permission', 'can_read_case', 'is_case_owner', 'is_cleared_reviewer', 'owns_assignment',
-        'has_submitted_peer_view', 'owns_case_in_challenge', 'can_upload_to', 'uuid_or_null'],
+        'has_submitted_peer_view', 'owns_case_in_challenge', 'owns_case_on_version', 'can_upload_to', 'uuid_or_null'],
   'signed in, only the helpers used by access policies are callable in private');
 
 select set_eq(
   $$select distinct p.proname::text from pg_proc p join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'private' and has_function_privilege('anon', p.oid, 'execute')$$,
   array['has_permission', 'can_read_case', 'is_case_owner', 'is_cleared_reviewer', 'owns_assignment',
-        'has_submitted_peer_view', 'owns_case_in_challenge'],
+        'has_submitted_peer_view', 'owns_case_in_challenge', 'owns_case_on_version'],
   'signed out, only the helpers needed to evaluate public-catalogue policies are callable');
 
 select is(
