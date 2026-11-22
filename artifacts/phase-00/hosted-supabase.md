@@ -14,6 +14,7 @@ The run records behind the hosted results in the runbook (§1), the data-handlin
 | 17 Nov, 17:36 (19:36) | `ae1aaa6` (migration 013, PR #40) | Same, from a temporary checkout of `main` + 012 + 013 (the branch alone lacked 012); dry run listed only 013 | **Passed:** 13 migrations; `health()` reported `20261123110000` |
 | 20 Nov, 13:47 (15:47) | `c71ae04` (migration 014, PR #42, merged) | Same, from a temporary checkout of `main` + the 013 file (013 is on hosted but not yet merged, #40); dry run listed only 014 | **Passed:** 14 migrations; `list_my_ideas()` live |
 | 21 Nov, 08:30 (10:30) | `ee53f8b` (migration 015, PR #88, merged) | Same, from a temporary checkout of `main` (`f42e31d`) + the 013 file; dry run listed only 015 | **Passed:** 15 migrations; `set_alert_preference` live |
+| 22 Nov, 09:52 (11:52) | `cd17218` (migration 016, PR #148, merged; reviewed in #150) | Same, from a temporary checkout of `main` (`0311e5e`); dry run listed only 016 | **Passed:** 16 migrations, level with `main`. Before: a signed-out (`anon`) read of `challenge_versions` failed with `42501 permission denied for table proposals`, so no challenge brief opened signed out. After: the same read returns the 2 published versions, and `anon` is still refused on `proposals`. No data changed (8 cases, 13 accounts, 1 file). The CLI warned that it couldn't cache its migration catalogue without Docker (local only) |
 
 ## 2. pgTAP on the hosted database
 
@@ -21,7 +22,9 @@ Each test file runs in its own transaction and rolls back. The case-reference se
 
 **Process note (Sylvain's review of #35):** migrations 012 and 013 were applied to hosted before their PRs were reviewed, so hosted is ahead of `main` until #35 and #40 merge. From now on, only migrations already on `main` are applied to hosted. The runner is for staging only, never for the judging project after code freeze (22 Nov, 18:00 CAT).
 
-**Hosted matches `main` since 21 Nov, 10:27 UTC**, when #40 merged (`694dc65`). Both list the same 15 migrations, `20261116100000` to `20261123130000` (hosted read through the Management API). The 013 file on `main` is identical to the one applied on 17 Nov from `ae1aaa6` (`git diff ae1aaa6 694dc65` on that file is empty).
+**Since 22 Nov, 09:52 UTC, hosted is at migration 016, level with `main`** (§1, `list_migrations` read back: `20261116100000` to `20261123140000`). Before that:
+
+**Hosted matched `main` from 21 Nov, 10:27 UTC**, when #40 merged (`694dc65`). Both list the same 15 migrations, `20261116100000` to `20261123130000` (hosted read through the Management API). The 013 file on `main` is identical to the one applied on 17 Nov from `ae1aaa6` (`git diff ae1aaa6 694dc65` on that file is empty).
 
 | When | Test files from | Command | Summary line |
 |---|---|---|---|
@@ -201,6 +204,26 @@ Checked before Sylvain switches the Amplify staging build from `VITE_API_MODE=mo
 **Supabase advisors, same session:** unchanged in substance from the 17 Nov baseline (API contract, test record):
 - **Security:** `SECURITY DEFINER` RPCs callable signed in (63, by design, D-02; the exact list is pinned by `010_security_privileges`, which passed on hosted at 10:29 UTC) and signed out (`health`, `chat_status`); `app_settings` and `email_outbox` have no policies (intentional: no client access); leaked-password protection is off (Pro feature).
 - **Performance (INFO):** 34 unindexed foreign keys and one table with two permissive `SELECT` policies, both recorded debt; unused indexes are down from 15 to 1, now that the tables have been used.
+
+## 3h. N9 through the real screens against hosted, and an exact reset (22 Nov 2026, 06:56–07:06 UTC)
+
+ABM asked for N9 (a closed challenge refuses the submit and keeps the draft) through the real screens on the real backend (#140, test 7 in `hosted-journey.spec.ts`). The workflow runs the whole write suite, so tests 5–6 ran again too.
+
+| Step | When (UTC) | Result |
+|---|---|---|
+| Snapshot (`staging-reset.mjs` from `main` `cbb1df3`) | 06:56:39 | 33 tables, 259 rows, sequence 8, 1 storage object: the demo baseline |
+| First attempt, [run 44996020945](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44996020945) | 06:57 | Stopped in test 1 (sign-ins) before any write: seven sign-ins behind the loading splash took longer than 30 s. Only Auth sessions were written |
+| [Run 44996202242](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44996202242), branch `test/n9-closed-challenge` (`a6f1a93`) | 07:00–07:03 | **7 passed (2.5 m):** tests 1–6 (the full main journey) and **test 7, N9:** the admin closes Water-Smart while Applicant A's form is open, the submit is refused with `CHALLENGE_CLOSED` ("This challenge is no longer accepting submissions. Your draft is saved."), My ideas still lists the draft, and the challenge is reopened |
+| Existing rows restored to their snapshot values | 07:05 | One atomic block, each update guarded to exactly one row: `app_settings.chat_demo_override` back to `null` @ `2026-11-17 07:13:46.482239+00`, and Water-Smart's `challenges.updated_at` back to `2026-11-17 09:57:31.392665+00` (status already `published` again). That needed the `challenges_updated_at` trigger, which stamps `now()`, paused for that single update and re-enabled in the same block |
+| Exact reset | 07:06 | `database reset COMMITTED: 33 tables identical to the snapshot; 19 triggers paused and re-enabled`; the run's PDFs deleted through the Storage API (HTTP 200); `storage objects: 1 now, 1 in snapshot, identical: true`; sequence 9 → 8 |
+
+**Rows removed by the reset:** `proposals` 2 (the journey case and the N9 draft), `proposal_versions` 2, `proposal_drafts` 1, `attachments` 3, `assignments` 2, `scorecards` 3, `scorecard_items` 12, `feedback_requests` 2, `feedback_tasks` 3, `task_verifications` 6, `decisions` 1, `awards` 1, `internal_notes` 1, `case_events` 9, `audit_events` 34 (including the two `challenge.status_changed` rows), `notifications` 14, `chat_sessions` 1, `chat_messages` 2.
+
+**Checked before the run:**
+- Water-Smart had no unpublished form version, so reopening (`publish_challenge`) changed only `status`.
+- The refused submit writes nothing: `private.raise_error` only raises, so the transaction rolls back.
+
+**Independent check (07:06:23 UTC):** 8 cases (highest `CEDA-2026-0008`), sequence 8, 0 drafts, 0 attachments, 1 storage object, 13 accounts, audit 24, case events 21, notifications 2, chat messages 8, the chat override and Water-Smart at their original timestamps, and no disabled triggers in `public`. The snapshot file was deleted. Reported on #61.
 
 ## 4. Not done or not run
 
