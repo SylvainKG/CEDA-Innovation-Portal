@@ -44,7 +44,7 @@ export function MfaPage() {
   if (!s.required)
     return (
       <AuthCard title="Two-step sign-in">
-        {s.demoExempt ? <Banner kind="demo">MFA not required for demo accounts</Banner> : <p>You&apos;re fully signed in. No code is needed.</p>}
+        {s.demoExempt ? <Banner kind="info">No authenticator code is needed for this account.</Banner> : <p>You&apos;re fully signed in. No code is needed.</p>}
         <ButtonLink to={next}>Continue</ButtonLink>
       </AuthCard>
     )

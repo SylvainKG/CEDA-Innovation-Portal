@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { ArrowRight } from 'lucide-react'
 import { Banner, Button, TextField } from '@/components'
 import { api, apiMode } from '@/lib/api'
 import type { AuthRefusal, Role } from '@/lib/api/types'
@@ -12,20 +11,6 @@ import { roleLabel } from '@/navigation/role-labels'
 import { AuthCard, FormErrorSummary, type FieldError } from './auth-ui'
 import { isEmail, REFUSAL_TEXT } from './auth-text'
 
-/**
- * The demo accounts the picker offers (#100 decision 1; D-17): the seven accounts of the main journey, by
- * role. The picker fills in the email address only. No password is ever in the site: judges type the one
- * given with the submission.
- */
-const DEMO_ACCOUNTS: readonly { label: string; email: string }[] = [
-  { label: 'Demo Applicant A', email: 'applicant.a@demo.ceda-portal.test' },
-  { label: 'Screening officer', email: 'screening@demo.ceda-portal.test' },
-  { label: 'Reviewer 1', email: 'reviewer.1@demo.ceda-portal.test' },
-  { label: 'Adjudicator', email: 'adjudicator@demo.ceda-portal.test' },
-  { label: 'Administrator', email: 'admin@demo.ceda-portal.test' },
-  { label: 'Support consultant', email: 'consultant@demo.ceda-portal.test' },
-  { label: 'Committee member (external)', email: 'committee.ext@demo.ceda-portal.test' },
-]
 
 /** T02 Sign in (spec T02; laid out to Sandra's sign-in frame, 21 Nov, #100). */
 export function SignInPage() {
@@ -75,14 +60,6 @@ export function SignInPage() {
     setResent(outcome.kind === 'ok' ? 'sent' : outcome.reason)
   }
 
-  /** Demo picker: fill in the email only, then let the person type the password. Never submits by itself. */
-  function pickDemoAccount(address: string) {
-    setEmail(address)
-    setErrors([])
-    setRefusal(null)
-    document.getElementById('signin-password')?.focus()
-  }
-
   // The frame shows a refused sign-in in the same "There is a problem" box as a missing field. Wrong
   // credentials link to the email field to try again; an unverified address keeps its own banner below.
   const problems: FieldError[] =
@@ -113,7 +90,6 @@ export function SignInPage() {
                 : 'Open the link we sent when you registered, then sign in.'}
           </Banner>
         ) : null}
-        <Banner kind="demo">Demo accounts are available: choose one below to fill in its email address.</Banner>
         <form noValidate onSubmit={(e) => void onSubmit(e)} className="flex flex-col gap-4">
           <TextField
             id="signin-email"
@@ -145,39 +121,9 @@ export function SignInPage() {
         <p className="text-center">
           New to the portal? <Link to="/auth/register" className="inline-flex min-h-touch items-center">Register</Link>
         </p>
-        <DemoAccountPicker onPick={pickDemoAccount} />
       </AuthCard>
       {apiMode === 'mock' ? <MockSessionPicker next={next} /> : null}
     </div>
-  )
-}
-
-/** "Choose a demo portal" (Sandra's frame): one row per demo account; choosing one fills in its email address. */
-function DemoAccountPicker({ onPick }: { onPick: (email: string) => void }) {
-  return (
-    <section aria-labelledby="demo-accounts-heading" className="flex flex-col gap-2 border-t border-line pt-4">
-      <h2 id="demo-accounts-heading" className="text-h3 font-semibold">
-        Choose a demo portal
-      </h2>
-      <p id="demo-accounts-help" className="text-sm text-ink-muted">
-        Demo environment only. Choosing an account fills in its email address; then type the demo password you were given.
-      </p>
-      <ul className="flex flex-col divide-y divide-line border-y border-line">
-        {DEMO_ACCOUNTS.map((account) => (
-          <li key={account.email}>
-            <button
-              type="button"
-              aria-describedby="demo-accounts-help"
-              onClick={() => onPick(account.email)}
-              className="flex min-h-touch w-full items-center justify-between gap-2 px-2 text-left hover:bg-surface-sunken"
-            >
-              {account.label}
-              <ArrowRight aria-hidden className="h-4 w-4 shrink-0" />
-            </button>
-          </li>
-        ))}
-      </ul>
-    </section>
   )
 }
 
