@@ -394,6 +394,163 @@
   }
 }
 
+/*
+ * The swallow's flights (post-freeze, ABM 22 Nov; src/brand/flight.ts moves the bird). Home: the sun glows, the
+ * swallow rises out of it, and when it lands a line of light runs along the top of the challenge strip and the
+ * "Open now" dot starts to pulse. How it works: stops along the route turn gold once passed; the current one rings.
+ */
+@layer components {
+  .dawn-glow {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: dawn-glow 1.4s ease-out both;
+  }
+  @keyframes dawn-glow {
+    0% {
+      opacity: 0;
+      transform: scale(0.6);
+    }
+    55% {
+      opacity: 1;
+      transform: scale(1.08);
+    }
+    100% {
+      opacity: 0.75;
+      transform: none;
+    }
+  }
+  .flight-bob {
+    animation: flight-bob 4.5s ease-in-out infinite;
+  }
+  @keyframes flight-bob {
+    0%,
+    100% {
+      transform: none;
+    }
+    50% {
+      transform: translateY(-5px);
+    }
+  }
+  .dawn-strip::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--ceda-gold), var(--ceda-orange), transparent);
+    transform: scaleX(0);
+    transform-origin: right center;
+    opacity: 0;
+  }
+  .dawn-frame.is-landed .dawn-strip::before {
+    animation: dawn-strip-light 1.2s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  }
+  @keyframes dawn-strip-light {
+    0% {
+      transform: scaleX(0);
+      opacity: 1;
+    }
+    70% {
+      transform: scaleX(1);
+      opacity: 1;
+    }
+    100% {
+      transform: scaleX(1);
+      opacity: 0.55;
+    }
+  }
+  .dawn-frame.is-landed .dawn-dot {
+    animation: dawn-dot 2s ease-in-out infinite;
+  }
+  @keyframes dawn-dot {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 rgba(253, 200, 13, 0.55);
+    }
+    50% {
+      box-shadow: 0 0 0 7px rgba(253, 200, 13, 0);
+    }
+  }
+  .journey-ring {
+    fill: none;
+    stroke: var(--ceda-gold);
+    stroke-width: 2;
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .journey-dot {
+    fill: var(--ceda-night);
+    stroke: rgba(255, 255, 255, 0.45);
+    stroke-width: 2;
+    transition:
+      fill 400ms ease,
+      stroke 400ms ease;
+  }
+  .journey-num {
+    fill: rgba(255, 255, 255, 0.8);
+  }
+  .journey-node.is-done .journey-dot,
+  .journey-node.is-current .journey-dot {
+    fill: var(--ceda-gold);
+    stroke: var(--ceda-gold);
+  }
+  .journey-node.is-done .journey-num,
+  .journey-node.is-current .journey-num {
+    fill: var(--ceda-night);
+  }
+  .journey-node.is-current .journey-ring {
+    opacity: 1;
+    animation: journey-ring 2s ease-out infinite;
+  }
+  @keyframes journey-ring {
+    from {
+      opacity: 0.9;
+      transform: scale(0.75);
+    }
+    to {
+      opacity: 0;
+      transform: scale(1.35);
+    }
+  }
+  .journey-btn {
+    display: inline-flex;
+    min-height: 44px;
+    min-width: 44px;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-pill);
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    transition: background-color 200ms ease;
+  }
+  .journey-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.22);
+  }
+  .journey-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dawn-glow,
+    .flight-bob,
+    .dawn-frame.is-landed .dawn-dot {
+      animation: none;
+    }
+    .dawn-frame.is-landed .dawn-strip::before {
+      animation: none;
+      transform: scaleX(1);
+      opacity: 0.55;
+    }
+    .journey-node.is-current .journey-ring {
+      animation: none;
+      opacity: 0.9;
+    }
+    .journey-dot {
+      transition: none;
+    }
+  }
+}
+
 /* Print (spec T05 "Print receipt"): only the page content, no navigation, banners or development tools. */
 @media print {
   header,

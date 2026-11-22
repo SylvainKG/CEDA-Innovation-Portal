@@ -160,14 +160,20 @@ export function BranchNetworkMap() {
   }
 
   return (
-    <div className="flex flex-col gap-8">
-      <section aria-labelledby="branch-network-heading" className="overflow-hidden rounded-lg border border-line bg-surface-card shadow-1">
-        <div className="flex flex-col gap-5 p-5 md:p-7">
+    <div className="flex flex-col gap-12 md:gap-14">
+      <section aria-labelledby="branch-network-heading" className="relative overflow-hidden rounded-[2rem] border border-line bg-surface-card shadow-1">
+        <span aria-hidden className="absolute inset-x-0 top-0 h-1.5 bg-[linear-gradient(90deg,var(--ceda-gold),var(--ceda-amber),var(--ceda-orange),var(--ceda-maroon))]" />
+        <div className="flex flex-col gap-5 p-5 pt-7 md:p-8">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-            <div className="flex flex-col gap-2">
-              <p className="text-sm font-bold uppercase tracking-wider text-brand-text">Find support near you</p>
-              <h2 id="branch-network-heading" className="text-h2 font-semibold">CEDA branches across Botswana</h2>
-              <p className="max-w-2xl text-ink-muted">Explore the national network, choose a region or select a pin to view a branch location.</p>
+            <div className="flex items-start gap-4">
+              <span aria-hidden className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[var(--ceda-maroon)] text-white sm:flex">
+                <MapPin className="h-6 w-6" />
+              </span>
+              <div className="flex flex-col gap-2">
+                <p className="text-sm font-bold uppercase tracking-wider text-brand-text">Find support near you</p>
+                <h2 id="branch-network-heading" className="text-[1.75rem] font-normal leading-tight md:text-[2rem]">CEDA branches across Botswana</h2>
+                <p className="max-w-2xl text-ink-muted">{BRANCHES.length} branches in four regions. Choose a region, or select a pin or a town, to see a branch and get directions.</p>
+              </div>
             </div>
             <a href={CEDA.branchNetworkPage} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-touch items-center gap-2 self-start font-semibold text-brand-text underline-offset-4 hover:underline lg:shrink-0">
               CEDA’s official branch page <ExternalLink aria-hidden className="h-4 w-4" /><span className="sr-only"> (opens in a new tab)</span>
@@ -184,13 +190,13 @@ export function BranchNetworkMap() {
 
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1.65fr)_minmax(17rem,0.8fr)]">
             <div ref={containerRef} role="region" aria-label="Interactive map of CEDA branches in Botswana" className="ceda-branch-map z-0 min-h-[22rem] overflow-hidden rounded-md border border-line bg-surface-sunken sm:min-h-[27rem]" />
-            <aside aria-live="polite" aria-atomic="true" className="flex flex-col gap-4 rounded-md border border-line bg-[var(--ceda-sky-start)] p-5">
+            <aside aria-live="polite" aria-atomic="true" className="flex flex-col gap-4 rounded-md border border-line bg-[linear-gradient(160deg,var(--ceda-sky-start),var(--ceda-band-start))] p-5">
               <div className="flex items-center gap-2 text-sm font-semibold text-[var(--ceda-maroon)]">
                 <Building2 aria-hidden className="h-4 w-4" /> Selected branch
               </div>
-              <div>
-                <h3 className="text-h3 font-semibold">{selected.name}</h3>
-                <p className="mt-1 text-ink-muted">{selected.region} · Botswana</p>
+              <div className="flex flex-col items-start gap-2">
+                <h3 className="text-[1.75rem] font-normal leading-tight">{selected.name}</h3>
+                <p className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-[var(--ceda-brown)] shadow-1">{selected.region} · Botswana</p>
               </div>
               {selected.approximate ? (
                 <p className="rounded-md border border-line bg-white/80 p-3 text-sm text-ink-muted">This is an approximate town-centre pin. Confirm the branch address with CEDA before travelling.</p>
@@ -229,25 +235,38 @@ export function BranchNetworkMap() {
       </section>
 
       <section aria-labelledby="branch-stories-heading" className="flex flex-col gap-5">
-        <div className="flex flex-col gap-2">
+        <div className="flex max-w-2xl flex-col gap-2">
           <p className="text-sm font-bold uppercase tracking-wider text-brand-text">Across the network</p>
-          <h2 id="branch-stories-heading" className="text-h2 font-semibold">A look at CEDA’s offices</h2>
-          <p className="max-w-2xl text-ink-muted">A few published snapshots of CEDA locations and branch milestones. Each image links to its original story.</p>
+          <h2 id="branch-stories-heading" className="text-[1.75rem] font-normal leading-tight md:text-[2rem]">A look at CEDA’s offices</h2>
+          <p className="text-ink-muted">A few published snapshots of CEDA locations and branch milestones. Each photo opens its original story.</p>
         </div>
-        <ul className="grid gap-4 md:grid-cols-3">
-          {PHOTO_STORIES.map((story) => (
-            <li key={story.title} className="group overflow-hidden rounded-md border border-line bg-surface-card shadow-1">
-              <a href={story.href} target="_blank" rel="noopener noreferrer" className="block focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus">
-                <div className="aspect-[4/3] overflow-hidden bg-surface-sunken">
-                  <img src={story.image} alt={story.alt} loading="lazy" referrerPolicy="no-referrer" className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03] motion-reduce:transition-none" />
-                </div>
-                <div className="flex min-h-28 flex-col gap-1 p-4">
-                  <p className="text-sm font-semibold text-[var(--ceda-maroon)]">{story.place}</p>
-                  <h3 className="font-semibold">{story.title}</h3>
-                  <span className="mt-1 inline-flex min-h-touch items-center gap-2 text-sm font-semibold text-brand-text underline-offset-4 group-hover:underline">
+        <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:h-[30rem] lg:grid-cols-3 lg:grid-rows-2">
+          {PHOTO_STORIES.map((story, i) => (
+            <li
+              key={story.title}
+              className={`group relative isolate overflow-hidden rounded-[1.25rem] bg-[var(--ceda-night)] shadow-1 ${i === 0 ? 'aspect-[4/3] md:col-span-2 lg:col-span-2 lg:row-span-2 lg:aspect-auto' : 'aspect-[4/3] lg:aspect-auto'}`}
+            >
+              <img
+                src={story.image}
+                alt={story.alt}
+                loading="lazy"
+                referrerPolicy="no-referrer"
+                className="absolute inset-0 -z-10 h-full w-full object-cover motion-safe:transition-transform motion-safe:duration-500 motion-safe:group-hover:scale-[1.04]"
+              />
+              <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(43,29,25,0.15)_0%,transparent_35%,rgba(43,29,25,0.9)_100%)]" />
+              <a
+                href={story.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="absolute inset-0 flex flex-col justify-between p-4 text-white no-underline focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white md:p-5"
+              >
+                <span className="self-start rounded-full bg-white/90 px-3 py-1 text-sm font-semibold text-[var(--ceda-maroon)]">{story.place}</span>
+                <span className="flex flex-col gap-1">
+                  <h3 className={i === 0 ? 'text-[1.5rem] font-semibold leading-tight md:text-[1.75rem]' : 'text-h2 font-semibold'}>{story.title}</h3>
+                  <span className="inline-flex min-h-touch items-center gap-2 text-sm font-semibold text-white/90 group-hover:underline">
                     Photo and story: {story.source} <ExternalLink aria-hidden className="h-4 w-4" /><span className="sr-only"> (opens in a new tab)</span>
                   </span>
-                </div>
+                </span>
               </a>
             </li>
           ))}

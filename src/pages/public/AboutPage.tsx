@@ -1,4 +1,4 @@
-import { ArrowRight, ClipboardCheck, Eye, LockKeyhole, Search, ExternalLink } from 'lucide-react'
+import { ArrowRight, Camera, ClipboardCheck, Eye, LockKeyhole, Search, ExternalLink } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { BRANDS, brand } from '@/brand'
 import { CEDA } from '@/brand/ceda-info'
@@ -106,41 +106,88 @@ export function AboutPage() {
 
 /**
  * Credits for the photographs on the public pages, as their open licences require: what each shows, who took it,
- * the licence (linked) and the source page on Wikimedia Commons. The list comes from src/brand/photos.ts.
+ * the licence (linked) and the source page on Wikimedia Commons. A gallery card per photo, so the credit sits with the
+ * picture it belongs to. The list comes from src/brand/photos.ts.
  */
 function PhotoCredits() {
   return (
-    <section id="photo-credits" aria-labelledby="photo-credits-heading" className="flex scroll-mt-28 flex-col gap-4 border-t border-line pt-8">
-      <div className="flex max-w-2xl flex-col gap-2">
-        <h2 id="photo-credits-heading" className="text-h2 font-semibold">
-          Photo credits
-        </h2>
-        <p className="text-ink-muted">
-          The photographs of Botswana on these pages come from Wikimedia Commons and are used under their open licences. They were resized, and one was
-          cropped; nothing else was changed.
-        </p>
+    <section
+      id="photo-credits"
+      aria-labelledby="photo-credits-heading"
+      className="flex scroll-mt-28 flex-col gap-6 rounded-[2rem] border border-line bg-surface-card p-5 shadow-1 md:p-10"
+    >
+      <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <div className="flex max-w-2xl flex-col gap-2">
+          <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-brand-text">
+            <Camera aria-hidden className="h-4 w-4" />
+            Photo credits
+          </p>
+          <h2 id="photo-credits-heading" className="text-[1.75rem] font-normal leading-tight md:text-[2rem]">
+            The photographs on these pages
+          </h2>
+          <p className="text-ink-muted">
+            Real photographs of Botswana, and of the swallow that gives {brand.header.title} its name, shared on Wikimedia Commons under open licences. We
+            resized them and cropped one; nothing else was changed. Thank you to the photographers.
+          </p>
+        </div>
+        <a
+          href="https://commons.wikimedia.org/wiki/Commons:Reusing_content_outside_Wikimedia"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex min-h-touch items-center gap-2 self-start rounded-full border border-line px-4 font-semibold text-ink no-underline hover:bg-surface-sunken md:shrink-0 md:self-auto"
+        >
+          About reusing Commons photos <ExternalLink aria-hidden className="h-4 w-4" />
+          <span className="sr-only"> (opens in a new tab)</span>
+        </a>
       </div>
-      <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
+      <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {PHOTO_LIST.map((p) => (
-          <li key={p.src} className="flex gap-3 rounded-md border border-line bg-surface-card p-3">
-            <img src={p.src} alt="" width={p.width} height={p.height} loading="lazy" decoding="async" className="h-20 w-24 shrink-0 rounded-sm object-cover" />
-            <div className="flex min-w-0 flex-col gap-0.5 text-sm">
-              <span className="font-semibold">{p.alt}</span>
-              <span className="text-ink-muted">
-                By {p.credit.author} ·{' '}
-                {p.credit.licenceUrl ? (
-                  <a href={p.credit.licenceUrl} target="_blank" rel="noopener noreferrer">
-                    {p.credit.licence}
-                    <span className="sr-only"> (opens in a new tab)</span>
-                  </a>
-                ) : (
-                  p.credit.licence
-                )}{' '}
-                ·{' '}
-                <a href={p.credit.source} target="_blank" rel="noopener noreferrer">
-                  Source<span className="sr-only">: {p.alt}, on Wikimedia Commons (opens in a new tab)</span>
+          <li key={p.src} className="group flex flex-col overflow-hidden rounded-md border border-line bg-surface-page">
+            <div className="relative aspect-[4/3] overflow-hidden bg-surface-sunken">
+              <img
+                src={p.src}
+                alt=""
+                width={p.width}
+                height={p.height}
+                loading="lazy"
+                decoding="async"
+                className="h-full w-full object-cover motion-safe:transition-transform motion-safe:duration-500 motion-safe:group-hover:scale-105"
+              />
+              <span className="absolute bottom-3 left-3 rounded-full bg-black/60 px-3 py-1 text-sm font-semibold text-white">{p.caption}</span>
+            </div>
+            <div className="flex flex-1 flex-col gap-3 p-4">
+              <p>{p.alt}</p>
+              <dl className="mt-auto grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-1.5 text-sm">
+                <dt className="text-ink-muted">Photographer</dt>
+                <dd className="font-semibold">{p.credit.author}</dd>
+                <dt className="text-ink-muted">Licence</dt>
+                <dd>
+                  {p.credit.licenceUrl ? (
+                    <a
+                      href={p.credit.licenceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex rounded-full bg-[var(--ceda-band-start)] px-2.5 py-0.5 font-semibold text-[var(--ceda-brown)] no-underline hover:underline"
+                    >
+                      {p.credit.licence}
+                      <span className="sr-only"> licence (opens in a new tab)</span>
+                    </a>
+                  ) : (
+                    <span className="inline-flex rounded-full bg-[var(--ceda-band-start)] px-2.5 py-0.5 font-semibold text-[var(--ceda-brown)]">{p.credit.licence}</span>
+                  )}
+                </dd>
+              </dl>
+              <div className="border-t border-line pt-1">
+                <a
+                  href={p.credit.source}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-touch items-center gap-2 text-sm font-semibold text-brand-text underline-offset-4 hover:underline"
+                >
+                  View on Wikimedia Commons <ExternalLink aria-hidden className="h-4 w-4" />
+                  <span className="sr-only">: {p.alt} (opens in a new tab)</span>
                 </a>
-              </span>
+              </div>
             </div>
           </li>
         ))}
