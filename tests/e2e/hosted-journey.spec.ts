@@ -516,8 +516,11 @@ test('N9: a challenge that closes while an idea is being drafted refuses the sub
     await expect(stepHeading).toHaveText(target)
   }
   await a.getByLabel('I have read and accept the declaration above.').check()
-  await expect(a.getByText(/^Saved/).first()).toBeVisible({ timeout: 20_000 })
-  await expect(a).toHaveURL(/\/ideas\/[0-9a-f-]{36}\/edit/)
+  // The server has the draft: the first save moves the address to /ideas/<id>/edit, and no save is pending or
+  // kept on the device only.
+  await expect(a).toHaveURL(/\/ideas\/[0-9a-f-]{36}\/edit/, { timeout: 20_000 })
+  await expect(a.getByText('Saving…')).toHaveCount(0, { timeout: 20_000 })
+  await expect(a.getByText('Saved on this device, not sent')).toHaveCount(0)
   const draftId = new URL(a.url()).pathname.split('/')[2]!
 
   // 2. The administrator closes the challenge to new ideas while the applicant's form is still open.
