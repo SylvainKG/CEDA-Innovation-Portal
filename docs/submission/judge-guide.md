@@ -18,6 +18,8 @@ Items marked **[confirm at release]** are filled in or checked on the release bu
 
 ### Demo accounts
 
+The sign-in page offers no account picker (it looks as it would in real use): type the email address from this table, or from the [README](../../README.md#accounts-for-evaluators), and the password given with the submission.
+
 All addresses end in `@demo.ceda-portal.test`. Each account sees only what its role allows. Staff accounts open on **Home**: a welcome, counts for your role and a list of what to do next, each linked. The "Start here" column names the screen to open from there or from the menu.
 
 | Account | Role | Start here | Look at |
@@ -33,7 +35,7 @@ All addresses end in `@demo.ceda-portal.test`. Each account sees only what its r
 | `committee.ext` | External committee member | Home, then All cases | Counts by stage, and each case's reference, challenge, stage and last update only. No proposal text, scores or notes (D-08) |
 | `applicant.c`, `.d`, `.e` | Applicants | My ideas | Owners of the background cases |
 
-**Staff two-step sign-in:** staff permissions normally require a second factor. The seeded demo staff accounts are exempt so that judges can sign in directly (D-07). The exemption is a setting, and it is switched off for any real use. The **Two-step sign-in** screen (`/auth/mfa`) shows a demo account that it is exempt; a staff account without the exemption sets up an authenticator app there and enters its 6-digit code.
+**Staff two-step sign-in:** staff permissions normally require a second factor. The seeded demo staff accounts are exempt so that judges can sign in directly (D-07). The exemption is a setting, and it is switched off for any real use. The **Two-step sign-in** screen (`/auth/mfa`) tells an exempt account "No authenticator code is needed for this account."; a staff account without the exemption sets up an authenticator app there and enters its 6-digit code.
 
 ## 2. The main journey in about 15 minutes
 
