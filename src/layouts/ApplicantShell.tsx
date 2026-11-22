@@ -1,7 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { APPLICANT_NAV } from '@/navigation/nav-config'
 import { cn } from '@/lib/cn'
-import { DemoBadge } from '@/components/DemoBadge'
 import { Brand, ChatLauncher, Footer, MockRoleSwitcher, SkipLink, TopBarEnd } from './ShellParts'
 import { PeolwaneAssistant } from '@/features/assistant/PeolwaneAssistant'
 
@@ -18,7 +17,6 @@ export function ApplicantShell() {
         <div className="mx-auto flex max-w-content items-center justify-between gap-4 px-4 py-2">
           <div className="flex min-w-0 items-center gap-3">
             <Brand />
-            <DemoBadge />
           </div>
           <div className="flex items-center gap-4">
             <nav aria-label="Main" className="hidden items-center gap-2 md:flex">

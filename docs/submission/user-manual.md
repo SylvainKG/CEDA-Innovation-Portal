@@ -24,11 +24,11 @@ Screens still being built are marked **[confirm at release]**; that line is chec
 
 **Register (applicants).** Choose **Register**. Enter your name, email address and a password of **at least 12 characters**, then accept the privacy notice. We email you a link: open it to verify your address, then sign in. Staff accounts are created by invitation from an administrator.
 
-**Sign in.** Use your email address and password. If either is wrong, the message doesn't say which, for your protection. If you try too often, wait a few minutes and try again. In the demo, **Choose a demo portal** under the form fills in a demo account's email address; you then type the demo password you were given.
+**Sign in.** Use your email address and password. If either is wrong, the message doesn't say which, for your protection. If you try too often, wait a few minutes and try again.
 
 **Forgot your password.** Choose **Forgot password?** under the password field and enter your email. If an account exists, we send a single-use link that expires. The message is the same whether or not an account exists.
 
-**Staff two-step sign-in.** Staff permissions require a second factor (an authenticator app); the server enforces this. The first time, the **Two-step sign-in** screen shows a QR code: scan it with an authenticator app (or type the key shown), then enter the 6-digit code. After that, enter a new code from the app when asked. Seeded demo staff accounts are exempt so that judges can sign in directly; the screen tells them so.
+**Staff two-step sign-in.** Staff permissions require a second factor (an authenticator app); the server enforces this. The first time, the **Two-step sign-in** screen shows a QR code: scan it with an authenticator app (or type the key shown), then enter the 6-digit code. After that, enter a new code from the app when asked. Seeded staff accounts used for evaluation are exempt so that evaluators can sign in directly; the screen then says "No authenticator code is needed for this account."
 
 **Notifications.** The bell in the header shows how many updates are unread; **Notifications** lists them. The count refreshes every so often while you are signed in. **Email alerts** are optional: switch them on or off on the Notifications page **[confirm at release]**. In this demonstration they are **Simulated** (queued but not sent).
 
@@ -70,7 +70,7 @@ Screens still being built are marked **[confirm at release]**; that line is chec
 3. **Record screening:**
    - **Eligible** moves the case to evaluation. Your reason stays with staff as an internal note, and the applicant sees only that the idea is under review.
    - **Ineligible** closes the case, and the applicant sees your reason.
-4. **Request a clarification** (a question and deadline) or **a revision** (tasks and deadline) when needed.
+4. **Request clarification** (a question and deadline) or **Request revision** (tasks and deadline) when needed.
 5. **Internal notes** are visible to staff only, never to the applicant.
 
 ## 4. Reviewer
@@ -79,7 +79,7 @@ Screens still being built are marked **[confirm at release]**; that line is chec
 2. **Declare first.** Before the proposal opens, confirm you have **no conflict of interest** and will keep it confidential. If you have a conflict, declare it: your assignment is removed, the administrator reassigns the case, and the declaration is recorded.
 3. **Score** each criterion from **1 to 5** using the anchored definitions, with a reason of **at least 20 characters**. Drafts are saved; **Submit** when complete.
 4. You **can't see other reviewers' scores until you have submitted your own** on the same version.
-5. **Version 2:** for a revised idea, verify each roadmap task as **Verified** or **Not verified**, with a note. **Compare with version 1** shows both versions side by side, with each change named. Version 1's scores stay with version 1.
+5. **Version 2:** for a revised idea, verify each roadmap task as **Verified** or **Not verified**, with a note. **Compare versions** shows both versions side by side, with each change named. Version 1's scores stay with version 1.
 
 ## 5. Adjudicator
 
@@ -90,12 +90,14 @@ Screens still being built are marked **[confirm at release]**; that line is chec
 
 ## 6. Administrator
 
+The navigation has **All cases**, **Users & roles** and **Settings**. Settings opens **Challenges**; links at the top of every settings page lead to **Roles**, **Content** and **Chat settings**.
+
 - **All cases:** every case with its stage; **assign reviewers** (at least two), see each reviewer's load, and remove a reviewer.
-- **Record an award** on an approved case (amount in BWP and a description), and **close** a case with a reason.
+- **Record award** on an approved case (amount in BWP and a description), and **close** a case with a reason.
 - **Challenges:** edit a challenge's details, publish, unpublish or close it to new ideas. Build its **application form** (sections and fields: short text, long text, choice, email), save it as a draft, then publish it. A submitted idea keeps the form version it used.
 - **Rubrics:** add the criteria reviewers score, each with a weight and a description of what a 1, a 3 and a 5 look like. The weights must total 100%.
 - **Content:** FAQs, contacts, referrals, the support page, the privacy notice, the declaration and other pages. Save as a draft or publish; only published pages are shown to the public.
-- **Users and roles:** everyone registered, with their roles. Grant a role, remove one (with a reason), or **invite** staff by email (the email is Simulated in this demonstration). **You can't change your own roles:** the controls on your own row are disabled, and the server refuses and records the attempt anyway.
+- **Users & roles:** everyone registered, with their roles. Grant a role, remove one (with a reason), or **invite** staff by email (the email is Simulated in this demonstration). **You can't change your own roles:** the controls on your own row are disabled, and the server refuses and records the attempt anyway.
 - **Roles:** what each role can do. Built-in roles keep their permissions; add a new role to combine permissions differently, and choose whether it needs two-step sign-in.
 - **Chat settings:** whether chat is always open, always closed or follows the opening hours; the hours for each day of the week; and closure days (for example public holidays).
 - **Other settings:** the review quorum (2 reviews) and the demo two-step exemption are configuration values with no screen; only the backend team can change them. Switch the exemption **off** for any real use.

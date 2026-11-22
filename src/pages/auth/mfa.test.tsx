@@ -34,10 +34,10 @@ beforeEach(async () => {
 })
 
 describe('T02 two-step sign-in (D-07)', () => {
-  it('lets seeded demo staff through with the "not required" banner', async () => {
+  it('lets exempt seeded staff through with the "no code needed" banner', async () => {
     await as('reviewer')
     renderAt('/auth/mfa')
-    expect(await screen.findByText('MFA not required for demo accounts', {}, LOAD)).toBeInTheDocument()
+    expect(await screen.findByText('No authenticator code is needed for this account.', {}, LOAD)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Continue' })).toHaveAttribute('href', '/staff')
   })
 

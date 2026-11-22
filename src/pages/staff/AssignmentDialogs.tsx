@@ -100,7 +100,7 @@ export function AssignReviewersDialog({
         ) : reviewers.isError ? (
           <p className="text-error">We couldn't load the reviewers. Close this dialog and try again.</p>
         ) : reviewers.data.length === 0 ? (
-          <p className="text-ink-muted">No one holds the reviewer role yet. Grant it in Users and roles first.</p>
+          <p className="text-ink-muted">No one holds the reviewer role yet. Grant it in Users & roles first.</p>
         ) : (
           reviewers.data.map((r) => {
             const already = active.has(r.id)
