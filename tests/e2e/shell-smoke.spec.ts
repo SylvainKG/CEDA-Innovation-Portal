@@ -12,6 +12,14 @@ import { expect, test, type Page } from '@playwright/test'
 
 const MOCK_ROLE_KEY = 'ceda.mock.role'
 
+/**
+ * Signed-in pages here use the mock session (a role in local storage), which exists only in a mock-mode build.
+ * Against a deployed site (E2E_BASE_URL), staging runs in Supabase mode, so those checks are skipped there; the
+ * real-backend journey (hosted-journey.spec.ts, `journey` input) covers signed-in pages on the deployed site.
+ */
+const deployed = !!process.env.E2E_BASE_URL
+const MOCK_ONLY = 'Needs the mock session (mock-mode build). On a deployed site, hosted-journey.spec.ts covers signed-in pages.'
+
 async function asRole(page: Page, role: string) {
   await page.addInitScript(([key, value]) => window.localStorage.setItem(key, value), [MOCK_ROLE_KEY, role])
 }
@@ -23,13 +31,14 @@ async function horizontalOverflow(page: Page) {
 const pages: { name: string; role?: string; path: string; heading: string | RegExp }[] = [
   { name: 'public home', path: '/', heading: 'Submit your innovation to CEDA' }, // T01 built from spec (was the placeholder title)
   { name: 'sign-in', path: '/auth/sign-in', heading: 'Sign in' },
-  { name: 'applicant home', role: 'applicant', path: '/ideas', heading: 'My ideas' },
-  { name: 'staff home', role: 'admin', path: '/staff', heading: /^Welcome, / }, // T06 built (#78): greets the signed-in person
+  { name: 'applicant home', role: 'applicant', path: '/ideas', heading: /^Welcome, / }, // T06 to Sandra's frame: greets the applicant
+  { name: 'staff home', role: 'admin', path: '/staff', heading: /^Good (morning|afternoon|evening), / }, // T06 to Sandra's frames: greets the signed-in person
   { name: 'reviewer queue', role: 'reviewer', path: '/staff/reviews', heading: 'My reviews' },
 ]
 
 for (const p of pages) {
   test(`${p.name}: one h1, DEMO label, no horizontal scroll`, async ({ page }) => {
+    test.skip(deployed && !!p.role, MOCK_ONLY)
     if (p.role) await asRole(page, p.role)
     await page.goto(p.path)
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(p.heading)
@@ -57,6 +66,7 @@ test('a signed-out visitor is sent to sign-in from an applicant page', async ({ 
 })
 
 test('an applicant sees the Forbidden state on the audit log, without confirming anything exists', async ({ page }) => {
+  test.skip(deployed, MOCK_ONLY)
   await asRole(page, 'applicant')
   await page.goto('/audit')
   await expect(page.getByRole('heading', { level: 1 })).toHaveText("You don't have access to this page")

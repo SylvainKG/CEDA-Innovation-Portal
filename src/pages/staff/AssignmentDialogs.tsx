@@ -3,6 +3,7 @@ import { Banner, Dialog, TextField } from '@/components'
 import { useCaseCommand, useReviewers } from '@/features/staff/queries'
 import { api } from '@/lib/api'
 import type { CaseAssignment, StaffCase } from '@/lib/api/types'
+import { RequiredTag } from '@/components/ErrorSummary'
 
 /** Default due date: 14 days from today (contract §4.2 default), as YYYY-MM-DD in CAT. */
 function defaultDueDate(now: Date = new Date()): string {
@@ -92,7 +93,7 @@ export function AssignReviewersDialog({
       <CommandBanner state={command.state} failed="The reviewers were not assigned." />
       <fieldset className="flex flex-col gap-2" aria-describedby={errors.reviewers || serverFields?.reviewers ? `${ids}-rev-err` : undefined}>
         <legend className="font-semibold">
-          Reviewers <span className="text-sm font-normal text-ink-muted">Required</span>
+          Reviewers <RequiredTag />
         </legend>
         {reviewers.isPending ? (
           <p className="text-ink-muted">Loading reviewers…</p>

@@ -20,7 +20,7 @@ export function ChallengesPage() {
   if (list.isError) return <ErrorState level="h1" message="We couldn't load the challenges." onRetry={() => void list.refetch()} />
   if (list.data === null) return <ForbiddenState home="/staff" />
   const columns: Column<AdminChallenge>[] = [
-    { key: 'title', header: 'Challenge', primary: true, cell: (c) => <Link to={`/admin/challenges/${c.id}`}>{c.title}</Link> },
+    { key: 'title', header: 'Challenge', primary: true, cell: (c) => <Link to={`/admin/challenges/${c.id}`} className="inline-flex min-h-touch items-center">{c.title}</Link> },
     { key: 'status', header: 'Status', cell: (c) => STATUS_WORD[c.status] },
     { key: 'opens', header: 'Opens', cell: (c) => formatDateCAT(c.opens_at) },
     { key: 'closes', header: 'Closes', cell: (c) => formatDateCAT(c.closes_at) },
@@ -131,7 +131,7 @@ function Rubrics() {
           const latest = [...r.versions].sort((a, b) => b.version_no - a.version_no)[0]
           return (
             <li key={r.id} className="flex flex-wrap items-baseline gap-x-3 rounded-md bg-surface-card p-3 shadow-1">
-              <Link to={`/admin/rubrics/${r.id}`}>{r.title}</Link>
+              <Link to={`/admin/rubrics/${r.id}`} className="inline-flex min-h-touch items-center">{r.title}</Link>
               <span className="text-sm text-ink-muted">{latest ? `v${latest.version_no} ${latest.published_at ? 'published' : 'draft'}` : 'No versions'}</span>
             </li>
           )
