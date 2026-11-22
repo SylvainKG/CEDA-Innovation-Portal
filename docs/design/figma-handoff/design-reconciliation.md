@@ -5,10 +5,10 @@
 
 ## Result
 
-- **Snapshot set complete.** Every screen in the route map has a current snapshot in [`snapshots/`](snapshots/): 28 Figma frames and 34 build captures (62 files, 3.0 MB, none over 200 KB). Each screen on the judges' tour has its 21 Nov frame and a 22 Nov capture of the polished build side by side. See the snapshot log in [`snapshots/README.md`](snapshots/README.md).
+- **Snapshot set complete for the framed and approved screens; the unframed dialogs, the state-dependent tabs and mobile captures are listed under What's left.** The set in [`snapshots/`](snapshots/) has 28 Figma frames and 34 build captures (62 files, 3.0 MB, none over 200 KB). Each screen on the judges' tour has its 21 Nov frame and a 22 Nov capture of the polished build side by side. See the snapshot log in [`snapshots/README.md`](snapshots/README.md).
 - **Visual polish (22 Nov, Sylvain's request):** every screen on the judges' tour was compared with its frame side by side at 1280 px. Two changes came out of it: the public header (#144: no wrapped labels, the DEMO pill beside the logo, links styled as in the applicant header) and the scorecard's criterion names in ink (#145). Everything else matches its frame or has its difference logged below.
 - **Every implemented screen matches its snapshot, or the difference is logged** in [`handoff-notes.md`](handoff-notes.md) (#2–#40). The table below lists each screen with its result.
-- **Two fixes are open before freeze** (UI merges stop 16:00 CAT): #142 links the admin settings pages from the navigation (#40), and #143 makes the status badges name an open revision (#39). Neither is in this PR.
+- **Both fixes merged on main 22 Nov:** #142 links the admin settings pages from the navigation (#40), and #143 makes the status badges name an open revision (#39).
 - **Not reconciled back into Figma (§8.4 step 8).** The frames live in Sandra's Figma file and were not redrawn before the freeze. Until they are, the differences listed here are the record, and the build plus these snapshots are the reference. When Sandra is back, she updates the frames to match the decisions below or keeps them logged.
 
 ## Two kinds of snapshot
@@ -64,8 +64,8 @@
 
 | Item | Owner | When |
 |---|---|---|
-| #40: Users & roles and the other settings pages in the admin navigation | ABM (UI), PR #142 | Review and merge before 16:00 CAT |
-| #39: status badges name an open revision | ABM (UI), PR #143 | Review and merge before 16:00 CAT |
+| #40: Users & roles and the other settings pages in the admin navigation | ABM (UI), PR #142 | Done — merged on main 22 Nov |
+| #39: status badges name an open revision | ABM (UI), PR #143 | Done — merged on main 22 Nov |
 | Redraw the frames to the decisions in #16–#38, or keep them logged (§8.4 step 8) | Sandra (ABM as backup) | After judging, when Sandra is back |
 | Snapshots of the dialogs with no frame (assign reviewers, revision request, publish, award), the T08 Feedback and Decision tabs and the V2 verification block | ABM | After judging; each needs case state set up in the session |
 | Mobile 360 snapshots | ABM | After judging. The 360 px checks are recorded in `staging-review-checklist.md`; only desktop is captured |

@@ -7,7 +7,7 @@
 
 **Note (21 Nov, added by Sylvain on Sandra's behalf, assisted):** the *Notes* column below is mostly Sandra's 16 Nov first pass. Words such as "Overdue" and "Missing" describe that day. Every row's *Code status (PR)* column is current: all screens in the route map are built, as Provisional UI unless stated. The design review of each screen is still Sandra's.
 
-**P7-04 (22 Nov, ABM for Sandra):** every row now names its current snapshot. Snapshots dated 2026-11-21 are Sandra's Figma frames; those dated 2026-11-22 and marked (build) are captures of the approved build for screens that have no frame. [`design-reconciliation.md`](design-reconciliation.md) lists each screen's result and the differences logged.
+**P7-04 (22 Nov, ABM for Sandra):** rows with a snapshot name their current file. Rows without a snapshot are listed in [`design-reconciliation.md`](design-reconciliation.md) under What's left. Snapshots dated 2026-11-21 are Sandra's Figma frames; those dated 2026-11-22 and marked (build) are captures of the approved build for screens that have no frame. [`design-reconciliation.md`](design-reconciliation.md) lists each screen's result and the differences logged.
 
 Design status values: Not started · In design · Provisional · In review · Approved · Implemented · Verified · Blocked.
 
@@ -15,6 +15,7 @@ Design status values: Not started · In design · Provisional · In review · Ap
 - The only design source is the Figma Make prototype (see `screen-inventory.md`). Its views are responsive, so **Mobile 360** and **Desktop 1280** share one status. Neither breakpoint has been checked at exactly 360 or 1280 px.
 - **Provisional** = something exists but has not been reviewed and has gaps (listed in Notes). Nothing is *Approved*.
 - **Ready for build (D-37) is not met by any row yet:** no snapshot is exported to `snapshots/`, and the API contract (`03-api-contracts-and-permissions.md`) is not written.
+Superseded on 22 Nov: the staging review (#135) and P7-04 (#139) approved the reviewed screens and exported snapshots; the rows below are current.
 - **Every row with a Provisional status is also blocked by the type-scale and contrast fixes** in `design-tokens.md`.
 
 | Template | Variant / role | Slice | Design-ready by | Mobile 360 | Desktop 1280 | Designer | Figma frame (link / node) | Last snapshot | Developer | Code status (PR) | Depends on (RPCs) | Notes |
