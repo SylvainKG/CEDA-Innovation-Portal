@@ -38,8 +38,41 @@ Each test file runs in its own transaction and rolls back. The case-reference se
 | 21 Nov, 08:30:07 (10:30:07) | `main` (`f42e31d`) + 013's suite, after 015 | `run-hosted.mjs`, TLS verified | `TOTAL 492 assertions, 4 failed`: `009` #7, #8, #15 and `007` #24 counted genuine history on hosted (0003's real expiry at 14:00 UTC and its extension at 14:06 UTC on 20 Nov). Not a defect: the checks assumed a fresh seed |
 | 21 Nov, 08:38:49 (10:38:49) | branch `db/tests-hold-on-live-data` (#97) + 013's suite | Same | **`TOTAL 493 assertions, 0 failed`**: the four checks now count only their own transaction's rows; sequence 8 |
 | **21 Nov, 10:29:40 (12:29:40)** | **`main` (`694dc65`)**, all 13 suites, hosted at migration 015 and level with `main` | `run-hosted.mjs`, TLS verified | **`TOTAL 507 assertions, 0 failed (hosted, 12.2 s)`**; sequence `8 -> restored to 8`. The same count as CI on `main`, including the report reconciliation suite (`013`) on the live data |
+| **22 Nov, 14:15:04 (16:15:04): final pre-freeze run (P7-01)** | **`main` (`1b89b25`)**, all 14 suites, hosted at migration 016 and level with `main` | `run-hosted.mjs`, TLS verified | **`TOTAL 513 assertions, 5 failed (hosted, 22.3 s)`**; sequence `8 -> restored to 8`. All 5 failures come from data added through the deployed site after the 07:06 reset, not from code (§3i): `001` #9 (one real, non-demo account) and `011` #2, #3, #5, #7 (two drafts by Applicant A). The same suites pass 513/513 on a clean database: CI run 45004119862, ABM's local stack (#153), Stacey's PGlite run on `85aee03` |
 
-Output of the last run (all files `ok`):
+Output of the final pre-freeze run (22 Nov):
+
+```
+hosted run started 2026-11-22T14:15:04.320Z · Postgres 17.12 · latest migration 20261123140000
+FAIL 001_foundation.test.sql: 38 passed, 1 failed
+ok   002_slice1_submit.test.sql: 62 passed, 0 failed
+ok   003_slice2_screen_assign.test.sql: 61 passed, 0 failed
+ok   004_slice3_evaluate.test.sql: 61 passed, 0 failed
+ok   005_slice4_revise.test.sql: 72 passed, 0 failed
+ok   006_slice5_decide_award.test.sql: 45 passed, 0 failed
+ok   007_slice6_reports_audit_chat.test.sql: 46 passed, 0 failed
+ok   008_slice6_admin_settings.test.sql: 52 passed, 0 failed
+ok   009_scheduled_jobs.test.sql: 20 passed, 0 failed
+ok   010_security_privileges.test.sql: 11 passed, 0 failed
+FAIL 011_my_ideas.test.sql: 10 passed, 4 failed
+ok   012_alert_preference.test.sql: 10 passed, 0 failed
+ok   013_report_reconciliation.test.sql: 14 passed, 0 failed
+ok   014_public_catalogue.test.sql: 6 passed, 0 failed
+reference sequence 8 -> restored to 8 (highest existing reference 8)
+
+TOTAL 513 assertions, 5 failed (hosted, 22.3 s)
+```
+
+The failed checks, as the runner printed them:
+- `001` #9 "every seeded profile is flagged DEMO": have 1, want 0.
+- `011` #2 "Applicant A sees exactly one idea": have 3, want 1.
+- `011` #3 "it is their own case 0008": have NULL.
+- `011` #5 "stages are the public stages reached…": have [].
+- `011` #7 "a new draft is listed too": have 4, want 2.
+
+Each follows from the data in §3i. No database test tool runs against this project after the 18:00 CAT freeze (runbook §3 step 9).
+
+Output of the 21 Nov run (all files `ok`):
 
 ```
 hosted run started 2026-11-21T10:29:40.813Z · Postgres 17.12 · latest migration 20261123130000
@@ -61,7 +94,7 @@ reference sequence 8 -> restored to 8 (highest existing reference 8)
 TOTAL 507 assertions, 0 failed (hosted, 12.2 s)
 ```
 
-This is not yet the release run: that is repeated against the release commit after code freeze, on staging only.
+The release-time run was planned for after the freeze, but runbook §3 step 9 bars test tools on the judging project after 18:00 CAT, and staging is that project. So the final run was the 22 Nov pre-freeze run above.
 
 ## 3. Accounts, Edge Functions, scheduled jobs (17 Nov)
 
@@ -224,6 +257,35 @@ ABM asked for N9 (a closed challenge refuses the submit and keeps the draft) thr
 - The refused submit writes nothing: `private.raise_error` only raises, so the transaction rolls back.
 
 **Independent check (07:06:23 UTC):** 8 cases (highest `CEDA-2026-0008`), sequence 8, 0 drafts, 0 attachments, 1 storage object, 13 accounts, audit 24, case events 21, notifications 2, chat messages 8, the chat override and Water-Smart at their original timestamps, and no disabled triggers in `public`. The snapshot file was deleted. Reported on #61.
+
+## 3i. Baseline check before the freeze, as found (22 Nov 2026, 14:15 UTC / 16:15 CAT)
+
+Read with SQL right after the final run (§2). Since the 07:06 reset (§3h), the deployed site (Supabase mode since 21 Nov) has been used, and three rows were added:
+
+| When (UTC) | Audit row | What |
+|---|---|---|
+| 12:37:53 | `account.registered` (#878) | A real person registered (a Gmail address, email confirmed, signed in at 12:38). Applicant role, `is_demo = false` |
+| 13:29:51 | `proposal.draft_created` (#879) | A draft started as `applicant.a@demo.ceda-portal.test`, no reference |
+| 13:32:15 | `proposal.draft_created` (#880) | A second draft as Applicant A, no reference |
+
+| | Expected (demo baseline) | Found |
+|---|---|---|
+| Cases (`proposals`) | 8 | **10**: 8 submitted + 2 drafts by Applicant A (both with `proposal_drafts` rows) |
+| Highest reference / sequence | `CEDA-2026-0008` / 8 | `CEDA-2026-0008` / 8: **the next demo case is still `CEDA-2026-0009`** (drafts take no reference) |
+| Accounts | 13 | **14**: the 13 demo accounts + 1 real registration |
+| Storage objects / attachments | 1 / 0 | 1 / 0 |
+| `chat_demo_override` | `null` @ 2026-11-17 07:13:46.482239+00 | Same |
+| Water-Smart challenge | `published` @ 2026-11-17 09:57:31.392665+00 | Same |
+| Disabled triggers in `public` | 0 | 0 |
+| `audit_events` / `case_events` / `notifications` / `chat_messages` | 24 / 21 / 2 / 8 | **27** / 21 / 2 / 8 |
+
+**Recorded as found, not changed** (Stacey's decision, 22 Nov):
+- The app has no function that deletes a draft.
+- Audit rows are append-only.
+- The runbook bars deleting rows on the judging project.
+- The morning's snapshot was deleted after its reset, so the exact-reset tool has nothing to reset to.
+
+The judges' journey is unaffected (the next case is `0009`), but Applicant A's My ideas shows two extra drafts. The real account is personal data in a fictional-data demo; whether it is removed is a team decision, after the freeze (#61). The demo password was also changed on 22 Nov at 13:34 UTC (`scripts/set-demo-passwords.mjs`, 13 accounts; sign-in checked, HTTP 200). That changes no table counted above.
 
 ## 4. Not done or not run
 
