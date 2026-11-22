@@ -20,6 +20,21 @@
   --brand-accent: #f9c51c; /* [make] decorative only */
   --brand-accent-subtle: #fff9dc; /* [make] */
 
+  /* CEDA sunrise palette used by Peolwane's public artwork and shared footer (post-freeze, 22 Nov 2026). */
+  --ceda-maroon: #9e2420;
+  --ceda-orange: #f26a21;
+  --ceda-amber: #f8a51b;
+  --ceda-gold: #fdc80d;
+  --ceda-brown: #5b3d34;
+  --ceda-night: #2b1d19;
+  --ceda-sky-start: #fffaf3;
+  --ceda-sky-end: #ffe3c2;
+  --ceda-rain: #3f6fa8;
+  --ceda-footer-text: #e9dcd5;
+  --ceda-surface-warm: #fff8ef;
+  --ceda-band-start: #fff3e2;
+  --ceda-band-end: #ffe0b8;
+
   /* Surfaces and text */
   --surface-page: #f7f7f5; /* [make] */
   --surface-card: #ffffff; /* [make] */

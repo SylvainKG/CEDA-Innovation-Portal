@@ -89,6 +89,8 @@ const doc = [
   '',
   'Not listed here, because they are not npm packages:',
   '- the CEDA name and logo, which belong to CEDA and are not covered by an open-source licence;',
+  '- the photographs in `src/assets/photos/` (Wikimedia Commons, public domain, CC0, CC BY or CC BY-SA), whose',
+  '  authors, licences and sources are in `src/brand/photos.ts` and credited on the About page (`/about#photo-credits`);',
   '- hosted services used at run time (Supabase, AWS Amplify), which are covered by their own terms of service.',
   '',
   ...sections,

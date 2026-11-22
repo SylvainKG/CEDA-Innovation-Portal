@@ -29,7 +29,10 @@ async function horizontalOverflow(page: Page) {
 }
 
 const pages: { name: string; role?: string; path: string; heading: string | RegExp }[] = [
-  { name: 'public home', path: '/', heading: 'Submit your innovation to CEDA' }, // T01 built from spec (was the placeholder title)
+  { name: 'public home', path: '/', heading: 'A new dawn for innovation in Botswana' }, // T01 built from spec (was the placeholder title)
+  { name: 'how it works', path: '/how-it-works', heading: 'How the CEDA innovation process works' },
+  { name: 'about us', path: '/about', heading: 'About Us' },
+  { name: 'CEDA branch network', path: '/help/contacts', heading: 'Contact and branch network' },
   { name: 'sign-in', path: '/auth/sign-in', heading: 'Sign in' },
   { name: 'applicant home', role: 'applicant', path: '/ideas', heading: /^Welcome, / }, // T06 to Sandra's frame: greets the applicant
   { name: 'staff home', role: 'admin', path: '/staff', heading: /^Good (morning|afternoon|evening), / }, // T06 to Sandra's frames: greets the signed-in person
@@ -48,6 +51,20 @@ for (const p of pages) {
     expect(await horizontalOverflow(page)).toBe(0)
   })
 }
+
+test('public navigation links to standalone information pages', async ({ page }) => {
+  await page.goto('/')
+  if ((page.viewportSize()?.width ?? 1280) < 1024) await page.getByRole('button', { name: 'Open menu' }).click()
+  const nav = page.getByRole('navigation', { name: 'Main' })
+  await expect(nav.getByRole('link', { name: 'Challenges' })).toHaveAttribute('href', '/challenges')
+  await expect(nav.getByRole('link', { name: 'How it works' })).toHaveAttribute('href', '/how-it-works')
+  await expect(nav.getByRole('link', { name: 'About Us' })).toHaveAttribute('href', '/about')
+  await expect(nav.getByRole('link', { name: 'FAQs' })).toHaveCount(0)
+  await expect(nav.getByRole('link', { name: 'Contact' })).toHaveAttribute('href', '/help/contacts')
+  await expect(page.getByRole('link', { name: 'Peolwane · CEDA Innovation Portal' })).toHaveAttribute('href', '/')
+  await nav.getByRole('link', { name: 'How it works' }).click()
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('How the CEDA innovation process works')
+})
 
 test('first Tab press focuses the skip link, which is visibly outlined', async ({ page }) => {
   await page.goto('/')

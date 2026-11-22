@@ -2,7 +2,7 @@ import type { ReactElement } from 'react'
 import { createBrowserRouter, type RouteObject } from 'react-router-dom'
 import { ApplicantShell } from '@/layouts/ApplicantShell'
 import { PublicShell } from '@/layouts/PublicShell'
-import { RoleShell } from '@/layouts/RoleShell'
+import { RoleShell, SiteShell } from '@/layouts/RoleShell'
 import { StaffShell } from '@/layouts/StaffShell'
 import { NotFoundState } from '@/components/states/States'
 import { STAFF_ROLES, type Role } from '@/lib/api/types'
@@ -37,7 +37,10 @@ import { ReceiptPage } from '@/pages/applicant/ReceiptPage'
 import { MyIdeasPage } from '@/pages/applicant/MyIdeasPage'
 import { ApplicantCasePage } from '@/pages/applicant/ApplicantCasePage'
 import { RevisePage } from '@/pages/applicant/RevisePage'
-import { ChallengesPage, PublicHome } from '@/pages/public/PublicHome'
+import { PublicHome } from '@/pages/public/PublicHome'
+import { ChallengesPage } from '@/pages/public/ChallengesPage'
+import { HowItWorksPage } from '@/pages/public/HowItWorksPage'
+import { AboutPage } from '@/pages/public/AboutPage'
 import { ChallengeBriefPage } from '@/pages/public/ChallengeBriefPage'
 import { apiMode } from '@/lib/api'
 import { RequireRole } from './guards'
@@ -50,18 +53,12 @@ export const routes: RouteObject[] = [
     element: <PublicShell />,
     children: [
       { path: '/', element: <PublicHome /> },
-      { path: '/challenges', element: <ChallengesPage /> },
-      { path: '/challenges/:slug', element: <ChallengeBriefPage /> },
       { path: '/auth/sign-in', element: <SignInPage /> },
       { path: '/auth/register', element: <RegisterPage /> },
       { path: '/auth/verify', element: <VerifyEmailPage /> },
       { path: '/auth/forgot', element: <ForgotPasswordPage /> },
       { path: '/auth/reset', element: <ResetPasswordPage /> },
       { path: '/auth/mfa', element: <MfaPage /> },
-      { path: '/help/faqs', element: <FaqPage /> },
-      { path: '/help/contacts', element: <ContactsPage /> },
-      { path: '/help/support', element: <SupportPage /> },
-      { path: '/privacy', element: <PrivacyPage /> },
       // Development-only component gallery: only registered in mock mode, never with a real backend.
       ...(apiMode === 'mock'
         ? [
@@ -71,6 +68,20 @@ export const routes: RouteObject[] = [
             },
           ]
         : []),
+    ],
+  },
+  {
+    // Shared by visitors and signed-in people: each keeps their own navigation here (SiteShell).
+    element: <SiteShell />,
+    children: [
+      { path: '/challenges', element: <ChallengesPage /> },
+      { path: '/challenges/:slug', element: <ChallengeBriefPage /> },
+      { path: '/how-it-works', element: <HowItWorksPage /> },
+      { path: '/about', element: <AboutPage /> },
+      { path: '/help/faqs', element: <FaqPage /> },
+      { path: '/help/contacts', element: <ContactsPage /> },
+      { path: '/help/support', element: <SupportPage /> },
+      { path: '/privacy', element: <PrivacyPage /> },
     ],
   },
   {

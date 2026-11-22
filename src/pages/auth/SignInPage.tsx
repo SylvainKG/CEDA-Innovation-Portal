@@ -136,7 +136,7 @@ function MockSessionPicker({ next }: { next: string | null }) {
     navigate(next ?? homeFor(user?.roles ?? [role]))
   }
   return (
-    <section aria-labelledby="mock-heading" className="mx-auto w-full max-w-[440px] rounded-md bg-demo-subtle p-4">
+    <section aria-labelledby="mock-heading" className="mx-auto w-full max-w-[440px] rounded-md bg-demo-subtle p-4 lg:max-w-[1040px]">
       <h2 id="mock-heading" className="text-h3 font-semibold text-demo">
         Mock session (development only)
       </h2>
