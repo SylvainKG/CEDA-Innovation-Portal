@@ -5,7 +5,8 @@
 
 ## Result
 
-- **Snapshot set complete.** Every screen in the route map has a current snapshot in [`snapshots/`](snapshots/): 28 Figma frames and 19 build captures (47 files, 2.1 MB; the largest is 169 KB). See the snapshot log in [`snapshots/README.md`](snapshots/README.md).
+- **Snapshot set complete.** Every screen in the route map has a current snapshot in [`snapshots/`](snapshots/): 28 Figma frames and 34 build captures (62 files, 3.0 MB, none over 200 KB). Each screen on the judges' tour has its 21 Nov frame and a 22 Nov capture of the polished build side by side. See the snapshot log in [`snapshots/README.md`](snapshots/README.md).
+- **Visual polish (22 Nov, Sylvain's request):** every screen on the judges' tour was compared with its frame side by side at 1280 px. Two changes came out of it: the public header (#144: no wrapped labels, the DEMO pill beside the logo, links styled as in the applicant header) and the scorecard's criterion names in ink (#145). Everything else matches its frame or has its difference logged below.
 - **Every implemented screen matches its snapshot, or the difference is logged** in [`handoff-notes.md`](handoff-notes.md) (#2–#40). The table below lists each screen with its result.
 - **Two fixes are open before freeze** (UI merges stop 16:00 CAT): #142 links the admin settings pages from the navigation (#40), and #143 makes the status badges name an open revision (#39). Neither is in this PR.
 - **Not reconciled back into Figma (§8.4 step 8).** The frames live in Sandra's Figma file and were not redrawn before the freeze. Until they are, the differences listed here are the record, and the build plus these snapshots are the reference. When Sandra is back, she updates the frames to match the decisions below or keeps them logged.
@@ -15,7 +16,7 @@
 | Kind | Files | Source | Use |
 |---|---|---|---|
 | **Figma frame** | dated `2026-11-21` (28) | Sandra's 21 Nov frames: the PDFs in `Figma pdf/`, rendered at 100 dpi, cropped and saved as 128-colour PNGs | The design reference the screen was built to |
-| **Build capture** | dated `2026-11-22` (19) | The app on `main` `cbb1df3` in mock mode, 1280 px wide, full page, demo data only, the development role switcher hidden | The approved state of a screen that has no frame. Each was approved in the 22 Nov staging review |
+| **Build capture** | dated `2026-11-22` (34) | The polished build (`main` `87f2097` with #142, #144 and #145 in a local preview) in mock mode, 1280 px wide, full page (side sheets: the viewport), demo data only, the development role switcher hidden | The approved state of a screen with no frame (19), and the polished build next to its frame for the judges' tour (15) |
 
 ## Screen by screen
 
