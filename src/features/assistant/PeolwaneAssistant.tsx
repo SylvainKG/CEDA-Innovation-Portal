@@ -1,4 +1,4 @@
-import { Keyboard, Loader2, Mic, Send, Sparkles, Square, VolumeX, X } from 'lucide-react'
+import { ArrowUp, Keyboard, Loader2, Mic, Send, ShieldCheck, Sparkles, Square, VolumeX, X } from 'lucide-react'
 import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { cn } from '@/lib/cn'
@@ -14,22 +14,62 @@ import {
   useAssistant,
   type AssistantStatus,
 } from './store'
+import './assistant.css'
 
-/**
- * Peolwane AI (docs/process/peolwane-ai.md): a voice-first assistant, with text as an option, on every page.
- * A floating button at the bottom right opens a panel. Voice: tap the microphone, speak, tap again; the reply is
- * shown and spoken. Text: type and send. Not shown at all when the service isn't configured (VITE_LESEDING_*).
- *
- * `placement="applicant"` stacks the button above the "Chat with CEDA" button, which applicant pages keep at the
- * bottom right. The panel is not modal: the page stays usable, Esc closes it and focus returns to the button.
- */
+const PROMPTS = ['How do I submit an idea?', 'Where can I find open challenges?', 'What happens after I apply?']
+const PANEL_EXIT_MS = 220
+
+/** A tab-persistent portal guide with a compact launcher that gets out of the way while the page scrolls. */
 export function PeolwaneAssistant({ placement = 'default', config = assistantConfig }: { placement?: 'default' | 'applicant'; config?: AssistantConfig | null }) {
   const { open } = useAssistant()
+  const [compact, setCompact] = useState(() => typeof window !== 'undefined' && window.scrollY > 12)
+  const [panelMounted, setPanelMounted] = useState(open)
   const launcherRef = useRef<HTMLButtonElement>(null)
   const wasOpen = useRef(open)
+  const openRef = useRef(open)
+  const closeTimer = useRef<number | null>(null)
+  const scrollClosedRef = useRef(false)
+  openRef.current = open
 
   useEffect(() => {
-    if (wasOpen.current && !open) launcherRef.current?.focus()
+    if (open) {
+      if (closeTimer.current !== null) window.clearTimeout(closeTimer.current)
+      closeTimer.current = null
+      setPanelMounted(true)
+      return
+    }
+    if (panelMounted) {
+      closeTimer.current = window.setTimeout(() => {
+        setPanelMounted(false)
+        closeTimer.current = null
+      }, PANEL_EXIT_MS)
+    }
+    return () => {
+      if (closeTimer.current !== null) window.clearTimeout(closeTimer.current)
+      closeTimer.current = null
+    }
+  }, [open, panelMounted])
+
+  useEffect(() => {
+    let previousY = window.scrollY
+    const onScroll = () => {
+      const currentY = window.scrollY
+      setCompact(currentY > 12)
+      if (Math.abs(currentY - previousY) > 2 && openRef.current) {
+        scrollClosedRef.current = true
+        setOpen(false)
+      }
+      previousY = currentY
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    if (wasOpen.current && !open) {
+      if (!scrollClosedRef.current) launcherRef.current?.focus()
+      scrollClosedRef.current = false
+    }
     wasOpen.current = open
   }, [open])
 
@@ -42,58 +82,67 @@ export function PeolwaneAssistant({ placement = 'default', config = assistantCon
           type="button"
           data-print="hide"
           aria-haspopup="dialog"
+          aria-expanded={open}
+          aria-label={ASSISTANT_NAME}
+          title={compact ? `Open ${ASSISTANT_NAME}` : undefined}
           onClick={() => setOpen(true)}
-          className={cn(
-            'fixed right-4 z-20 inline-flex min-h-touch items-center gap-2 rounded-full bg-brand px-4 font-semibold text-brand-on shadow-1 hover:bg-brand-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
-            placement === 'applicant' ? 'bottom-40 md:bottom-24' : 'bottom-4 md:bottom-6',
-          )}
+          className={cn('peolwane-launcher', compact && 'peolwane-launcher--compact', placement === 'applicant' && 'peolwane-launcher--applicant')}
         >
-          <Sparkles aria-hidden className="h-5 w-5" />
-          {ASSISTANT_NAME}
+          <span className="peolwane-launcher__icon"><Sparkles aria-hidden className="h-5 w-5" /></span>
+          <span className="peolwane-launcher__label">Peolwane <strong>AI</strong></span>
+          <span className="peolwane-launcher__hint">Ask a question</span>
         </button>
       )}
-      {open && <Panel config={config} />}
+      {panelMounted && <Panel config={config} closing={!open} />}
     </>
   )
 }
 
 const STATUS_TEXT: Record<AssistantStatus, string> = {
   idle: '',
-  listening: 'Listening… tap the button again when you have finished.',
+  listening: 'Listening… tap again when you have finished.',
   transcribing: 'Working out what you said…',
-  thinking: 'Peolwane AI is answering…',
+  thinking: 'Peolwane is putting together an answer…',
   speaking: 'Speaking the answer…',
 }
 
-function Panel({ config }: { config: AssistantConfig }) {
+function Panel({ config, closing }: { config: AssistantConfig; closing: boolean }) {
   const { mode, status, messages, error, voiceUnavailable } = useAssistant()
   const titleId = useId()
   const logRef = useRef<HTMLOListElement>(null)
   const micRef = useRef<HTMLButtonElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const panelRef = useRef<HTMLElement>(null)
   const [draft, setDraft] = useState('')
   const busy = status === 'transcribing' || status === 'thinking'
+  const showPrompts = messages.length === 1
 
-  // Focus the main control when the panel opens or the mode changes.
   useEffect(() => {
     if (mode === 'voice') micRef.current?.focus()
     else inputRef.current?.focus()
   }, [mode])
 
-  // Keep the newest message in view.
   useEffect(() => {
     const log = logRef.current
     if (log) log.scrollTop = log.scrollHeight
   }, [messages])
 
-  // Esc closes the panel while focus is inside it (it is not modal, so Esc elsewhere on the page is left alone).
-  const panelRef = useRef<HTMLElement>(null)
   useEffect(() => {
     const panel = panelRef.current
     if (!panel) return
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.stopPropagation()
+    panel.toggleAttribute('inert', closing)
+    if (closing && panel.contains(document.activeElement)) {
+      const activeElement = document.activeElement
+      if (activeElement instanceof HTMLElement) activeElement.blur()
+    }
+  }, [closing])
+
+  useEffect(() => {
+    const panel = panelRef.current
+    if (!panel) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.stopPropagation()
         setOpen(false)
       }
     }
@@ -101,11 +150,16 @@ function Panel({ config }: { config: AssistantConfig }) {
     return () => panel.removeEventListener('keydown', onKeyDown)
   }, [])
 
-  function onSubmit(e: FormEvent) {
-    e.preventDefault()
-    if (!draft.trim() || busy) return
-    void sendQuestion(config, draft, 'text')
+  function submitQuestion(question: string, source: 'voice' | 'text' = 'text') {
+    if (!question.trim() || busy) return
+    if (source === 'text' && mode !== 'text') setMode('text')
+    void sendQuestion(config, question, source)
     setDraft('')
+  }
+
+  function onSubmit(event: FormEvent) {
+    event.preventDefault()
+    submitQuestion(draft)
   }
 
   return (
@@ -113,124 +167,86 @@ function Panel({ config }: { config: AssistantConfig }) {
       role="dialog"
       aria-modal="false"
       aria-labelledby={titleId}
+      aria-hidden={closing || undefined}
       ref={panelRef}
       data-print="hide"
-      className="fixed inset-x-4 bottom-4 z-30 flex max-h-[min(36rem,calc(100dvh-2rem))] flex-col overflow-hidden rounded-lg border border-line bg-surface-card shadow-1 md:inset-x-auto md:bottom-6 md:right-6 md:w-96"
+      className={cn('peolwane-panel', closing && 'peolwane-panel--closing')}
     >
-      <header className="flex items-center justify-between gap-2 border-b border-line px-4 py-2">
-        <h2 id={titleId} className="flex items-center gap-2 text-lg font-semibold text-ink">
-          <Sparkles aria-hidden className="h-5 w-5 text-brand-text" />
-          {ASSISTANT_NAME}
-        </h2>
-        <button
-          type="button"
-          onClick={() => setOpen(false)}
-          className="inline-flex min-h-touch min-w-touch items-center justify-center rounded-md text-ink hover:bg-surface-sunken"
-          aria-label={`Close ${ASSISTANT_NAME}`}
-        >
+      <header className="peolwane-panel__header">
+        <div className="peolwane-panel__brandmark" aria-hidden><Sparkles className="h-6 w-6" /></div>
+        <div className="min-w-0 flex-1">
+          <p className="peolwane-panel__eyebrow">CEDA PORTAL GUIDE</p>
+          <h2 id={titleId} className="peolwane-panel__title">Peolwane AI</h2>
+          <p className="peolwane-panel__subtitle">Here to help you find your way</p>
+        </div>
+        <span className="peolwane-panel__online"><span />{status === 'thinking' || status === 'transcribing' ? 'Working' : status === 'listening' ? 'Listening' : 'Ready'}</span>
+        <button type="button" onClick={() => setOpen(false)} className="peolwane-panel__close" aria-label={`Close ${ASSISTANT_NAME}`}>
           <X aria-hidden className="h-5 w-5" />
         </button>
       </header>
 
-      <div role="group" aria-label="How to talk to Peolwane AI" className="flex gap-1 border-b border-line px-4 py-2">
-        <ModeButton active={mode === 'voice'} onClick={() => setMode('voice')} icon={<Mic aria-hidden className="h-4 w-4" />} label="Voice" />
+      <div className="peolwane-panel__mode" role="group" aria-label="How to talk to Peolwane AI">
         <ModeButton active={mode === 'text'} onClick={() => setMode('text')} icon={<Keyboard aria-hidden className="h-4 w-4" />} label="Text" />
+        <ModeButton active={mode === 'voice'} onClick={() => setMode('voice')} icon={<Mic aria-hidden className="h-4 w-4" />} label="Voice" />
       </div>
 
-      <ol ref={logRef} role="log" aria-label="Conversation with Peolwane AI" className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
-        {messages.map((m) => (
-          <li key={m.id} className={cn('flex', m.role === 'user' ? 'justify-end' : 'justify-start')} aria-busy={m.pending || undefined}>
-            <p
-              className={cn(
-                'max-w-[85%] whitespace-pre-wrap rounded-lg px-3 py-2',
-                m.role === 'user' ? 'bg-brand text-brand-on' : 'bg-surface-sunken text-ink',
-              )}
-            >
-              <span className="sr-only">{m.role === 'user' ? 'You: ' : `${ASSISTANT_NAME}: `}</span>
-              {m.content || (m.pending ? '…' : '')}
-            </p>
-          </li>
-        ))}
-      </ol>
+      <div className="peolwane-panel__conversation">
+        <div className="peolwane-panel__section-label"><span /> YOUR CONVERSATION</div>
+        <ol ref={logRef} role="log" aria-label="Conversation with Peolwane AI" className="peolwane-panel__messages">
+          {messages.map((message) => (
+            <li key={message.id} className={cn('peolwane-message', `peolwane-message--${message.role}`)} aria-busy={message.pending || undefined}>
+              {message.role === 'assistant' && <span className="peolwane-message__avatar" aria-hidden><Sparkles className="h-3.5 w-3.5" /></span>}
+              <p className="peolwane-message__bubble">
+                <span className="sr-only">{message.role === 'user' ? 'You: ' : `${ASSISTANT_NAME}: `}</span>
+                {message.content || (message.pending ? <span className="peolwane-typing" aria-label="Thinking"><i /><i /><i /></span> : '')}
+              </p>
+            </li>
+          ))}
+        </ol>
 
-      <div className="space-y-2 border-t border-line px-4 py-3">
-        <p aria-live="polite" className="min-h-[1.25rem] text-sm text-ink-muted">
-          {STATUS_TEXT[status]}
-        </p>
-        {(error || voiceUnavailable) && (
-          <p role="alert" className="text-sm font-semibold text-ink">
-            {error ?? voiceUnavailable}
-          </p>
+        {showPrompts && (
+          <div className="peolwane-prompts" aria-label="Suggested questions">
+            <p>Not sure where to start?</p>
+            <div>{PROMPTS.map((prompt) => <button key={prompt} type="button" onClick={() => submitQuestion(prompt)}>{prompt}<ArrowUp aria-hidden className="h-3.5 w-3.5" /></button>)}</div>
+          </div>
         )}
+      </div>
+
+      <div className="peolwane-panel__composer">
+        <p aria-live="polite" className="peolwane-panel__status">{STATUS_TEXT[status]}</p>
+        {(error || voiceUnavailable) && <p role="alert" className="peolwane-panel__error">{error ?? voiceUnavailable}</p>}
 
         {mode === 'voice' ? (
-          <div className="flex items-center justify-center gap-3">
+          <div className="peolwane-voice-control">
             {status === 'speaking' ? (
-              <button ref={micRef} type="button" onClick={stopSpeaking} className={ROUND_BUTTON}>
-                <VolumeX aria-hidden className="h-6 w-6" />
-                Stop speaking
-              </button>
+              <button ref={micRef} type="button" onClick={stopSpeaking}><VolumeX aria-hidden className="h-5 w-5" />Stop speaking</button>
             ) : status === 'listening' ? (
-              <button ref={micRef} type="button" onClick={stopListening} className={cn(ROUND_BUTTON, 'animate-pulse')}>
-                <Square aria-hidden className="h-6 w-6" />
-                Stop and send
-              </button>
+              <button ref={micRef} type="button" onClick={stopListening} className="peolwane-voice-control--listening"><Square aria-hidden className="h-4 w-4" />Stop and send</button>
             ) : (
-              <button ref={micRef} type="button" onClick={() => void startListening(config)} disabled={busy} className={ROUND_BUTTON}>
-                {busy ? <Loader2 aria-hidden className="h-6 w-6 animate-spin" /> : <Mic aria-hidden className="h-6 w-6" />}
+              <button ref={micRef} type="button" onClick={() => void startListening(config)} disabled={busy}>
+                {busy ? <Loader2 aria-hidden className="h-5 w-5 animate-spin" /> : <Mic aria-hidden className="h-5 w-5" />}
                 Start speaking
               </button>
             )}
           </div>
         ) : (
-          <form onSubmit={onSubmit} className="flex items-end gap-2">
-            <label className="flex-1">
-              <span className="sr-only">Your question</span>
-              <input
-                ref={inputRef}
-                value={draft}
-                onChange={(e) => setDraft(e.target.value)}
-                maxLength={1000}
-                placeholder="Type your question"
-                className="min-h-touch w-full rounded-md border border-[#8A8580] bg-surface-card px-3 text-ink"
-              />
-            </label>
-            <button
-              type="submit"
-              disabled={busy || !draft.trim()}
-              className="inline-flex min-h-touch min-w-touch items-center justify-center gap-1 rounded-md bg-brand px-3 font-semibold text-brand-on hover:bg-brand-hover disabled:opacity-60"
-            >
+          <form onSubmit={onSubmit} className="peolwane-input-row">
+            <label className="sr-only" htmlFor="peolwane-question">Your question</label>
+            <input id="peolwane-question" ref={inputRef} value={draft} onChange={(event) => setDraft(event.target.value)} maxLength={1000} placeholder="Ask me about the portal…" />
+            <button type="submit" aria-label="Send question" disabled={busy || !draft.trim()}>
               {busy ? <Loader2 aria-hidden className="h-5 w-5 animate-spin" /> : <Send aria-hidden className="h-5 w-5" />}
-              Send
             </button>
           </form>
         )}
 
-        <p className="text-xs text-ink-muted">
-          AI answers can be wrong; check anything important on the page. Don&apos;t share personal or case details: what you say or type
-          goes to our AI provider. <Link to="/privacy" className="text-ink underline">Privacy</Link>
+        <p className="peolwane-panel__privacy"><ShieldCheck aria-hidden className="h-4 w-4" />
+          Chat history stays in this tab and clears when it closes. Don&apos;t share personal or case details. <Link to="/privacy">Privacy</Link>
         </p>
       </div>
     </section>
   )
 }
 
-const ROUND_BUTTON =
-  'inline-flex min-h-touch items-center gap-2 rounded-full bg-brand px-5 py-3 font-semibold text-brand-on hover:bg-brand-hover disabled:opacity-60'
-
 function ModeButton({ active, onClick, icon, label }: { active: boolean; onClick: () => void; icon: ReactNode; label: string }) {
-  return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className={cn(
-        'inline-flex min-h-touch flex-1 items-center justify-center gap-1 rounded-md px-3 text-sm font-semibold',
-        active ? 'bg-brand-subtle text-brand-text' : 'text-ink hover:bg-surface-sunken',
-      )}
-    >
-      {icon}
-      {label}
-    </button>
-  )
+  return <button type="button" aria-pressed={active} onClick={onClick} className={cn('peolwane-mode-button', active && 'peolwane-mode-button--active')}>{icon}{label}</button>
 }

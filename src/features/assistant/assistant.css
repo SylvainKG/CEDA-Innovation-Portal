@@ -1,0 +1,143 @@
+.peolwane-launcher {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.5rem;
+  z-index: 40;
+  display: inline-flex;
+  width: 16.5rem;
+  min-height: 3.75rem;
+  align-items: center;
+  justify-content: flex-start;
+  gap: .65rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--surface-card) 58%, transparent);
+  border-radius: var(--radius-pill);
+  padding: .45rem 1rem .45rem .5rem;
+  color: var(--brand-on-primary);
+  background: linear-gradient(125deg, var(--ceda-amber), var(--ceda-orange) 55%, var(--brand-primary-hover));
+  box-shadow: 0 12px 32px color-mix(in srgb, var(--ceda-night) 25%, transparent), inset 0 1px color-mix(in srgb, var(--surface-card) 48%, transparent);
+  font: inherit;
+  cursor: pointer;
+  transition: width .28s cubic-bezier(.2,.7,.2,1), min-height .28s ease, gap .28s ease, padding .28s ease, transform .24s ease, box-shadow .24s ease, opacity .2s ease;
+}
+.peolwane-launcher:hover { transform: translateY(-2px); box-shadow: 0 16px 34px color-mix(in srgb, var(--ceda-night) 28%, transparent), inset 0 1px color-mix(in srgb, var(--surface-card) 52%, transparent); }
+.peolwane-launcher:focus-visible, .peolwane-panel button:focus-visible, .peolwane-panel input:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 3px; }
+.peolwane-launcher__icon {
+  display: grid;
+  width: 2.65rem;
+  height: 2.65rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--surface-card) 48%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--surface-card) 28%, transparent);
+}
+.peolwane-launcher__label { max-width: 6.5rem; overflow: hidden; font-size: 1rem; font-weight: 650; letter-spacing: -.02em; white-space: nowrap; transition: max-width .25s ease, opacity .2s ease, transform .25s ease; }
+.peolwane-launcher__label strong { font-weight: 850; }
+.peolwane-launcher__hint { max-width: 7.5rem; flex: 0 1 auto; overflow: hidden; margin-left: .05rem; border-left: 1px solid color-mix(in srgb, var(--brand-on-primary) 25%, transparent); padding-left: .6rem; font-size: .875rem; font-weight: 550; white-space: nowrap; opacity: .88; transition: max-width .25s ease, opacity .2s ease, transform .25s ease, padding .25s ease, border-color .25s ease; }
+.peolwane-launcher--compact { width: 3.5rem; min-height: 3.5rem; justify-content: center; gap: 0; padding: .35rem; }
+.peolwane-launcher--compact .peolwane-launcher__label, .peolwane-launcher--compact .peolwane-launcher__hint { max-width: 0; opacity: 0; transform: translateX(.3rem); }
+.peolwane-launcher--compact .peolwane-launcher__hint { border-color: transparent; padding-left: 0; }
+.peolwane-launcher[aria-hidden='true'] { visibility: hidden; opacity: 0; transform: scale(.92); pointer-events: none; }
+.peolwane-launcher--applicant { bottom: calc(6.25rem + env(safe-area-inset-bottom)); }
+
+.peolwane-panel {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.5rem;
+  z-index: 50;
+  display: flex;
+  width: min(27rem, calc(100vw - 2rem));
+  max-height: min(46rem, calc(100dvh - 2rem));
+  flex-direction: column;
+  overflow: hidden;
+  transform-origin: bottom right;
+  border: 1px solid color-mix(in srgb, var(--surface-card) 80%, transparent);
+  border-radius: 1.65rem;
+  background: var(--surface-card);
+  box-shadow: 0 24px 80px color-mix(in srgb, var(--ceda-night) 30%, transparent), 0 4px 18px color-mix(in srgb, var(--ceda-night) 14%, transparent);
+  color: var(--text-primary);
+  animation: peolwane-open .26s cubic-bezier(.2,.8,.2,1) both;
+  will-change: opacity, transform;
+}
+.peolwane-panel--closing { animation: peolwane-close .2s cubic-bezier(.4,0,.8,.4) both; pointer-events: none; }
+.peolwane-panel__header {
+  position: relative;
+  display: flex;
+  min-height: 6.6rem;
+  align-items: center;
+  gap: .85rem;
+  overflow: hidden;
+  padding: 1.2rem 1rem 1.1rem 1.25rem;
+  color: var(--surface-card);
+  background: radial-gradient(ellipse at 88% 12%, color-mix(in srgb, var(--ceda-amber) 38%, transparent), transparent 37%), linear-gradient(118deg, var(--ceda-night), var(--ceda-brown) 58%, var(--ceda-maroon));
+}
+.peolwane-panel__header::after { position: absolute; right: 3.6rem; bottom: -4.5rem; width: 11rem; height: 8rem; border: 1px solid color-mix(in srgb, var(--ceda-gold) 22%, transparent); border-radius: 50%; content: ''; transform: rotate(-18deg); pointer-events: none; }
+.peolwane-panel__brandmark { z-index: 1; display: grid; width: 3.1rem; height: 3.1rem; flex: 0 0 auto; place-items: center; border: 1px solid color-mix(in srgb, var(--ceda-gold) 48%, transparent); border-radius: 1.1rem; color: var(--ceda-gold); background: color-mix(in srgb, var(--ceda-orange) 24%, transparent); box-shadow: inset 0 1px color-mix(in srgb, var(--surface-card) 18%, transparent); }
+.peolwane-panel__eyebrow { margin: 0 0 .12rem; color: var(--ceda-gold); font-size: .75rem; font-weight: 800; letter-spacing: .14em; }
+.peolwane-panel__title { margin: 0; font-size: 1.25rem; font-weight: 750; letter-spacing: -.035em; line-height: 1.2; }
+.peolwane-panel__subtitle { margin: .17rem 0 0; color: color-mix(in srgb, var(--surface-card) 78%, transparent); font-size: .875rem; }
+.peolwane-panel__online { display: inline-flex; align-items: center; gap: .35rem; color: color-mix(in srgb, var(--surface-card) 88%, transparent); font-size: .875rem; white-space: nowrap; }
+.peolwane-panel__online span, .peolwane-panel__section-label span { width: .5rem; height: .5rem; border-radius: 50%; background: var(--feedback-success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--feedback-success) 16%, transparent); }
+.peolwane-panel__close { z-index: 1; display: grid; width: 2.75rem; height: 2.75rem; flex: 0 0 auto; place-items: center; border: 1px solid color-mix(in srgb, var(--surface-card) 26%, transparent); border-radius: 50%; color: var(--surface-card); background: color-mix(in srgb, var(--surface-card) 10%, transparent); cursor: pointer; }
+.peolwane-panel__close:hover { background: color-mix(in srgb, var(--surface-card) 20%, transparent); }
+.peolwane-panel__mode { display: flex; gap: .35rem; padding: .7rem 1rem; border-bottom: 1px solid var(--border-default); background: var(--surface-card); }
+.peolwane-mode-button { display: inline-flex; min-height: 2.75rem; flex: 1; align-items: center; justify-content: center; gap: .45rem; border: 1px solid transparent; border-radius: .8rem; color: var(--text-secondary); background: transparent; font: inherit; font-size: 1rem; font-weight: 650; cursor: pointer; transition: background .18s ease, color .18s ease, border .18s ease; }
+.peolwane-mode-button:hover { background: var(--surface-sunken); }
+.peolwane-mode-button--active { border-color: var(--border-input); color: var(--brand-primary-text); background: var(--brand-primary-subtle); }
+.peolwane-panel__conversation { display: flex; min-height: 8rem; flex: 1; flex-direction: column; overflow: hidden; background: radial-gradient(ellipse at 85% 4%, color-mix(in srgb, var(--ceda-band-end) 22%, transparent), transparent 36%), var(--surface-card); }
+.peolwane-panel__section-label { display: flex; flex: 0 0 auto; align-items: center; gap: .45rem; padding: .75rem 1.15rem .25rem; color: var(--text-secondary); font-size: .75rem; font-weight: 800; letter-spacing: .12em; }
+.peolwane-panel__section-label span { width: .4rem; height: .4rem; background: var(--ceda-orange); box-shadow: none; }
+.peolwane-panel__messages { display: flex; min-height: 0; flex: 1; flex-direction: column; gap: .68rem; overflow-y: auto; overscroll-behavior: contain; margin: 0; padding: .65rem 1rem .8rem; list-style: none; scrollbar-color: var(--border-input) transparent; scrollbar-width: thin; }
+.peolwane-message { display: flex; align-items: flex-end; gap: .45rem; }
+.peolwane-message--user { justify-content: flex-end; }
+.peolwane-message__avatar { display: grid; width: 1.65rem; height: 1.65rem; flex: 0 0 auto; place-items: center; border: 1px solid var(--border-default); border-radius: .62rem; color: var(--brand-primary-text); background: var(--brand-primary-subtle); }
+.peolwane-message__bubble { max-width: 85%; margin: 0; border: 1px solid var(--border-default); border-radius: 1rem 1rem 1rem .3rem; padding: .68rem .8rem; color: var(--text-primary); background: var(--surface-sunken); font-size: 1rem; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.peolwane-message--user .peolwane-message__bubble { border-color: transparent; border-radius: 1rem 1rem .3rem 1rem; color: var(--surface-card); background: linear-gradient(135deg, var(--ceda-brown), var(--ceda-night)); }
+.peolwane-typing { display: inline-flex; gap: .22rem; padding: .18rem .1rem; }
+.peolwane-typing i { width: .32rem; height: .32rem; border-radius: 50%; background: var(--ceda-brown); animation: peolwane-dot 1s infinite ease-in-out; }
+.peolwane-typing i:nth-child(2) { animation-delay: .15s; }
+.peolwane-typing i:nth-child(3) { animation-delay: .3s; }
+.peolwane-prompts { flex: 0 0 auto; padding: 0 1rem 1rem 3.05rem; }
+.peolwane-prompts p { margin: 0 0 .4rem; color: var(--text-secondary); font-size: .875rem; }
+.peolwane-prompts div { display: flex; flex-wrap: wrap; gap: .4rem; }
+.peolwane-prompts button { display: inline-flex; min-height: 2.75rem; align-items: center; gap: .35rem; border: 1px solid var(--border-input); border-radius: var(--radius-pill); padding: .45rem .65rem; color: var(--brand-primary-text); background: var(--brand-primary-subtle); font: inherit; font-size: .875rem; font-weight: 600; text-align: left; cursor: pointer; transition: border-color .18s ease, background .18s ease; }
+.peolwane-prompts button:hover { border-color: var(--brand-primary); background: color-mix(in srgb, var(--brand-primary-subtle) 60%, var(--ceda-band-end)); }
+.peolwane-panel__composer { flex: 0 0 auto; border-top: 1px solid var(--border-default); padding: .75rem 1rem .9rem; background: var(--surface-card); }
+.peolwane-panel__status { min-height: 1.25rem; margin: 0 0 .35rem; color: var(--text-secondary); font-size: .875rem; }
+.peolwane-panel__error { margin: 0 0 .5rem; border-radius: .65rem; padding: .55rem .65rem; color: var(--feedback-error); background: var(--feedback-error-subtle); font-size: .875rem; }
+.peolwane-input-row { display: flex; align-items: center; gap: .5rem; border: 1px solid var(--border-input); border-radius: 1rem; padding: .35rem; background: var(--surface-card); transition: border-color .18s ease, box-shadow .18s ease; }
+.peolwane-input-row:focus-within { border-color: var(--brand-primary-text); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-primary) 24%, transparent); }
+.peolwane-input-row input { min-width: 0; min-height: 2.75rem; flex: 1; border: 0; outline: 0; padding: 0 .6rem; color: var(--text-primary); background: transparent; font: inherit; font-size: 1rem; }
+.peolwane-input-row input::placeholder { color: var(--text-secondary); }
+.peolwane-input-row button { display: grid; width: 2.75rem; height: 2.75rem; flex: 0 0 auto; place-items: center; border: 0; border-radius: .78rem; color: var(--brand-on-primary); background: var(--brand-primary); box-shadow: var(--shadow-1); cursor: pointer; }
+.peolwane-input-row button:hover { background: var(--brand-primary-hover); }
+.peolwane-input-row button:disabled { cursor: not-allowed; opacity: .55; }
+.peolwane-voice-control { display: flex; justify-content: center; }
+.peolwane-voice-control button { display: inline-flex; min-height: 2.9rem; align-items: center; justify-content: center; gap: .55rem; border: 0; border-radius: var(--radius-pill); padding: .55rem 1.25rem; color: var(--surface-card); background: linear-gradient(115deg, var(--ceda-brown), var(--ceda-night)); box-shadow: var(--shadow-1); font: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; }
+.peolwane-voice-control button:hover { filter: brightness(1.1); }
+.peolwane-voice-control button:disabled { opacity: .55; cursor: wait; }
+.peolwane-voice-control .peolwane-voice-control--listening { background: linear-gradient(115deg, var(--feedback-error), color-mix(in srgb, var(--feedback-error) 74%, var(--ceda-night))); animation: peolwane-pulse 1.3s infinite; }
+.peolwane-panel__privacy { display: flex; align-items: flex-start; gap: .4rem; margin: .65rem 0 0; color: var(--text-secondary); font-size: .875rem; line-height: 1.45; }
+.peolwane-panel__privacy svg { flex: 0 0 auto; color: var(--brand-primary-text); }
+.peolwane-panel__privacy a { color: var(--brand-primary-text); font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
+
+@keyframes peolwane-open { from { opacity: 0; transform: translateY(8px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes peolwane-close { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(5px) scale(.97); } }
+@keyframes peolwane-dot { 0%, 60%, 100% { transform: translateY(0); opacity: .45; } 30% { transform: translateY(-3px); opacity: 1; } }
+@keyframes peolwane-pulse { 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--feedback-error) 14%, transparent); } }
+
+@media (max-width: 640px) {
+  .peolwane-launcher { right: 1rem; bottom: calc(1rem + env(safe-area-inset-bottom)); width: 12.5rem; min-height: 3.4rem; padding-right: .85rem; }
+  .peolwane-launcher__hint { max-width: 0; border-left-color: transparent; padding-left: 0; opacity: 0; }
+  .peolwane-launcher--compact { width: 3.5rem; }
+  .peolwane-launcher--applicant { bottom: calc(6.25rem + env(safe-area-inset-bottom)); }
+  .peolwane-panel { right: .55rem; bottom: calc(.55rem + env(safe-area-inset-bottom)); left: .55rem; width: auto; max-height: calc(100dvh - 1.1rem - env(safe-area-inset-bottom)); border-radius: 1.35rem; }
+  .peolwane-panel__header { min-height: 6.1rem; gap: .65rem; padding-right: .7rem; padding-left: .9rem; }
+  .peolwane-panel__online { font-size: .875rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .peolwane-launcher, .peolwane-mode-button, .peolwane-input-row { transition: none; }
+  .peolwane-panel, .peolwane-panel--closing { animation: none; }
+  .peolwane-typing i, .peolwane-voice-control .peolwane-voice-control--listening { animation: none; }
+}
