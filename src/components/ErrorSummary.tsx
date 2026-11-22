@@ -30,7 +30,7 @@ export function ErrorSummary({
   )
 }
 
-/** "REQUIRED" in small capitals at the right of a field's label (Sandra's 21 Nov frames). Read out as "Required". */
+/** "REQUIRED" in small capitals at the right of a field's label (Sandra's 21 Nov frames), 12 px: F1 allows 12 px uppercase at 4.5:1 or more. Read out as "Required". */
 export function RequiredTag() {
-  return <span className="ml-auto pl-2 text-[0.6875rem] font-semibold uppercase tracking-wider text-ink-muted">Required</span>
+  return <span className="ml-auto pl-2 text-[0.75rem] font-semibold uppercase tracking-wider text-ink-muted">Required</span>
 }
