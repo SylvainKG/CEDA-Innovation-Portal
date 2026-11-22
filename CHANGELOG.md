@@ -5,6 +5,15 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 ## [Unreleased]
 
 - `feature` **OpenAPI export of the database API** (ARC-01, test plan S6). The Database workflow's Supabase-stack job now saves PostgREST's own description of the API (every exposed table and function) as the `openapi` artifact of each run, with the number of paths in the job summary. It is read as a signed-in (`authenticated`) user, with a short-lived token signed by the disposable CI stack's demo JWT secret: PostgREST lists only the functions the caller may execute, and the workflow functions are granted to `authenticated`, so a service-role read showed only 4 of them. The summary states whether `/rpc/submit_proposal` is present, and the step fails if it isn't. Evidence only, so a failure is reported without blocking the database gate.
+- `chore` **Release checklist brought up to date** (`docs/submission/release-checklist.md`, #64). It adds:
+  - resolving every [confirm at release] mark;
+  - Stacey's exact reset of staging before the freeze;
+  - the release note naming the demo two-step exemption (D-07, BCR-001 Part C);
+  - the extra steps for a fresh judging project;
+  - the Peolwane AI checks, including that it never asks for personal details.
+
+  `.gitattributes` keeps `THIRD_PARTY_LICENCES.md` in LF, so the licence check also passes on Windows checkouts.
+- `feature` Release tooling (REL-01, SUB-01): `scripts/third-party-licences.mjs` writes `THIRD_PARTY_LICENCES.md` from the committed lockfiles (runtime packages separated from build and test tooling; `--check` fails on an out-of-date list or a licence outside the allowed set). `scripts/package-source.sh` packs exactly the committed files of the release tag under one team folder, refuses secret-looking or personal files, re-checks the licence list and enforces the 150 MB limit. `docs/submission/release-checklist.md`: freeze, tag, judging environment, hosted checks, package, bundle and upload, judging period, with the decisions still open.
 - `test` **Smoke checks no longer fail against the Supabase-mode staging site.** The signed-in page checks in `shell-smoke.spec.ts` use the mock session, which only a mock-mode build has, so they now skip when `E2E_BASE_URL` points at a deployed site. There, the real-backend journey (`hosted-journey.spec.ts`) covers signed-in pages; it passed 4/4 read-only against the deployed site (run 44953549649). In mock mode all 20 smoke checks still run and pass.
 - `docs` **Submission documents brought up to date for the release** (judge guide, user manual, technical proposal):
   - the line "Peolwane is the portal's name; it is built for CEDA's Innovation Fund" in all three;
