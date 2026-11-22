@@ -27,7 +27,7 @@ This portal is a **demonstration prototype that uses fictional data only**. It i
 
 **Data minimisation:** the form stores only fields the published challenge form defines (unknown fields are dropped); phone is optional; file names are kept as display names only, never in storage paths.
 
-**No proposal or case data goes to external AI** (D-25, narrowed by BCR-004 if approved): no proposal, attachment, score, note or decision is sent to any AI service. The completeness meter and field help (INN-03) are rule-based. The one exception is **Peolwane AI**, the optional site-help assistant: it receives only what a person types or says in its panel, never page, form or account data. It is shown only when the Leseding key is configured (`docs/process/peolwane-ai.md`).
+**No proposal or case data goes to external AI** (D-25, narrowed by BCR-004, approved 21 Nov 2026): no proposal, attachment, score, note or decision is sent to any AI service. The completeness meter and field help (INN-03) are rule-based. The one exception is **Peolwane AI**, the optional site-help assistant: it receives only what a person types or says in its panel, never page, form or account data. It is shown only when the Leseding key is configured (`docs/process/peolwane-ai.md`).
 
 ## 2. How access is controlled
 

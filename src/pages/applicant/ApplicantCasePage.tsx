@@ -53,7 +53,7 @@ export function ApplicantCasePage() {
           <div className="flex flex-col gap-2">
             <div className="flex flex-wrap items-center gap-2">
               <ReferencePill reference={c.reference} copyable />
-              <StatusBadge status={c.status} audience="applicant" />
+              <StatusBadge status={c.status} audience="applicant" context={{ feedbackKind: waiting?.kind }} />
             </div>
             <h1 className="text-h1 font-semibold">{c.title}</h1>
             <p className="text-ink-muted">{c.challenge.title}</p>

@@ -15,6 +15,8 @@ describe('status wording (spec §6)', () => {
     expect(applicantStatus('action_required', { feedbackKind: 'clarification' }).label).toBe('Action required: answer a question')
     expect(applicantStatus('action_required', { feedbackKind: 'revision' }).label).toBe('Action required: revise your idea')
     expect(staffStatus('action_required', { feedbackKind: 'revision' }).label).toBe('Waiting on applicant (revision)')
+    // Without the request's kind (staff lists), the badge doesn't guess (handoff-notes #39).
+    expect(staffStatus('action_required').label).toBe('Waiting on applicant')
   })
 
   it('maps statuses to the five public stages', () => {

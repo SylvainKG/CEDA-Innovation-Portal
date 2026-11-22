@@ -4,6 +4,11 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `repair` **Status badges name an open revision correctly** (handoff-notes #39, found in the P7-04 V2 check). While a revision was open, the staff case page said "Waiting on applicant (clarification)" and the applicant's case page said "Action required: answer a question", because neither passed the request's kind to the badge, which then assumed a clarification. Both pages now pass the open request's kind (from the roadmap the page already reads), so a revision reads "Waiting on applicant (revision)" and "Action required: revise your idea", as in spec §6. Staff lists, which don't carry the kind, now say "Waiting on applicant" instead of guessing.
+
+  Evidence: the revision journey test now checks both badges, the clarification test checks the staff badge, and a unit test covers the label without a kind.
+- `docs` **BCR-004: Stacey's sign-off recorded** (`docs/blueprint/change-requests/BCR-004-peolwane-ai-assistant.md`). The row records "Approved with conditions, both met", as in the #122 review, and the status line names both approvals. The data-handling note no longer says "if approved".
+
 - `docs` **Draft release note** (`artifacts/phase-07/release.md`, release checklist §2). It covers:
   - what's in the release;
   - the demo configuration that must change for real use: the demo two-step exemption (D-07, BCR-001 Part C), demo data and passwords;
