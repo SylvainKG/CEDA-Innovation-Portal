@@ -12,7 +12,6 @@ import { cn } from '@/lib/cn'
 import { useSession } from '@/lib/session'
 import { staffStatus } from '@/lib/status'
 import { roleLabel } from '@/navigation/role-labels'
-import { CommitteeHome } from './CommitteeView'
 
 const READ_ALL: readonly Role[] = ['screening_officer', 'adjudicator', 'admin']
 const HANDLE: readonly Role[] = ['support_consultant', 'support_lead']
@@ -75,10 +74,11 @@ export function StaffHomePage() {
   const { data: user } = useSession()
   const roles = user?.roles ?? []
   const has = (list: readonly Role[]) => roles.some((r) => list.includes(r))
+  const admin = roles.includes('admin')
   const readAll = has(READ_ALL)
   const reviewer = roles.includes('reviewer')
-  const support = has(HANDLE)
-  const admin = roles.includes('admin')
+  // The admin absorbed the support consultant/lead role, so the admin home also carries chat.
+  const support = has(HANDLE) || admin
 
   const cases = useQuery({ queryKey: staffKeys.cases([]), queryFn: () => api.staff.listCases({ statuses: [] }), enabled: readAll })
   const queue = useQuery({ queryKey: reviewKeys.queue, queryFn: () => api.review.myQueue(), enabled: reviewer })
@@ -86,7 +86,6 @@ export function StaffHomePage() {
   const notes = useQuery({ queryKey: oversightKeys.notifications, queryFn: () => api.oversight.listNotifications() })
   const report = useQuery({ queryKey: oversightKeys.report({}), queryFn: () => api.oversight.getReport({}), enabled: admin })
 
-  if (user && roles.length === 1 && roles[0] === 'committee_member') return <CommitteeHome />
   const pending = [readAll && cases, reviewer && queue, support && inbox, notes].filter((q) => q && q.isPending)
   if (!user || pending.length) return <LoadingState what="your home page" />
   const failed = [readAll && cases, reviewer && queue, support && inbox].find((q) => q && q.isError)

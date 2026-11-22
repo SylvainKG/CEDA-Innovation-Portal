@@ -20,9 +20,11 @@ set local role authenticated;
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-0000000000c1","role":"authenticated"}', true);
 select throws_ok(format($$select public.record_decision(%L, 'approved', 'Strong case')$$, (select v from ids where k = 'c4')),
   'PT403', 'FORBIDDEN', 'a reviewer cannot record a decision');
-select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-0000000000e1","role":"authenticated"}', true);
+-- Migration 017 gave the admin decision.record / decision.publish (absorbed the adjudicator); a screening
+-- officer is now the staff role that still cannot decide. The admin's decision path is covered below.
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-0000000000b1","role":"authenticated"}', true);
 select throws_ok(format($$select public.record_decision(%L, 'approved', 'Strong case')$$, (select v from ids where k = 'c4')),
-  'PT403', 'FORBIDDEN', 'the administrator cannot decide (separation of duties)');
+  'PT403', 'FORBIDDEN', 'a screening officer cannot record a decision');
 
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-0000000000d1","role":"authenticated"}', true);
 select throws_ok(format($$select public.record_decision(%L, 'maybe', 'Strong case')$$, (select v from ids where k = 'c4')),
@@ -61,8 +63,9 @@ select throws_ok(format($$select public.record_award(%L, 1000000, 'Seed grant')$
   'PT409', 'CASE_NOT_APPROVED', 'N5: no award while the decision is unpublished');
 select throws_ok(format($$select public.record_award(%L, 1000000, 'Seed grant')$$, (select v from ids where k = 'c5')),
   'PT409', 'CASE_NOT_APPROVED', 'N5: no award on a not-approved case');
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-0000000000b1","role":"authenticated"}', true);
 select throws_ok(format($$select public.publish_decision(%L)$$, (select v from ids where k = 'd3')),
-  'PT403', 'FORBIDDEN', 'the administrator cannot publish a decision');
+  'PT403', 'FORBIDDEN', 'a screening officer cannot publish a decision');
 
 -- ============================================================ publish_decision
 select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-0000000000d1","role":"authenticated"}', true);

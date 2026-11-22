@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { ConfigAdminPort } from '../config-admin'
 import { ApiError, fromRpcError } from '../errors'
-import type { AdminContentPage, AdminRole, PermissionOption } from '../types'
+import { isActiveRole, type AdminContentPage, type AdminRole, type PermissionOption, type Role } from '../types'
 
 /** Supabase config admin adapter (T12 roles and content). */
 export function createSupabaseConfigAdmin(client: SupabaseClient): ConfigAdminPort {
@@ -17,7 +17,10 @@ export function createSupabaseConfigAdmin(client: SupabaseClient): ConfigAdminPo
       const byRole = new Map<string, string[]>()
       for (const g of (grants.data ?? []) as { role_key: string; permission: string }[]) byRole.set(g.role_key, [...(byRole.get(g.role_key) ?? []), g.permission])
       return {
-        roles: ((roles.data ?? []) as Omit<AdminRole, 'permissions'>[]).map((r) => ({ ...r, permissions: (byRole.get(r.key) ?? []).sort() })),
+        // Absorbed roles stay in the table for history but are hidden from the roles editor (migration 017).
+        roles: ((roles.data ?? []) as Omit<AdminRole, 'permissions'>[])
+          .filter((r) => isActiveRole(r.key as Role))
+          .map((r) => ({ ...r, permissions: (byRole.get(r.key) ?? []).sort() })),
         permissions: (perms.data ?? []) as PermissionOption[],
       }
     },

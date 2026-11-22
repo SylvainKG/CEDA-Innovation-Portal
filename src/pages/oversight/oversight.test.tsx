@@ -70,7 +70,7 @@ describe('T11 notifications (NTF-01)', () => {
 
 describe('T13 reports (RPT-01)', () => {
   it('reconciles with the seed: 8 cases, 4 applicants, one award of BWP 250,000', async () => {
-    await as('adjudicator')
+    await as('admin')
     const user = renderAt('/reports')
     expect(await screen.findByRole('heading', { name: 'Reports', level: 1 }, LOAD)).toBeInTheDocument()
     expect(within(screen.getByText('Ideas submitted', { selector: 'span' }).parentElement!).getByText('8')).toBeInTheDocument()
@@ -133,7 +133,7 @@ describe('T14 audit log (SEC-03)', () => {
   })
 
   it('is closed to everyone but admins and auditors, and pages by id', async () => {
-    await as('adjudicator')
+    await as('reviewer')
     renderAt('/audit')
     expect(await screen.findByRole('heading', { name: NO_ACCESS }, LOAD)).toBeInTheDocument()
     expect(await mockOversight.queryAudit({})).toBeNull()

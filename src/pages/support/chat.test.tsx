@@ -46,7 +46,8 @@ describe('T15 chat (CHT-01, CHT-02)', () => {
     expect(await within(screen.getByRole('list', { name: 'Conversation' })).findByText('How do I attach a budget?', {}, LOAD)).toBeInTheDocument()
     cleanup()
 
-    await as('support_consultant')
+    // The admin now handles support chat (absorbed the consultant role, migration 017).
+    await as('admin')
     user = renderAt('/support/inbox')
     expect(await screen.findByText('1 waiting · 0 with you', {}, LOAD)).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: 'Accept' }))
@@ -75,20 +76,20 @@ describe('T15 chat (CHT-01, CHT-02)', () => {
     expect(await mockChat.start('Hello there')).toMatchObject({ kind: 'refused', code: 'INVALID_STATE' })
   })
 
-  it('lets only one consultant take a chat', async () => {
+  it('lets only one handler take a chat', async () => {
     await as('applicant')
     const started = await mockChat.start('Is anyone there?')
     if (started.kind !== 'ok') throw new Error('start failed')
-    await as('support_consultant')
+    await as('admin')
     const user = renderAt('/support/inbox')
     await screen.findByText('1 waiting · 0 with you', {}, LOAD)
-    // Another consultant (the lead) accepts first.
+    // Someone else (another chat handler) accepts it first.
     await as('support_lead')
     expect(await mockChat.accept(started.data.session_id)).toMatchObject({ kind: 'ok' })
-    await as('support_consultant')
+    await as('admin')
     await user.click(screen.getByRole('button', { name: 'Accept' }))
     expect(await screen.findByText('Another consultant took this conversation, or it has ended.', {}, LOAD)).toBeInTheDocument()
-    // The consultant cannot write in, or read, a chat they don't handle.
+    // A handler cannot write in, or read, a chat they don't handle.
     expect(await mockChat.send(started.data.session_id, 'Hi')).toMatchObject({ kind: 'refused', code: 'FORBIDDEN' })
     expect(await mockChat.messages(started.data.session_id)).toEqual([])
   })
@@ -129,13 +130,15 @@ describe('T15 chat (CHT-01, CHT-02)', () => {
     expect(await mockChat.statistics({})).toBeNull()
   })
 
-  it('gives the support lead the chat statistics on Reports', async () => {
+  it('gives the admin the chat statistics in the Reports Chat tab', async () => {
     await as('applicant')
     await mockChat.start('A question')
-    await as('support_lead')
-    renderAt('/reports')
+    await as('admin')
+    const user = renderAt('/reports')
+    // The admin sees the full reports, so Chat is a tab alongside Participation (chat.stats absorbed).
+    expect(await screen.findByRole('tab', { name: 'Participation' }, LOAD)).toBeInTheDocument()
+    await user.click(screen.getByRole('tab', { name: 'Chat' }))
     expect(await screen.findByRole('heading', { name: 'Chat', level: 2 }, LOAD)).toBeInTheDocument()
     expect(within(screen.getByText('Waiting now').parentElement!).getByText('1')).toBeInTheDocument()
-    expect(screen.queryByRole('tab', { name: 'Participation' })).not.toBeInTheDocument()
   })
 })

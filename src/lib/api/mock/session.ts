@@ -22,15 +22,16 @@ const DEMO_USERS: Record<Role, SessionUser> = {
 
 const STORAGE_KEY = 'ceda.mock.role'
 
-/** The seed's demo sign-in emails (blueprint §3.1), so the sign-in screen can be tried in mock mode. */
+/**
+ * The seed's demo sign-in emails (blueprint §3.1), so the sign-in screen can be tried in mock mode.
+ * The adjudicator, consultant and committee accounts were absorbed into the Administrator
+ * (migration 017): the admin account now performs decisions, support chat and committee oversight.
+ */
 const DEMO_EMAILS: Record<string, Role> = {
   'applicant.a@demo.ceda-portal.test': 'applicant',
   'screening@demo.ceda-portal.test': 'screening_officer',
   'reviewer.1@demo.ceda-portal.test': 'reviewer',
-  'adjudicator@demo.ceda-portal.test': 'adjudicator',
   'admin@demo.ceda-portal.test': 'admin',
-  'consultant@demo.ceda-portal.test': 'support_consultant',
-  'committee.ext@demo.ceda-portal.test': 'committee_member',
 }
 /** Mock only: this address behaves like an account whose email is not verified yet. */
 export const MOCK_UNVERIFIED_EMAIL = 'unverified@demo.ceda-portal.test'
