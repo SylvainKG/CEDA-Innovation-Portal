@@ -1,9 +1,11 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Banner, Button, TextField } from '@/components'
 import { ErrorState, LoadingState } from '@/components/states/States'
 import { api } from '@/lib/api'
 import type { AdminRole, CommandOutcome, PermissionOption } from '@/lib/api/types'
+import { SettingsNav } from './SettingsNav'
 
 type Msg = { kind: 'success' | 'error' | 'warning'; text: string; fields?: Record<string, string> } | null
 const KEY = ['admin', 'role-setup'] as const
@@ -40,9 +42,12 @@ export function RolesPage() {
   const { roles, permissions } = setup.data
   return (
     <div className="flex flex-col gap-6">
+      <SettingsNav />
       <div className="flex flex-col gap-1">
         <h1 className="text-h1 font-semibold">Roles</h1>
-        <p className="text-ink-muted">What each role can do. Give roles to people on Users and roles.</p>
+        <p className="text-ink-muted">
+          What each role can do. Give roles to people on <Link to="/admin/users">Users and roles</Link>.
+        </p>
       </div>
       <div aria-live="polite">{msg ? <Banner kind={msg.kind}>{msg.text}</Banner> : null}</div>
       <NewRole permissions={permissions} busy={busy} fields={msg?.fields} onCreate={(i) => act(() => api.configAdmin.createRole(i), `Role "${i.label.trim()}" added.`)} />

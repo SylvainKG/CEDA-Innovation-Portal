@@ -12,6 +12,7 @@ import {
   ScrollText,
   Settings,
   Trophy,
+  Users,
 } from 'lucide-react'
 import type { Role } from '@/lib/api/types'
 
@@ -26,6 +27,8 @@ export interface NavItem {
   roles: readonly Role[]
   /** Marked ◐ in the navigation map: restricted view, scope pending a decision (e.g. D-08). */
   restricted?: boolean
+  /** Path prefixes that also mark this item as the current page (Settings covers every settings page). */
+  activeFor?: readonly string[]
 }
 
 export const STAFF_NAV: readonly NavItem[] = [
@@ -42,7 +45,15 @@ export const STAFF_NAV: readonly NavItem[] = [
   { label: 'Reports', to: '/reports', icon: BarChart3, roles: ['adjudicator', 'admin', 'support_lead', 'committee_member'] },
   { label: 'Audit log', to: '/audit', icon: ScrollText, roles: ['admin', 'auditor'] },
   { label: 'Support inbox', to: '/support/inbox', icon: Inbox, roles: ['support_consultant', 'support_lead'] },
-  { label: 'Settings', to: '/admin/challenges', icon: Settings, roles: ['admin'] },
+  // Laid out to Sandra's 21 Nov admin frame ("Users & roles" in the navigation; handoff-notes #40).
+  { label: 'Users & roles', to: '/admin/users', icon: Users, roles: ['admin'] },
+  {
+    label: 'Settings',
+    to: '/admin/challenges',
+    icon: Settings,
+    roles: ['admin'],
+    activeFor: ['/admin/challenges', '/admin/rubrics', '/admin/content', '/admin/settings'],
+  },
 ]
 
 export const APPLICANT_NAV: readonly NavItem[] = [

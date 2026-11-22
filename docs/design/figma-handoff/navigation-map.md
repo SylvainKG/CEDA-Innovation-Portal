@@ -25,7 +25,8 @@ Every shell has a DEMO badge, a skip link and a footer (Privacy · Fault support
 | Reports → `/reports` | | | ● | ● | ◐ chat | ◐ | |
 | Audit log → `/audit` | | | | ● | | | ● |
 | Support inbox → `/support/inbox` | | | | | ● | | |
-| Settings → `/admin/...` | | | | ● | | | |
+| Users & roles → `/admin/users` | | | | ● | | | |
+| Settings → `/admin/...` (Challenges, Roles, Content, Chat settings, linked from each settings page) | | | | ● | | | |
 
 ## Routes by template
 
