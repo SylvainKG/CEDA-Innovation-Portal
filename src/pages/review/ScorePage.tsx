@@ -638,9 +638,10 @@ function CriterionInput({
   const anchor = anchorFor(c, draft.score)
   return (
     <fieldset id={`${base}-${c.key}`} className="flex flex-col gap-2 border-t border-line pt-4" aria-describedby={error ? `${base}-${c.key}-err` : undefined}>
-      <legend className="flex w-full flex-wrap items-baseline justify-between gap-2 text-h3 font-semibold text-brand-text">
+      {/* Sandra's 21 Nov scorecard frame: the criterion in ink, its weight in orange. */}
+      <legend className="flex w-full flex-wrap items-baseline justify-between gap-2 text-h3 font-semibold text-ink">
         <span>{c.label}</span>
-        <span className="text-sm">
+        <span className="text-sm text-brand-text">
           {c.weight}%<span className="sr-only"> of the weighted score</span>
         </span>
       </legend>
