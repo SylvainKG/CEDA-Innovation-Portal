@@ -29,6 +29,9 @@ export function StaffCasePage() {
   const { id } = useParams()
   const kase = useStaffCase(id)
   const { data: user } = useSession()
+  // case.read_all holders read the roadmap (contract §4.4); the status badge words an open request by its kind (handoff-notes #39).
+  const readsAll = Boolean(user?.roles.some((r) => r === 'screening_officer' || r === 'adjudicator' || r === 'admin'))
+  const roadmap = useRoadmap(readsAll ? id : undefined)
   const [screeningOpen, setScreeningOpen] = useState(false)
   const [assignOpen, setAssignOpen] = useState(false)
   const [removing, setRemoving] = useState<{ assignment: CaseAssignment; name: string } | null>(null)
@@ -72,6 +75,7 @@ export function StaffCasePage() {
       .map((e) => ({ stage: e.public_stage!, at: e.at }))
       .filter((s, i, all) => all.findIndex((x) => x.stage === s.stage) === i),
   })
+  const openKind = c.status === 'action_required' ? roadmap.data?.find((r) => r.status !== 'answered')?.kind : undefined
   const closedReason = c.status === 'closed' ? [...c.events].reverse().find((e) => e.to_status === 'closed')?.reason : undefined
 
   return (
@@ -95,7 +99,7 @@ export function StaffCasePage() {
           <div className="flex min-w-0 flex-col gap-2">
             <div className="flex flex-wrap items-center gap-2">
               <ReferencePill reference={c.reference} copyable />
-              <StatusBadge status={c.status} audience="staff" context={{ decisionDrafted: Boolean(activeDecision(c) && !activeDecision(c)?.published_at) }} />
+              <StatusBadge status={c.status} audience="staff" context={{ decisionDrafted: Boolean(activeDecision(c) && !activeDecision(c)?.published_at), feedbackKind: openKind }} />
             </div>
             <h1 className="break-words text-h1 font-semibold">{c.title}</h1>
             <p className="text-sm text-ink-muted">
