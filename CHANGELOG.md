@@ -4,6 +4,7 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `test` **A signed-out visitor opens the challenge brief** (`hosted-journey.spec.ts`, a read-only test; regression for #148). It is the judges' first click, and every other journey test signs in first. Without migration 016 it failed on a throwaway stack from `main` (run 45003244482: "Something went wrong"); with it, the whole journey passes 8/8 (run 45004151958).
 - `repair` **Signed-out visitors can open challenge briefs again** (migration 016). The `challenge_versions` read policy (001) let an applicant keep seeing the version of their own case through a plain subquery on `proposals`; signed-out visitors have no access to `proposals`, so every read of `challenge_versions` failed with 42501 ("permission denied for table proposals") and no challenge brief opened on the hosted build. The check now runs in a security-definer helper, `private.owns_case_on_version()`, as 011 did for `challenges`; the policy's meaning is unchanged. The helper is added to the 010 allow-lists.
 
   Evidence: new pgTAP file `014_public_catalogue.test.sql` (signed out: no permission error, the published version readable, unpublished versions hidden; signed in: Applicant A still reads their case's version).
