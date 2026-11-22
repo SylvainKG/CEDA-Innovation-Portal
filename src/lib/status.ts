@@ -64,7 +64,8 @@ export function staffStatus(status: CaseStatus, ctx: StatusContext = {}): Status
       return { ...base, label: s ? `In evaluation (${s.scored}/${s.required} scored)` : 'In evaluation' }
     }
     case 'action_required':
-      return { ...base, label: `Waiting on applicant (${ctx.feedbackKind ?? 'clarification'})` }
+      // Lists don't carry the request's kind; say nothing rather than guess "clarification" (handoff-notes #39).
+      return { ...base, label: ctx.feedbackKind ? `Waiting on applicant (${ctx.feedbackKind})` : 'Waiting on applicant' }
     case 'in_adjudication':
       return { ...base, label: ctx.decisionDrafted ? 'Decision drafted (unpublished)' : 'Ready for decision' }
     case 'closed':
