@@ -4,6 +4,9 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `design` **Public header styled like the applicant header and Sandra's sign-in frame** (visual polish, 22 Nov). At 1280 px its buttons and links wrapped onto two lines ("Sign in", "How it works", "Submit an innovation"), and its links were underlined. Now the DEMO pill sits beside the logo, the links are bold without underlines (the current page orange and underlined, as in the applicant header), and no label wraps. Below 1280 px, where the logo, the pill and five links don't fit on one line, the links move into the menu that phones already use. Styling only: same links, same names, same order.
+
+  Evidence: measured at 1440, 1280, 1279, 1024, 768 and 360 px: no sideways scroll; every link and button one line, 44 px tall; header 61 px at every width (it was 77 px, with wrapped labels, at 1280).
 - `docs` **BCR-004: Stacey's sign-off recorded** (`docs/blueprint/change-requests/BCR-004-peolwane-ai-assistant.md`). The row records "Approved with conditions, both met", as in the #122 review, and the status line names both approvals. The data-handling note no longer says "if approved".
 
 - `docs` **Draft release note** (`artifacts/phase-07/release.md`, release checklist §2). It covers:
