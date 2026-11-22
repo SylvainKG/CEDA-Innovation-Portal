@@ -17,7 +17,7 @@ import {
 import './assistant.css'
 
 const PROMPTS = ['How do I submit an idea?', 'Where can I find open challenges?', 'What happens after I apply?']
-const PANEL_EXIT_MS = 220
+const PANEL_EXIT_MS = 340
 
 /** A tab-persistent portal guide with a compact launcher that gets out of the way while the page scrolls. */
 export function PeolwaneAssistant({ placement = 'default', config = assistantConfig }: { placement?: 'default' | 'applicant'; config?: AssistantConfig | null }) {
@@ -39,6 +39,11 @@ export function PeolwaneAssistant({ placement = 'default', config = assistantCon
       return
     }
     if (panelMounted) {
+      const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+      if (reduceMotion) {
+        setPanelMounted(false)
+        return
+      }
       closeTimer.current = window.setTimeout(() => {
         setPanelMounted(false)
         closeTimer.current = null
@@ -76,23 +81,23 @@ export function PeolwaneAssistant({ placement = 'default', config = assistantCon
   if (!config) return null
   return (
     <>
-      {!open && (
-        <button
-          ref={launcherRef}
-          type="button"
-          data-print="hide"
-          aria-haspopup="dialog"
-          aria-expanded={open}
-          aria-label={ASSISTANT_NAME}
-          title={compact ? `Open ${ASSISTANT_NAME}` : undefined}
-          onClick={() => setOpen(true)}
-          className={cn('peolwane-launcher', compact && 'peolwane-launcher--compact', placement === 'applicant' && 'peolwane-launcher--applicant')}
-        >
-          <span className="peolwane-launcher__icon"><Sparkles aria-hidden className="h-5 w-5" /></span>
-          <span className="peolwane-launcher__label">Peolwane <strong>AI</strong></span>
-          <span className="peolwane-launcher__hint">Ask a question</span>
-        </button>
-      )}
+      <button
+        ref={launcherRef}
+        type="button"
+        data-print="hide"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-hidden={open || undefined}
+        tabIndex={open ? -1 : undefined}
+        aria-label={ASSISTANT_NAME}
+        title={compact ? `Open ${ASSISTANT_NAME}` : undefined}
+        onClick={() => setOpen(true)}
+        className={cn('peolwane-launcher', compact && 'peolwane-launcher--compact', placement === 'applicant' && 'peolwane-launcher--applicant')}
+      >
+        <span className="peolwane-launcher__icon"><Sparkles aria-hidden className="h-5 w-5" /></span>
+        <span className="peolwane-launcher__label">Peolwane <strong>AI</strong></span>
+        <span className="peolwane-launcher__hint">Ask a question</span>
+      </button>
       {panelMounted && <Panel config={config} closing={!open} />}
     </>
   )
