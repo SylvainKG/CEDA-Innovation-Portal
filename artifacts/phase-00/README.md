@@ -20,17 +20,17 @@
 | `figma-handoff/` first snapshot | Sandra | Not run | |
 | Tokens → Tailwind theme; shell + navigation skeleton; state kit | Obvious | **Passed** (independent re-check) | PR #6 review comments: 55 unit tests, browser check at 360/1280 px; now covered by the E2E smoke suite |
 | Region latency measured (D-14) | Stacey + Sylvain | Partly run: EU Central (hosted project) p50 263 ms, p95 315 ms; Mumbai comparison Not run | `region-latency.md` |
-| Every member runs the same commit locally | All | Not run | Table below |
+| Every member runs the same commit locally | All | **Partly run:** Stacey on `0311e5e` (`main`, 22 Nov), all Passed. Sylvain's row is from `f126c10` (17 Nov); Sandra and Obvious Not run | Table below |
 
 ## Same commit on every machine
 
-Commit: `__________`
+Commit: `0311e5e` (`main`, 22 Nov 2026, after migration 016). A row run on another commit names its commit in Notes.
 
 | Member | OS | Node / npm | Docker | Supabase CLI | `npm ci` | `supabase start` | `db reset` | lint | typecheck | test | build | Notes |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Sandra | | | | | | | | | | | | |
 | Obvious | | | | | | | | | | | | |
-| Stacey | Windows 11 Pro (10.0.26200) | 25.0.0 / 11.6.2 | Not installed | 2.108.0 | Passed (451 packages) | Not run (no Docker) | Not run (no Docker); covered by CI run 43907353789 | Passed | Passed | Passed (55/55) | Passed | Run on `621307e` (origin/main), 16 Nov 2026. Database checks also pass on the PGlite stand-in (`tools/pglite-db-tests`, 457/457 on `cc7c6bb`) |
+| Stacey | Windows 11 Pro (10.0.26300) | 25.0.0 / 11.6.2 | Not installed | 2.108.0 | Passed (467 packages) | Not run (no Docker) | Not run (no Docker); the same migrations, seed and suites pass in CI on the Supabase stack (`main` `cd17218`, run 45004119862: `Files=14, Tests=513`, PASS) | Passed | Passed | Passed (49 files, 354/354) | Passed | Run on `0311e5e`, 22 Nov 2026, from a clean checkout (`npm ci`). Database suites on the PGlite stand-in (`tools/pglite-db-tests`, `npm test`): **513/513**, including `014_public_catalogue`. Earlier run: `621307e`, 16 Nov (55/55) |
 | Sylvain | Ubuntu 24.04 (cloud container) | 22.23.4 / 10.9.9 | 29.9.2 | Not installed | Passed | Not run | Not run (PGlite stand-in: 457 assertions passed on `db/security-checks`, 16 Nov) | Passed | Passed | Passed (55/55) | Passed | Commit `f126c10` (17 Nov) |
 
 ## Results summary
