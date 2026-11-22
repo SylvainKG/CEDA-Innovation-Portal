@@ -9,6 +9,7 @@ import { ACTIVE, BRANDS, brand } from '.'
  */
 const served = import.meta.glob<string>('/public/*.{ico,png}', { query: '?raw', import: 'default', eager: true })
 const kept = import.meta.glob<string>('/src/brand/*/icons/*', { query: '?raw', import: 'default', eager: true })
+const marks = import.meta.glob<string>('/src/brand/*/mark.svg', { query: '?raw', import: 'default', eager: true })
 const ICONS = ['favicon.ico', 'favicon-32.png', 'apple-touch-icon.png']
 
 describe('brand', () => {
@@ -25,6 +26,27 @@ describe('brand', () => {
 
   it('the page title in index.html is the active brand’s full name', () => {
     expect(indexHtml).toContain(`<title>${brand.fullName}</title>`)
+  })
+
+  it('index.html shows the loading splash of the active brand', () => {
+    expect(indexHtml).toContain(`id="pw-splash" class="pw-splash" data-brand="${brand.id}"`)
+    // Outside #root, so React's first render doesn't wipe it before its exit (src/brand/splash.ts).
+    expect(indexHtml).toContain('<div id="root"></div>')
+    expect(indexHtml).toContain('role="status"')
+    expect(indexHtml).toContain('prefers-reduced-motion')
+    expect(indexHtml.match(/<script\b/g)).toHaveLength(1)
+  })
+
+  it('the splash draws the brand’s vector mark exactly', () => {
+    const mark = marks[`/src/brand/${brand.id}/mark.svg`]
+    if (mark === undefined) return
+
+    const paths = Array.from(mark.matchAll(/\bd="([^"]+)"/g), (match) => match[1]).filter(
+      (path): path is string => path !== undefined,
+    )
+    for (const path of paths) {
+      expect(indexHtml).toContain(`d="${path}"`)
+    }
   })
 
   it('every brand keeps its three icons, so switching back is a copy', () => {
