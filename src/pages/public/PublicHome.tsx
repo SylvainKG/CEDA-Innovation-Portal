@@ -1,7 +1,8 @@
+import { useState } from 'react'
 import { ArrowRight, FileClock, ListChecks, Lock, PenLine, Route, ShieldCheck, type LucideIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { brand } from '@/brand'
-import { SunriseJourney } from '@/brand/Horizon'
+import { DawnFlight } from '@/brand/Horizon'
 import { PHOTOS, type Photo } from '@/brand/photos'
 import { ButtonLink } from '@/components'
 import { buttonClassName } from '@/components/button-styles'
@@ -98,12 +99,7 @@ function Hero() {
             ))}
           </ul>
         </div>
-        <div className="relative mx-auto w-full max-w-xl">
-          <div className="overflow-hidden rounded-[2rem] shadow-2 ring-1 ring-black/5">
-            <SunriseJourney className="block aspect-[600/440] h-auto w-full" />
-          </div>
-          <OpenChallengeCard />
-        </div>
+        <DawnFrame />
       </section>
     </div>
   )
@@ -220,8 +216,28 @@ function CedaVoice() {
   )
 }
 
-/** The challenge open now (the one closing soonest), live from the challenge list; nothing when none is open. */
-function OpenChallengeCard() {
+/**
+ * The hero's one piece: the sunrise and the swallow's flight above, and the challenge open now built into the frame's
+ * base like the ground under the sky, never over the photo. When the swallow lands, a line of light runs along the
+ * top of the strip and the "Open now" dot starts to pulse: the flight ends at the challenge.
+ */
+function DawnFrame() {
+  const [landed, setLanded] = useState(false)
+  return (
+    <figure className={cn('dawn-frame relative mx-auto w-full max-w-xl overflow-hidden rounded-[2rem] bg-[var(--ceda-night)] shadow-2', landed && 'is-landed')}>
+      <div className="relative aspect-[4/3] md:aspect-[600/430]">
+        <DawnFlight photo={PHOTOS.sunrise} onArrive={() => setLanded(true)} className="absolute inset-0 block h-full w-full" />
+        <figcaption className="absolute left-4 top-4 rounded-full bg-black/45 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+          {PHOTOS.sunrise.caption}
+        </figcaption>
+      </div>
+      <ChallengeStrip />
+    </figure>
+  )
+}
+
+/** The challenge open now (the one closing soonest), live from the challenge list; a way to all challenges if none is open. */
+function ChallengeStrip() {
   const challenges = useChallenges()
   const open = (challenges.data ?? [])
     .filter((c) => {
@@ -229,20 +245,35 @@ function OpenChallengeCard() {
       return t === 'open' || t === 'closing_soon'
     })
     .sort((a, b) => a.closes_at.localeCompare(b.closes_at))[0]
-  if (!open) return null
   return (
-    <div className="relative -mt-8 ml-4 mr-4 flex flex-col gap-1 rounded-md border border-line bg-surface-card p-4 shadow-1 lg:absolute lg:-bottom-8 lg:right-6 lg:mx-0 lg:mt-0 lg:max-w-xs">
-      <p className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-brand-text">
-        <span aria-hidden className="live-dot h-2 w-2 rounded-full bg-[var(--ceda-orange)]" />
-        Open now
-      </p>
-      <p className="font-semibold leading-snug">{open.title}</p>
-      <p className="text-sm text-ink-muted">
-        Closes {formatDateTimeCAT(open.closes_at)} ({relativeDays(open.closes_at)})
-      </p>
-      <Link to={`/challenges/${open.slug}`} className="inline-flex min-h-touch items-center gap-1 self-start font-semibold">
-        Read the brief<span className="sr-only">: {open.title}</span> <ArrowRight aria-hidden className="h-4 w-4" />
-      </Link>
+    <div className="dawn-strip relative flex flex-col gap-3 px-5 py-4 text-white sm:flex-row sm:items-center sm:justify-between sm:gap-5 sm:px-6">
+      {open ? (
+        <>
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[var(--ceda-gold)]">
+              <span aria-hidden className="dawn-dot h-2 w-2 rounded-full bg-[var(--ceda-gold)]" />
+              Open now
+            </p>
+            <p className="font-semibold leading-snug">{open.title}</p>
+            <p className="text-sm text-white/75">
+              Closes {formatDateTimeCAT(open.closes_at)} ({relativeDays(open.closes_at)})
+            </p>
+          </div>
+          <Link
+            to={`/challenges/${open.slug}`}
+            className="inline-flex min-h-touch shrink-0 items-center gap-2 self-start rounded-full bg-[var(--ceda-gold)] px-5 font-semibold text-ink no-underline hover:bg-[var(--ceda-amber)] sm:self-center"
+          >
+            Read the brief<span className="sr-only">: {open.title}</span> <ArrowRight aria-hidden className="h-4 w-4" />
+          </Link>
+        </>
+      ) : (
+        <>
+          <p className="text-white/85">New challenges open here first.</p>
+          <Link to="/challenges" className="inline-flex min-h-touch items-center gap-2 font-semibold text-[var(--ceda-gold)]">
+            See all challenges <ArrowRight aria-hidden className="h-4 w-4" />
+          </Link>
+        </>
+      )}
     </div>
   )
 }

@@ -3,6 +3,7 @@ import dressmaker from '@/assets/photos/dressmaker.webp'
 import farmerKalakamati from '@/assets/photos/farmer-kalakamati.webp'
 import gaboroneCbd from '@/assets/photos/gaborone-cbd.webp'
 import mainMall from '@/assets/photos/main-mall.webp'
+import okavangoSunrise from '@/assets/photos/okavango-sunrise.webp'
 import swallow from '@/assets/photos/swallow.webp'
 
 /**
@@ -25,6 +26,19 @@ export interface Photo {
 }
 
 export const PHOTOS = {
+  sunrise: {
+    src: okavangoSunrise,
+    width: 1400,
+    height: 936,
+    alt: 'The sun rising behind a lone tree in the Okavango Delta, Botswana, under a sky turning from deep blue to orange',
+    caption: 'Sunrise · Okavango Delta',
+    credit: {
+      author: 'Diego Delso',
+      licence: 'CC BY-SA 4.0',
+      licenceUrl: 'https://creativecommons.org/licenses/by-sa/4.0',
+      source: 'https://commons.wikimedia.org/wiki/File:Salida_de_sol,_delta_del_Okavango,_Botsuana,_2018-08-01,_DD_21.jpg',
+    },
+  },
   gaboroneCbd: {
     src: gaboroneCbd,
     width: 1600,

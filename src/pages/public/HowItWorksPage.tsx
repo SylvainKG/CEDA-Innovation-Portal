@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { brand } from '@/brand'
 import { PHOTOS } from '@/brand/photos'
 import { cn } from '@/lib/cn'
+import { StepJourney } from './StepJourney'
 
 const STEPS = [
   {
@@ -175,9 +176,8 @@ export function HowItWorksPage() {
 }
 
 function Hero() {
-  const photo = PHOTOS.techStand
   return (
-    <div className="relative isolate grid items-center gap-10 overflow-hidden rounded-[2rem] bg-[linear-gradient(135deg,var(--ceda-sky-start),var(--ceda-sky-end))] px-5 py-8 shadow-1 sm:px-8 md:px-12 md:py-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
+    <div className="relative isolate grid grid-cols-1 items-center gap-10 overflow-hidden rounded-[2rem] bg-[linear-gradient(135deg,var(--ceda-sky-start),var(--ceda-sky-end))] px-5 py-8 shadow-1 sm:px-8 md:px-12 md:py-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
       <div aria-hidden className="absolute -bottom-40 -right-24 -z-10 h-[28rem] w-[28rem] rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--ceda-gold)_45%,transparent),transparent_65%)]" />
       <div className="flex max-w-2xl flex-col items-start gap-4">
         <p className="inline-flex items-center gap-2 rounded-full border border-[var(--ceda-maroon)]/20 bg-white/80 px-3 py-1.5 text-sm font-semibold text-[var(--ceda-maroon)]">
@@ -198,19 +198,7 @@ function Hero() {
           </a>
         </div>
       </div>
-      <figure className="relative mx-auto w-full max-w-lg">
-        <div className="overflow-hidden rounded-[1.5rem] shadow-2 ring-4 ring-white">
-          <img src={photo.src} alt={photo.alt} width={photo.width} height={photo.height} decoding="async" className="aspect-[4/3] h-auto w-full object-cover" />
-        </div>
-        <figcaption className="absolute right-3 top-3 rounded-full bg-black/60 px-3 py-1 text-sm text-white">{photo.caption}</figcaption>
-        <div className="absolute -bottom-5 left-4 flex items-center gap-3 rounded-md bg-white px-4 py-3 shadow-2 sm:left-6">
-          <img src={brand.mark.src} alt="" width={brand.mark.width} height={brand.mark.height} className="h-9 w-auto" />
-          <span className="flex flex-col leading-tight">
-            <span className="font-semibold">Five steps</span>
-            <span className="text-sm text-ink-muted">from brief to decision</span>
-          </span>
-        </div>
-      </figure>
+      <StepJourney steps={STEPS} />
     </div>
   )
 }
