@@ -120,6 +120,8 @@ async function fillSection(page: Page) {
 }
 
 test('each demo account signs in and lands on its own home, never on Forbidden', async ({ browser }) => {
+  // Seven sign-ins, each behind the loading splash (#138): more than the default 30 s on hosted staging (run 44996020945).
+  test.setTimeout(150_000)
   for (const account of Object.values(ACCOUNTS)) {
     const page = await asAccount(browser, account)
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
