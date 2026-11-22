@@ -11,6 +11,7 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
   - the release checks.
 
   The tag, commit and included PRs are filled in after the freeze.
+- `feature` **OpenAPI export of the database API** (ARC-01, test plan S6). The Database workflow's Supabase-stack job now saves PostgREST's own description of the API (every exposed table and function) as the `openapi` artifact of each run, with the number of paths in the job summary. It is read as a signed-in (`authenticated`) user, with a short-lived token signed by the disposable CI stack's demo JWT secret: PostgREST lists only the functions the caller may execute, and the workflow functions are granted to `authenticated`, so a service-role read showed only 4 of them. The summary states whether `/rpc/submit_proposal` is present, and the step fails if it isn't. Evidence only, so a failure is reported without blocking the database gate.
 - `docs` **Phase 0 decisions closed: D-01, D-02, D-07, D-14, D-16, D-35** (blueprint §1.3, §5 Phase 0, §12; BCR-001 Part C). Each register row now records the agreed result and the evidence it was checked against on 22 Nov:
   - D-01: the stack on `main`, with Amplify hosting instead of Vercel (D-44);
   - D-02: on hosted, no browser write grants on the 33 tables, RLS on all of them, pinned by `010_security_privileges`;
