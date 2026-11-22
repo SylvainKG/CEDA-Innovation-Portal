@@ -4,6 +4,10 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `repair` **Signed-out visitors can open challenge briefs again** (migration 016). The `challenge_versions` read policy (001) let an applicant keep seeing the version of their own case through a plain subquery on `proposals`; signed-out visitors have no access to `proposals`, so every read of `challenge_versions` failed with 42501 ("permission denied for table proposals") and no challenge brief opened on the hosted build. The check now runs in a security-definer helper, `private.owns_case_on_version()`, as 011 did for `challenges`; the policy's meaning is unchanged. The helper is added to the 010 allow-lists.
+
+  Evidence: new pgTAP file `014_public_catalogue.test.sql` (signed out: no permission error, the published version readable, unpublished versions hidden; signed in: Applicant A still reads their case's version).
+
 - `docs` **Release note: D-14 and D-15 wording, and the pre-freeze staging checks** (`artifacts/phase-07/release.md`; #137 review). Changes:
   - the Mumbai row now reads "EU Central, chosen; latency acceptable", as D-14 was closed;
   - the demo data is "wiped after judging", as D-15 says;
