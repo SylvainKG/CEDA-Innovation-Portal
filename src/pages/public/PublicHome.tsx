@@ -52,7 +52,9 @@ const Eyebrow = ({ children, onDark = false }: { children: string; onDark?: bool
  */
 export function PublicHome() {
   return (
-    <div className="flex flex-col">
+    // overflow-x-clip: the decorative sun-glows bleed a few px past the viewport at 360 px (e.g. WhyPeolwane's
+    // -inset-6 halo). Clip horizontal bleed only — vertical scroll and the shell's sticky navbar are unaffected.
+    <div className="flex flex-col overflow-x-clip">
       <Hero />
       <WhyPeolwane />
       <Sectors />
