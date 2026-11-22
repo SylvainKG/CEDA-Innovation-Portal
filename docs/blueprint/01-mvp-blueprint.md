@@ -70,22 +70,22 @@ Legend: **Full** = working end to end with real state · **Simplified** = real b
 
 | # | Decision | Status | Selected / default | Alternatives | Reason | Deadline / owner |
 |---|---|---|---|---|---|---|
-| D-01 | Stack | RECOMMENDED (team doc) | React 18 + TS + Vite + Tailwind + Radix; Supabase (Postgres, Auth, Storage, Realtime, Edge Fns); Vercel | Next.js + Prisma; Django | Team already ships it. RLS puts the rules next to the data | Confirm with all 4 members, 15 Nov |
-| D-02 | API style | RECOMMENDED | **Reads** go through PostgREST with RLS. **All state changes** go through `SECURITY DEFINER` RPCs. Direct table writes are revoked | REST service layer | One transaction per transition, with audit included. Cannot be bypassed | 15 Nov, Stacey |
+| D-01 | Stack | **CONFIRMED** (BCR-001 Part C, 22 Nov) | React 18 + TS + Vite + Tailwind + Radix; Supabase (Postgres, Auth, Storage, Realtime, Edge Fns). **Hosting: AWS Amplify instead of Vercel** (D-44, `docs/process/hosting-aws-amplify.md`). As built on `main`: React 18.3, TypeScript 5.8, Vite 6, Tailwind 3.4, Radix, supabase-js 2.119 | Next.js + Prisma; Django | Team already ships it. RLS puts the rules next to the data | Closed 22 Nov: matches `package.json`; staging is served by Amplify against the hosted Supabase project (#61) |
+| D-02 | API style | **CONFIRMED** (BCR-001 Part C, 22 Nov) | **Reads** go through PostgREST with RLS. **All state changes** go through `SECURITY DEFINER` RPCs. Direct table writes are revoked | REST service layer | One transaction per transition, with audit included. Cannot be bypassed | Closed 22 Nov (Stacey): on hosted, 0 insert/update/delete/truncate grants to `anon` or `authenticated` on the 33 `public` tables, RLS on all 33; pinned by `010_security_privileges` (pgTAP, `main` and hosted); contract §1 |
 | D-03 | Figma as UI source | CONFIRMED (brief; refined 14 Nov) | The shared CEDA Figma project is the source of truth for **visual** design; this blueprint is the source of truth for **functional** behaviour (D-32) | — | — | Inventory by 15 Nov (Sandra) |
 | D-04 | Brand | OPEN | Neutral placeholder tokens, swapped when CEDA guidance arrives | — | Brand is worth 2 pts and is not yet supplied | Briefing / 16 Nov |
 | D-05 | Award authority | OPEN | `award.record` permission granted to **Administrator** | Adjudicator | Separation of duties: the person who decides does not also pay | CEDA, 16 Nov |
 | D-06 | Review quorum | OPEN | **2** submitted scorecards on the current version before adjudication | 3 | Matches the demo requirement | CEDA, 16 Nov |
-| D-07 | Staff MFA vs judge access | RECOMMENDED | MFA enforced for staff except seeded `is_demo` accounts. The judge guide states this | Enforce for all, which blocks judges | **Contradiction:** the security design requires MFA, but judges need frictionless staff log-ins | 15 Nov |
+| D-07 | Staff MFA vs judge access | **CONFIRMED** (BCR-001 Part C, 22 Nov) | MFA enforced for staff except seeded `is_demo` accounts, behind the `app_settings.demo_mfa_exempt` flag, which **must be off for any real use**. The judge guide states this | Enforce for all, which blocks judges | **Contradiction:** the security design requires MFA, but judges need frictionless staff log-ins | Closed 22 Nov: on hosted, all 7 staff roles have `requires_mfa`, the flag is on and all 13 accounts are seeded demo accounts; rule tested in `001_foundation` (pgTAP); judge guide and data-handling note state it; debt entry in `docs/design/design.md`. **Still to do:** list the flag in the release notes (BCR-001 Part C) |
 | D-08 | External committee visibility | OPEN | Case status, stage and summary counts only. No proposal text, scores or notes | Full read | Least privilege | CEDA, 16 Nov |
 | D-09 | Who can request revision | RECOMMENDED | Screening officer, assigned reviewer, adjudicator | Admin only | Matches the access table | — |
 | D-10 | After V2 | RECOMMENDED | The case returns to the **requesting stage**. If that was evaluation, the same reviewers score V2 as new scorecards and V1 scorecards are kept | Skip re-scoring | Follows APP-04 and keeps V1 scores intact | — |
 | D-11 | Transition to adjudication | RECOMMENDED | Automatic when quorum is met on the current version | Manual by admin | Fewer demo clicks, still a real transition with audit | — |
 | D-12 | Reference format | RECOMMENDED | `CEDA-2026-NNNN` from a DB sequence | UUID-based | Readable for judges | — |
 | D-13 | Chat audience | OPEN | Registered users only | Anonymous visitors | Simpler access control | CEDA, 16 Nov |
-| D-14 | Region | OPEN | Lowest measured latency from Gaborone (EU vs Mumbai) | — | No African Supabase region | Latency test, 15 Nov |
+| D-14 | Region | **CONFIRMED** (BCR-001 Part C, 22 Nov) | **EU Central (Frankfurt), chosen; latency acceptable.** From Gaborone on mobile data: p50 263 ms, p95 315 ms (n = 30, 17 Nov). The Mumbai comparison is **Not run** | Mumbai (not measured) | No African Supabase region. The project already existed in EU Central, and ~0.3 s per round trip fits the D-16 workflow target | Closed 22 Nov: `artifacts/phase-00/region-latency.md` |
 | D-15 | Retention (proposal note) | OPEN | Propose 5 years after closure for applicant records. Demo data is wiped after judging | — | Proposal only; no automation | Kickoff |
-| D-16 | Response-time targets | OPEN | Proposed p95: page ≤ 2 s, workflow action ≤ 1 s, file upload (5 MB) ≤ 5 s | — | Needed for QA-01 | Kickoff |
+| D-16 | Response-time targets | **CONFIRMED** as targets (BCR-001 Part C, 22 Nov); measurement **Not run** | p95 targets: page ≤ 2 s, workflow action ≤ 1 s, file upload (5 MB) ≤ 5 s. Stated as *Proposed* in public docs until QA-01 measures them | — | Needed for QA-01 | Closed 22 Nov: values agreed. The QA-01 timed sample (claim C-18) has not run, so no document may say the targets are met |
 | D-17 | Demo credentials | RECOMMENDED | The seed reads `DEMO_PASSWORD` from env. No credentials in source. The judge guide lists the accounts | Hard-coded | REL-01 forbids credentials in source | — |
 | D-18 | Compliance language | CONFIRMED (brief) | "Designed with reference to the Data Protection Act, 2024". Never "compliant" | — | Prototype with fictional data | — |
 | D-19 | Reviewer declaration | **CONFIRMED** (14 Nov) | Conflict + confidentiality declaration before the proposal opens. Declaring a conflict removes the assignment, which the admin then reassigns | No declaration | Reference analysis (Agorize, HeroX, IdeaScale). Low cost, adds security evidence | — |
@@ -103,7 +103,7 @@ Legend: **Full** = working end to end with real state · **Simplified** = real b
 | D-32 | Source-of-truth split | **CONFIRMED** (14 Nov) | Figma = visual design; blueprint + API contracts = functional behaviour; `02-figma-ui-ux-spec.md` = behavioural detail, with its placeholder tokens used only where Figma has none; CEDA brand guidance overrides both (§8.1) | Spec-only design | Preserves the existing Figma direction without losing approved behaviour | — |
 | D-33 | Figma vs blueprint conflicts | **CONFIRMED** (14 Nov) | Logged in `handoff-notes.md`, resolved by the team; functionality follows the blueprint until resolved | Silent alignment | No silent functional change | — |
 | D-34 | Shared Figma access | **CONFIRMED** requirement; setup OPEN | Team-controlled Figma project; ≥ 2 editors (Sandra, Obvious); ≥ 2 team-level owners; Stacey and Sylvain view/Dev Mode | Personal drafts | No single-account dependency | Sandra, 15 Nov (ABM for Sandra from 21 Nov) |
-| D-35 | Figma MCP connection | **OPEN** | Official Figma MCP server, each person with their own login. Connection mode, seat requirements and rate limits are **ASSUMED to vary by plan and must be verified** at setup and recorded in `screen-inventory.md` | Manual exports only | Lets the coding assistant read frames directly; fallback exists (§9.1) | Sandra, 15 Nov (ABM for Sandra from 21 Nov) |
+| D-35 | Figma MCP connection | **CONFIRMED: manual fallback** (BCR-001 Part C, 22 Nov) | **Manual exports** (§9.1). The official MCP server connected (16 Nov), but Sandra's Starter plan allows about 20 read calls a month and the canvas tools can't read the Figma Make file, so design reached the repo as exports: `Figma pdf/` (#110) and the dated snapshots (#101, #104) | Official Figma MCP server as the main route | Plan limits and the Make file type, both verified at setup | Closed 22 Nov: connection record in `docs/design/figma-handoff/screen-inventory.md` (PR #4). Owner ABM for Sandra (D-31) |
 | D-36 | Handoff artefacts in the repo | **CONFIRMED** (14 Nov) | `docs/design/figma-handoff/` with inventory, status, tokens, components, navigation, notes and dated snapshots; capture on approval and daily 17:00 CAT; size budget ≤ 300 KB per snapshot, ≤ 25 MB total (proposed) | Live Figma only | Development never depends entirely on live Figma access | Sandra (ABM for Sandra from 21 Nov) |
 | D-37 | Screen status and Ready for build | **CONFIRMED** (14 Nov) | Status vocabulary §8.5. A screen is buildable when at least Provisional with the slice's states, exported to the repo, and its RPCs are in the approved contract. Provisional builds are labelled | Wait for the full Figma file | Parallel development without design drift | — |
 | D-38 | Branches, reviews, takeover | **CONFIRMED** (14 Nov); review-rule setup OPEN | One branch per task, PRs only, required reviewers per area (§7.3), takeover procedure §9.2, claims in `screen-status.md` | Direct pushes | No overwritten work | Sylvain, once GitHub usernames are known |
@@ -285,7 +285,7 @@ Conventions: UUID PKs, `created_at timestamptz` in UTC (rendered in Africa/Gabor
 Each slice is vertical: Figma screens *Ready for build* (§8.5) → migration → RPC + RLS → pgTAP → UI → Playwright → artifact in `artifacts/phase-NN/`. Contracts are agreed before parallel work. There is one migration sequence (owned by Stacey). The frontend uses mocks until the RPC lands. **Design-ready dates are the day before the slice starts**, so developers never wait for the whole Figma file.
 
 ### Phase 0 — Foundation (14–15 Nov) · exit artifact `phase-00`
-- [ ] **All:** close D-01, D-02, D-07, D-14, D-16, D-35. Record them in the decision register *(Sylvain records)*
+- [x] **All:** close D-01, D-02, D-07, D-14, D-16, D-35. Record them in the decision register *(Sylvain records)*. Closed 22 Nov 2026 under BCR-001 Part C and recorded in §1.3, each with its evidence. Open follow-ups: the D-07 flag in the release notes; the D-14 Mumbai comparison and the D-16 measurement stay Not run
 - [ ] **Sylvain:** repo rules (dated ≥ 13 Nov), protected `main`, review rules (D-38), CI: lint, type-check, Vitest, pgTAP, secret scan, `npm audit`
 - [ ] **Stacey + Sylvain:** Supabase project (Pro from judging), Vercel staging, `.env.example`, health check
 - [ ] **Stacey:** Migration 001: all core tables, RLS default-deny, audit/immutability triggers, `has_permission()`
@@ -592,6 +592,18 @@ Principle: **the remaining development work must never depend entirely on live F
 ---
 
 ## 12. Change log
+
+### 22 Nov 2026 · Phase 0 decisions closed (D-01, D-02, D-07, D-14, D-16, D-35)
+
+The six Phase 0 decisions in BCR-001 Part C move to CONFIRMED with the results agreed there. Obvious signed on 16 Nov, Stacey on 18 Nov, and Sylvain and ABM (for Sandra, D-31) in BCR-001 on 22 Nov. Each register row was checked against the build on 22 Nov:
+- D-01: the stack on `main`, with Amplify hosting (D-44);
+- D-02: no browser write grants on the hosted database;
+- D-07: the `demo_mfa_exempt` flag on hosted;
+- D-14: the latency record;
+- D-16: values agreed, not yet measured;
+- D-35: the manual fallback recorded in the screen inventory.
+
+Nothing in scope or schedule changes.
 
 ### 21 Nov 2026 · Sandra's duties handed to ABM
 
