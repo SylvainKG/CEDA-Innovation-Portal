@@ -4,6 +4,7 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `docs` **Team folder name decided** (release checklist). The bundle folder is "Peolwane CEDA Innovation Portal". The source package uses `Peolwane-CEDA-Innovation-Portal`, because the packaging script allows only letters, digits, dot, dash and underscore.
 - `docs` **Release note: D-14 and D-15 wording, and the pre-freeze staging checks** (`artifacts/phase-07/release.md`; #137 review). Changes:
   - the Mumbai row now reads "EU Central, chosen; latency acceptable", as D-14 was closed;
   - the demo data is "wiped after judging", as D-15 says;
