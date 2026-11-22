@@ -4,6 +4,14 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `docs` **Plan for the innovator and reviewer toolkits** (`docs/plans/toolkits/`, eight documents; proposed, nothing implemented). It contains:
+  - an audit of what the repository already has for the 14 innovator and 8 reviewer tools;
+  - a task-by-task estimate (726 h expected) split Stacey 372 h (51.2%) / Shawnjembu 354 h (48.8%);
+  - the evidence-snapshot design that lets an assigned, declared reviewer read a frozen copy of what the innovator chose to submit, without touching the private workspace;
+  - both developers' task plans, a roadmap with schedules at 20 and 35 h a week, a UI consistency specification built on the existing tokens and components, and a risk and test strategy.
+
+  It needs approval (a scope change request, a separate development project, Shawnjembu's availability) before any work starts.
+
 - `docs` **Submission screenshots retaken without the header DEMO pill** (after #157). Same four pages and method as #154: a mock build of `main` at 1280 px, after the loading splash, demo data only.
 - `docs` **Evaluator accounts in the README** (team lead, 22 Nov): every account, its role and where to start, since the sign-in page no longer offers a picker (#159). The password is given with the submission, never in the repository (D-17). The judge guide and user manual no longer mention the picker, and quote the two-step sign-in page's new wording.
 - `design` **No demo-account picker or demo-account notes on the sign-in pages** (team lead, 22 Nov: evaluators should see the portal as it would look in real use; the accounts come with the submission's README). Sign in no longer shows "Demo accounts are available…" or "Choose a demo portal". The two-step sign-in page says "No authenticator code is needed for this account." instead of naming demo accounts. Sign-in itself is unchanged.
