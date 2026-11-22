@@ -60,15 +60,11 @@ describe('T02 sign in', () => {
     expect(screen.getByRole('link', { name: 'Register' })).toHaveAttribute('href', '/auth/register')
   })
 
-  it('demo picker lists the seven journey accounts and fills in the email only, without signing in', async () => {
+  it('offers no demo-account picker or demo note (accounts are given with the submission; team lead, 22 Nov)', async () => {
     renderAt('/auth/sign-in')
-    const picker = await screen.findByRole('region', { name: 'Choose a demo portal' })
-    expect(within(picker).getAllByRole('button')).toHaveLength(7)
-    fireEvent.click(within(picker).getByRole('button', { name: 'Screening officer' }))
-    expect(screen.getByLabelText(/Email address/)).toHaveValue('screening@demo.ceda-portal.test')
-    expect(screen.getByLabelText(/^Password/)).toHaveValue('')
-    expect(document.activeElement).toBe(screen.getByLabelText(/^Password/))
-    expect(screen.getByRole('heading', { level: 1, name: 'Sign in' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Sign in' })).toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Choose a demo portal' })).not.toBeInTheDocument()
+    expect(screen.queryByText(/Demo accounts are available/)).not.toBeInTheDocument()
   })
 
   it('offers to resend the link to an unverified address', async () => {
