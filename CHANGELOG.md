@@ -4,6 +4,7 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `docs` **Submission screenshots retaken without the header DEMO pill** (after #157). Same four pages and method as #154: a mock build of `main` at 1280 px, after the loading splash, demo data only.
 - `design` **No DEMO pill in the header or on the auth cards** (team lead, 22 Nov). The "DEMO · Demo environment — fictional data" pill is removed from the public, applicant and staff headers and from the sign-in, register and other auth cards. The site still says it is a demonstration: every page's footer reads "… · Demo prototype with fictional data", the sign-in page offers "Choose a demo portal", Sample content keeps its label, and the demo data itself is fictional. The tests now check the footer line instead of the pill.
 - `design` **"Users & roles" on the page itself** (Sandra's 21 Nov frame, `ceda administrator users +roles.pdf`). The navigation, the docs and the submission screenshots already say Users & roles; the page heading, the link on Roles and the hint in the assign-reviewers dialog said "Users and roles". Text only.
 - `docs` **Submission documents matched to the final UI** (FF-Y2). The judge guide and user manual use today's labels: Users & roles, Settings with links to Roles, Content and Chat settings, Request clarification / Request revision, Compare versions and Record award. The four screenshots are retaken from a mock build of `main` at 1280 px, after the loading splash has gone, with the development-only role switcher left out.
