@@ -300,7 +300,7 @@ Each slice is vertical: Figma screens *Ready for build* (§8.5) → migration �
 - [ ] **Sandra:** T01–T05 and applicant T06 *Ready for build* by 15 Nov
 - [ ] **Stacey:** `save_draft`, `submit_proposal` (idempotent, declaration), storage policies, signed URLs, reference sequence, pgTAP
 - [ ] **Obvious:** T01–T05, applicant dashboard with multiple idea cards (T06), autosave + local backup, upload progress/retry, session-expiry warning, receipt details
-- [ ] **Sylvain:** Playwright N1, N2, N9 + immutability test; evidence `phase-01`
+- [ ] **Sylvain:** Playwright N1, N2, N9 + immutability test; evidence `phase-01`. *Status 22 Nov:* N1 Passed in the browser on staging; N9 Passed in the browser on a throwaway stack, staging run pending (#61); N2 Partly (refusals in the browser; the 60-second expiry through the deployed function, not scripted in the browser); immutability (N6) at the database layer only
 - **Exit:** a verified applicant submits on staging and gets a reference; Applicant B cannot read it.
 
 ### Slice 2 — Screen & assign (16–17 Nov) · REV-01, IAM-01 · `phase-02`
