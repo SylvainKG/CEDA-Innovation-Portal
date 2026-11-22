@@ -2,10 +2,18 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, useRoutes } from 'react-router-dom'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockSession } from '@/lib/api/mock/session'
 import type { Role } from '@/lib/api/types'
 import { routes } from '@/routes/router'
+
+vi.mock('@/features/assistant/PeolwaneAssistant', () => ({
+  PeolwaneAssistant: ({ placement = 'default' }: { placement?: string }) => (
+    <button type="button" aria-label="Peolwane AI" data-placement={placement}>
+      Peolwane AI
+    </button>
+  ),
+}))
 
 const LOAD = { timeout: 5000 }
 
