@@ -18,7 +18,7 @@ Every line starts as **Not run**. Tick it only with evidence: a commit, a CI run
 
 | Decision | Needed by | Owner |
 |---|---|---|
-| Team folder name for the bundle | 22 Nov | Team lead |
+| Team folder name for the bundle | **Decided 22 Nov (team lead):** the bundle folder is **`Peolwane CEDA Innovation Portal`**. Inside the source package, `scripts/package-source.sh` uses **`Peolwane-CEDA-Innovation-Portal`** (it allows only letters, digits, dot, dash and underscore) | Team lead |
 | Judging backend: the current hosted Supabase project (Free plan, keep-alive) or a fresh Pro project (D-15, runbook §1) | 21 Nov | Sylvain (owner), Stacey |
 | Installation files: install script (backlog default) or container build; confirm the format with the organisers | 21 Nov | Sylvain, Obvious |
 | Video length and format, upload size limit, whether ID copies, certificates or CVs go in the bundle (briefing answers, BCR-002 item 7) | 21 Nov | Team lead |
@@ -63,13 +63,13 @@ Every line starts as **Not run**. Tick it only with evidence: a commit, a CI run
 
 ## 5. Source package and installation files
 
-- [ ] `scripts/package-source.sh v1.0-judging <team-folder> <dir outside the repo>`: passes the secret and personal-document scan, the licence check and the 150 MB limit; record the size and SHA-256
+- [ ] `scripts/package-source.sh v1.0-judging Peolwane-CEDA-Innovation-Portal <dir outside the repo>`: passes the secret and personal-document scan, the licence check and the 150 MB limit; record the size and SHA-256
 - [ ] Installation files in the confirmed format; tested from a clean machine (fresh clone → install → run against mock mode and against the hosted backend)
 - [ ] The package's commit equals the deployed commit (REL-01: "the source matches the demo build")
 
 ## 6. Bundle and upload (SUB-01)
 
-- [ ] One folder named after the team, holding: live URL and judge accounts (in the judge guide, not the source), video (DEM-01), source package, technical proposal (DOC-01, at most 10 pages), user manual and README (DOC-02), installation files
+- [ ] One folder, **`Peolwane CEDA Innovation Portal`**, holding: live URL and judge accounts (in the judge guide, not the source), video (DEM-01), source package, technical proposal (DOC-01, at most 10 pages), user manual and README (DOC-02), installation files
 - [ ] Personal documents (ID copies, certificates, CVs) only where the brief asks, and **never** inside the source package
 - [ ] Every item checked against the brief by a second person; video playback and link permissions checked by a teammate (DEM-01)
 - [ ] Upload on Skillsranker by **12:00 on 23 Nov**; submission confirmation saved in `artifacts/phase-07/` before 17:00
