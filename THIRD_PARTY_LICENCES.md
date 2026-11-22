@@ -5,13 +5,15 @@ run the script again after any dependency change (`--check` fails when this file
 
 Not listed here, because they are not npm packages:
 - the CEDA name and logo, which belong to CEDA and are not covered by an open-source licence;
+- the photographs in `src/assets/photos/` (Wikimedia Commons, public domain, CC0, CC BY or CC BY-SA), whose
+  authors, licences and sources are in `src/brand/photos.ts` and credited on the About page (`/about#photo-credits`);
 - hosted services used at run time (Supabase, AWS Amplify), which are covered by their own terms of service.
 
 ## Portal (frontend, build and test tooling)
 
-Source: `package-lock.json`. 509 packages: MIT 444 · Apache-2.0 25 · ISC 16 · BSD-2-Clause 9 · BSD-3-Clause 3 · MIT-0 2 · CC0-1.0 2 · BlueOak-1.0.0 2 · 0BSD 2 · OFL-1.1 1 · Python-2.0 1 · MPL-2.0 1 · CC-BY-4.0 1.
+Source: `package-lock.json`. 512 packages: MIT 446 · Apache-2.0 25 · ISC 16 · BSD-2-Clause 10 · BSD-3-Clause 3 · MIT-0 2 · CC0-1.0 2 · BlueOak-1.0.0 2 · 0BSD 2 · OFL-1.1 1 · Python-2.0 1 · MPL-2.0 1 · CC-BY-4.0 1.
 
-### Ships in the built site (51)
+### Ships in the built site (52)
 
 | Package | Version | Licence |
 |---|---|---|
@@ -51,6 +53,7 @@ Source: `package-lock.json`. 509 packages: MIT 444 · Apache-2.0 25 · ISC 16 ·
 | `get-nonce` | 1.0.1 | MIT |
 | `iceberg-js` | 0.8.1 | MIT |
 | `js-tokens` | 4.0.0 | MIT |
+| `leaflet` | 1.9.4 | BSD-2-Clause |
 | `loose-envify` | 1.4.0 | MIT |
 | `lucide-react` | 1.73.0 | ISC |
 | `react` | 18.3.1 | MIT |
@@ -67,7 +70,7 @@ Source: `package-lock.json`. 509 packages: MIT 444 · Apache-2.0 25 · ISC 16 ·
 | `use-callback-ref` | 1.3.3 | MIT |
 | `use-sidecar` | 1.1.3 | MIT |
 
-### Build, test and lint tooling only (458)
+### Build, test and lint tooling only (460)
 
 | Package | Version | Licence |
 |---|---|---|
@@ -193,7 +196,9 @@ Source: `package-lock.json`. 509 packages: MIT 444 · Apache-2.0 25 · ISC 16 ·
 | `@types/chai` | 5.2.3 | MIT |
 | `@types/deep-eql` | 4.0.2 | MIT |
 | `@types/estree` | 1.0.10 | MIT |
+| `@types/geojson` | 7946.0.16 | MIT |
 | `@types/json-schema` | 7.0.15 | MIT |
+| `@types/leaflet` | 1.9.22 | MIT |
 | `@types/node` | 26.6.6 | MIT |
 | `@typescript-eslint/eslint-plugin` | 8.72.2 | MIT |
 | `@typescript-eslint/parser` | 8.72.2 | MIT |

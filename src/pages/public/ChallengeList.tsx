@@ -1,9 +1,10 @@
 import { Link } from 'react-router-dom'
 import { ChallengeCard, EmptyState, ErrorState, LoadingState } from '@/components'
+import { challengeCover } from '@/brand/photos'
 import { challengeTiming } from '@/lib/form-check'
 import { useChallenges } from '@/features/submission/queries'
 
-/** The challenge list shared by T01 home and /challenges. Open first (closing soonest first), then closed. */
+/** The challenge list on /challenges. Open first (closing soonest first), then closed; each card has a cover photo. */
 export function ChallengeList() {
   const challenges = useChallenges()
   if (challenges.isPending) return <LoadingState what="challenges" />
@@ -28,10 +29,10 @@ export function ChallengeList() {
           Check back soon.
         </EmptyState>
       ) : null}
-      <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <ul className="grid grid-cols-1 gap-5 md:grid-cols-2">
         {list.map((c) => (
           <li key={c.id}>
-            <ChallengeCard challenge={c} />
+            <ChallengeCard challenge={c} cover={challengeCover(c.title)} />
           </li>
         ))}
       </ul>
