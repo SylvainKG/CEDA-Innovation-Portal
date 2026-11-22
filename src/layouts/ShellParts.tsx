@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import { Bell, LogOut, MessageSquare } from 'lucide-react'
+import { ArrowUp, Bell, ExternalLink, LogOut, Mail, MapPin, MessageSquare, Phone } from 'lucide-react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { brand } from '@/brand'
+import { BRANDS, brand } from '@/brand'
+import { HorizonEdge } from '@/brand/Horizon'
 import { CEDA, telHref } from '@/brand/ceda-info'
 import { DemoBadge } from '@/components/DemoBadge'
 import { useNotifications } from '@/features/oversight/queries'
@@ -37,82 +38,109 @@ export function Brand() {
   )
 }
 
+/** Footer links that the navigation doesn't already give (Challenges, How it works and Contact are up there). */
 const FOOTER_LINKS = [
-  { to: '/privacy', label: 'Privacy' },
-  { to: '/help/support', label: 'Fault support' },
   { to: '/help/faqs', label: 'FAQs' },
-  { to: '/help/contacts', label: 'Contacts' },
+  { to: '/help/support', label: 'Fault support' },
+  { to: '/privacy', label: 'Privacy' },
 ]
 
 /**
- * Footer (Sandra's 21 Nov frames, with the team's 21 Nov decision: Peolwane is a CEDA product). Three columns from
- * 768 px: what Peolwane is and a link to CEDA's main website; CEDA's head office; a pointer to CEDA's offices with a link
- * to CEDA's page for each office. Below: the portal links and the demo note. `chatSpace` keeps the bottom row clear
- * of the floating buttons: "Peolwane AI" on every page, and "Chat with CEDA" on applicant pages. CEDA's details come from `src/brand/ceda-info.ts`.
+ * Footer. Post-freeze design (ABM, 22 Nov; not the judged build), on CEDA's sunrise: the land from the home page's
+ * hero rises across the top and settles into CEDA's deep brown, so every page closes on the same horizon. Three
+ * columns from 1024 px: Peolwane as a CEDA product (CEDA's logo on a white tile, a link to CEDA's main website);
+ * CEDA's head office with its phone numbers and email, and CEDA's offices; and help (FAQs, fault support, privacy,
+ * Peolwane AI). Links already in the navigation aren't repeated. `chatSpace` keeps the bottom row clear of the floating
+ * buttons ("Peolwane AI" on every page, "Chat with CEDA" on applicant pages). CEDA's details come from
+ * `src/brand/ceda-info.ts`; the team's 21 Nov decision stands: Peolwane is a CEDA product.
  */
 export function Footer({ chatSpace = false }: { chatSpace?: boolean }) {
-  const ext = 'text-ink underline underline-offset-2 hover:text-brand-text'
+  const link = 'inline-flex min-h-touch items-center gap-2 text-white no-underline hover:text-[var(--ceda-gold)] hover:underline'
+  const heading = 'text-xs font-bold uppercase tracking-wider text-[var(--ceda-gold)]'
+  const toTop = () => {
+    const reduce = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' })
+  }
   return (
-    <footer className="mt-12 border-t border-line bg-surface-card text-sm" data-print="hide">
-      <div className="mx-auto grid max-w-content grid-cols-1 gap-6 px-4 py-6 md:grid-cols-3">
-        <section aria-labelledby="footer-about" className="flex flex-col gap-2">
-          <h2 id="footer-about" className="font-semibold">
-            {brand.header.title} · a {CEDA.shortName} product
-          </h2>
-          <p className="text-ink-muted">
-            The innovation portal of the {CEDA.name} ({CEDA.shortName}), Botswana: answer CEDA&apos;s challenges with your ideas and follow them from
-            submission to award.
-          </p>
-          <a href={CEDA.website} target="_blank" rel="noopener noreferrer" className={`inline-flex min-h-touch items-center ${ext}`}>
-            Visit {CEDA.shortName}&apos;s main website (www.ceda.co.bw)<span className="sr-only"> (opens in a new tab)</span>
-          </a>
-        </section>
-        <section aria-labelledby="footer-office" className="flex flex-col gap-2">
-          <h2 id="footer-office" className="font-semibold">
-            {CEDA.shortName} head office
-          </h2>
-          <address className="not-italic text-ink-muted">
-            {CEDA.headOffice.lines.map((l) => (
-              <span key={l} className="block">
-                {l}
+    <footer className="mt-12 text-sm" data-print="hide">
+      <HorizonEdge className="block h-16 w-full md:h-24" />
+      {/* Always dark (CEDA's night brown); white on it is above 15:1, the muted text above 9:1. */}
+      <div className="bg-[var(--ceda-night)] text-[#e9dcd5]">
+        <div className="mx-auto grid max-w-content grid-cols-1 gap-8 px-4 pb-8 pt-4 md:grid-cols-2 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)]">
+          <section aria-labelledby="footer-about" className="flex flex-col gap-3">
+            <span className="self-start rounded-md bg-white p-2.5 shadow-1">
+              <img src={BRANDS.ceda.logo.src} alt={`${CEDA.name} (${CEDA.shortName})`} width={BRANDS.ceda.logo.width} height={BRANDS.ceda.logo.height} className="h-12 w-auto" />
+            </span>
+            <h2 id="footer-about" className="text-base font-semibold text-white">
+              {brand.header.title} · a {CEDA.shortName} product
+            </h2>
+            <p>
+              The innovation portal of the {CEDA.name} ({CEDA.shortName}), Botswana: answer CEDA&apos;s challenges with your ideas and follow them from
+              submission to award.
+            </p>
+            <a href={CEDA.website} target="_blank" rel="noopener noreferrer" className={link}>
+              <ExternalLink aria-hidden className="h-4 w-4 shrink-0" />
+              Visit {CEDA.shortName}&apos;s main website (www.ceda.co.bw)<span className="sr-only"> (opens in a new tab)</span>
+            </a>
+          </section>
+          <section aria-labelledby="footer-office" className="flex flex-col gap-2">
+            <h2 id="footer-office" className={heading}>
+              {CEDA.shortName} head office
+            </h2>
+            <address className="flex gap-2 not-italic">
+              <MapPin aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-[var(--ceda-gold)]" />
+              <span>
+                {CEDA.headOffice.lines.map((l) => (
+                  <span key={l} className="block">
+                    {l}
+                  </span>
+                ))}
+                <span className="block">{CEDA.headOffice.postal}</span>
               </span>
-            ))}
-            <span className="block">{CEDA.headOffice.postal}</span>
-          </address>
-          <p className="flex flex-col">
-            <a href={telHref(CEDA.headOffice.phone)} className={`inline-flex min-h-touch items-center ${ext}`}>
+            </address>
+            <a href={telHref(CEDA.headOffice.phone)} className={link}>
+              <Phone aria-hidden className="h-4 w-4 shrink-0 text-[var(--ceda-gold)]" />
               Tel {CEDA.headOffice.phone}
             </a>
-            <a href={telHref(CEDA.headOffice.tollFree)} className={`inline-flex min-h-touch items-center ${ext}`}>
+            <a href={telHref(CEDA.headOffice.tollFree)} className={link}>
+              <Phone aria-hidden className="h-4 w-4 shrink-0 text-[var(--ceda-gold)]" />
               Toll-free {CEDA.headOffice.tollFree}
             </a>
-            <a href={`mailto:${CEDA.headOffice.email}`} className={`inline-flex min-h-touch items-center break-all ${ext}`}>
+            <a href={`mailto:${CEDA.headOffice.email}`} className={`${link} break-all`}>
+              <Mail aria-hidden className="h-4 w-4 shrink-0 text-[var(--ceda-gold)]" />
               {CEDA.headOffice.email}
             </a>
-          </p>
-        </section>
-        <section aria-labelledby="footer-branches" className="flex flex-col gap-2">
-          <h2 id="footer-branches" className="font-semibold">
-            {CEDA.shortName} offices
-          </h2>
-          <p className="text-ink-muted">{CEDA.shortName} has offices across Botswana.</p>
-          <a href={CEDA.contactPage} target="_blank" rel="noopener noreferrer" className={`inline-flex min-h-touch items-center ${ext}`}>
-            Addresses and phone numbers on ceda.co.bw<span className="sr-only"> (opens in a new tab)</span>
-          </a>
-        </section>
-      </div>
-      <div className="border-t border-line">
-        <div className={`mx-auto flex max-w-content flex-wrap items-center justify-between gap-x-6 gap-y-1 px-4 py-3 ${chatSpace ? 'md:pr-56' : ''}`}>
-          <p className="text-ink-muted">
-            {brand.fullName} · Demo prototype with fictional data
-          </p>
-          <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-4">
-            {FOOTER_LINKS.map((l) => (
-              <Link key={l.to} to={l.to} className="inline-flex min-h-touch min-w-touch items-center text-ink no-underline hover:underline">
-                {l.label}
-              </Link>
-            ))}
-          </nav>
+            <p className="mt-1">{CEDA.shortName} has offices across Botswana.</p>
+            <a href={CEDA.contactPage} target="_blank" rel="noopener noreferrer" className={link}>
+              <ExternalLink aria-hidden className="h-4 w-4 shrink-0" />
+              Addresses and phone numbers on ceda.co.bw<span className="sr-only"> (opens in a new tab)</span>
+            </a>
+          </section>
+          <section aria-labelledby="footer-help" className="flex flex-col gap-2">
+            <h2 id="footer-help" className={heading}>
+              Help
+            </h2>
+            <nav aria-label="Footer" className="flex flex-col">
+              {FOOTER_LINKS.map((l) => (
+                <Link key={l.to} to={l.to} className={link}>
+                  {l.label}
+                </Link>
+              ))}
+            </nav>
+            <p className="mt-1">Questions about using the portal? Ask Peolwane AI, the assistant at the bottom right of every page.</p>
+          </section>
+        </div>
+        <div className="border-t border-white/15">
+          <div className={`mx-auto flex max-w-content flex-wrap items-center justify-between gap-x-6 gap-y-1 px-4 py-3 ${chatSpace ? 'md:pr-56' : ''}`}>
+            <p className="flex flex-wrap gap-x-2">
+              <span>© {new Date().getFullYear()} {CEDA.shortName}</span>
+              <span>{brand.fullName} · Demo prototype with fictional data</span>
+            </p>
+            <button type="button" onClick={toTop} className="inline-flex min-h-touch items-center gap-2 font-semibold text-white hover:text-[var(--ceda-gold)]">
+              <ArrowUp aria-hidden className="h-4 w-4" />
+              Back to top
+            </button>
+          </div>
         </div>
       </div>
     </footer>

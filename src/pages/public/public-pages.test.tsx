@@ -64,9 +64,14 @@ describe('T01 public home', () => {
 
   it('has the intro, the challenges (open first, closed labelled) and the five steps', async () => {
     renderAt('/')
-    const intro = (await screen.findByRole('heading', { level: 1, name: 'Submit your innovation to CEDA' })).closest('section') as HTMLElement
-    expect(within(intro).getByRole('link', { name: 'Register' })).toHaveAttribute('href', '/auth/register')
-    expect(within(intro).getByRole('link', { name: 'Sign in' })).toHaveAttribute('href', '/auth/sign-in')
+    const intro = (await screen.findByRole('heading', { level: 1, name: 'A new dawn for innovation in Botswana' })).closest('section') as HTMLElement
+    // One action leads into the open challenges; Sign in and Register stay in the navigation (post-freeze design).
+    expect(within(intro).getByRole('link', { name: 'Submit an innovation' })).toHaveAttribute('href', '/challenges')
+    expect(within(intro).getByRole('link', { name: 'How it works' })).toHaveAttribute('href', '#how-it-works')
+    expect(await within(intro).findByRole('link', { name: 'Read the brief: Water-Smart Agriculture Challenge 2026' })).toHaveAttribute(
+      'href',
+      '/challenges/water-smart-agriculture-2026',
+    )
     await screen.findByText('Closed — not accepting submissions')
     const cards = screen.getAllByRole('article')
     expect(within(cards[0] as HTMLElement).getByRole('heading', { name: 'Water-Smart Agriculture Challenge 2026' })).toBeInTheDocument()
