@@ -6,6 +6,7 @@ import { chatKeys } from '@/features/chat/queries'
 import { api } from '@/lib/api'
 import type { ChatStatus, CommandOutcome } from '@/lib/api/types'
 import { formatDateCAT } from '@/lib/format'
+import { SettingsNav } from './SettingsNav'
 
 const DAYS = ['', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 type Msg = { kind: 'ok' | 'error' | 'warning'; text: string } | null
@@ -44,6 +45,7 @@ export function ChatSettingsPage() {
   const mode = status.data.mode === 'demo_override_open' ? 'open' : status.data.mode === 'demo_override_closed' ? 'closed' : null
   return (
     <div className="flex flex-col gap-6">
+      <SettingsNav />
       <div className="flex flex-col gap-1">
         <h1 className="text-h1 font-semibold">Chat settings</h1>
         <p className="text-ink-muted" role="status">
