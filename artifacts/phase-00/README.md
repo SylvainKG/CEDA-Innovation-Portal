@@ -20,7 +20,7 @@
 | `figma-handoff/` first snapshot | Sandra | Not run | |
 | Tokens → Tailwind theme; shell + navigation skeleton; state kit | Obvious | **Passed** (independent re-check) | PR #6 review comments: 55 unit tests, browser check at 360/1280 px; now covered by the E2E smoke suite |
 | Region latency measured (D-14) | Stacey + Sylvain | Partly run: EU Central (hosted project) p50 263 ms, p95 315 ms; Mumbai comparison Not run | `region-latency.md` |
-| Every member runs the same commit locally | All | Not run | Table below |
+| Every member runs the same commit locally | All | Partly run: Stacey (16 Nov) and Sylvain (17 Nov) without the local database stack; ABM (22 Nov, `85aee03`) with every column Passed, including `supabase start`, `db reset` and 513/513 pgTAP. Sandra and Obvious not yet recorded | Table below |
 
 ## Same commit on every machine
 
@@ -32,6 +32,7 @@ Commit: `__________`
 | Obvious | | | | | | | | | | | | |
 | Stacey | Windows 11 Pro (10.0.26200) | 25.0.0 / 11.6.2 | Not installed | 2.108.0 | Passed (451 packages) | Not run (no Docker) | Not run (no Docker); covered by CI run 43907353789 | Passed | Passed | Passed (55/55) | Passed | Run on `621307e` (origin/main), 16 Nov 2026. Database checks also pass on the PGlite stand-in (`tools/pglite-db-tests`, 457/457 on `cc7c6bb`) |
 | Sylvain | Ubuntu 24.04 (cloud container) | 22.23.4 / 10.9.9 | 29.9.2 | Not installed | Passed | Not run | Not run (PGlite stand-in: 457 assertions passed on `db/security-checks`, 16 Nov) | Passed | Passed | Passed (55/55) | Passed | Commit `f126c10` (17 Nov) |
+| ABM | Windows 11 Pro (10.0.26300) | 24.14.0 / 11.14.0 | 29.6.1 (Docker Desktop) | 2.115.0 | Passed (467 packages) | Passed (first start pulls the images: 33 min) | Passed (migrations 001–016 and the seed); `supabase test db` 513/513 in 14 files | Passed | Passed | Passed (354/354 in 49 files) | Passed (one chunk over 500 kB: a warning, not a failure) | Commit `85aee03` (origin/main), 22 Nov 2026 |
 
 ## Results summary
 

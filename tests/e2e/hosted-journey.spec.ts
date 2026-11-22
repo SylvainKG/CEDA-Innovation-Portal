@@ -177,6 +177,20 @@ test("N-a: Applicant B cannot open Applicant A's idea or receipt (Not found, no 
   await b.close()
 })
 
+test('a signed-out visitor opens the open challenge brief from the challenges list (#148)', async ({ browser }) => {
+  // Read-only. Every other test here signs in first; the judges' first click is signed out. Until migration 016,
+  // reading challenge_versions as anon failed (42501 on proposals) and the brief showed "Something went wrong".
+  const context = await browser.newContext({ viewport: { width: 1280, height: 800 } })
+  const page = await context.newPage()
+  await page.goto('/challenges')
+  await page.getByRole('link', { name: 'View challenge: Water-Smart Agriculture Challenge 2026' }).click()
+  await expect(page).toHaveURL(/\/challenges\/water-smart-agriculture-2026$/)
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Water-Smart Agriculture Challenge 2026', { timeout: 20_000 })
+  await expect(page.getByText('Something went wrong')).toHaveCount(0)
+  await expect(page.getByText("We couldn't load this challenge.")).toHaveCount(0)
+  await context.close()
+})
+
 test('Applicant A submits an idea; a lost reply is recovered without a second case (N-k)', async ({ browser }) => {
   test.skip(!writes, 'Writes one case: run with E2E_JOURNEY_WRITE=1 after a snapshot of staging (#65, #68)')
   test.setTimeout(180_000)
