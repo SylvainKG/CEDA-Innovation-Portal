@@ -4,6 +4,13 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `docs` **Draft release note** (`artifacts/phase-07/release.md`, release checklist §2). It covers:
+  - what's in the release;
+  - the demo configuration that must change for real use: the demo two-step exemption (D-07, BCR-001 Part C), demo data and passwords;
+  - the known limitations, each with its status;
+  - the release checks.
+
+  The tag, commit and included PRs are filled in after the freeze.
 - `docs` **Phase 0 decisions closed: D-01, D-02, D-07, D-14, D-16, D-35** (blueprint §1.3, §5 Phase 0, §12; BCR-001 Part C). Each register row now records the agreed result and the evidence it was checked against on 22 Nov:
   - D-01: the stack on `main`, with Amplify hosting instead of Vercel (D-44);
   - D-02: on hosted, no browser write grants on the 33 tables, RLS on all of them, pinned by `010_security_privileges`;
