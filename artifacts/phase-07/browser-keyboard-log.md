@@ -72,7 +72,7 @@ With #94 applied, all three dialogs return focus to the button that opened them 
 | Challenges admin: challenge and rubric links | both | 20–24 px tall | Obvious |
 | Challenge brief "Read the FAQs"; Register "Sign in" | both | 20 px tall | Obvious |
 | Action dialogs lose focus on close | both | WCAG 2.4.3 | **Fixed in #94** (awaiting review) |
-| Challenge brief on **staging** (`/challenges/water-smart-agriculture-2026`, signed out) | both | "Something went wrong": `challenge_versions` returns 401 (found in the P7-02 Edge run, §5) | Fix in #148 (migration 016), merged 22 Nov 10:43 CAT. **Re-checked 11:35 CAT: still failing**, same `42501 permission denied for table proposals`, so 016 is not yet applied to the hosted database |
+| Challenge brief on **staging** (`/challenges/water-smart-agriculture-2026`, signed out) | both | "Something went wrong": `challenge_versions` returns 401 (found in the P7-02 Edge run, §5) | **Fixed.** #148 (migration 016) merged 22 Nov 10:43 CAT; still failing at 11:35 CAT until 016 was applied to hosted (Stacey, 11:52 CAT, #61). **Re-checked in Edge 14:50 CAT: passes** |
 
 Text links inside a sentence or a table cell can be exempt from the 44 px target under WCAG 2.5.8. The spec (§3.3) asks for 44 px on every control, so these are listed.
 
@@ -99,8 +99,8 @@ Checks still Not run at upload stay labelled **Not run** in the final evidence.
 
 | Browser / device | What was checked | Result |
 |---|---|---|
-| Microsoft Edge 157, Windows 11 desktop, 1280 px | Signed out: home, challenges, challenge brief, sign in, register, FAQs, contacts, privacy | **7 of 8 passed.** Challenge brief **failed**: "Something went wrong", `challenge_versions` 401 (§3). Re-run 11:35 CAT after #148 merged: same result (migration 016 not yet applied to hosted) |
-| Microsoft Edge 157, mobile emulation, 360 px | The same eight pages | **7 of 8 passed**; the challenge brief failed the same way |
+| Microsoft Edge 157, Windows 11 desktop, 1280 px | Signed out: home, challenges, challenge brief, sign in, register, FAQs, contacts, privacy | **8 of 8 passed** (re-run 14:50 CAT). The challenge brief failed in the first run with `challenge_versions` 401 (§3); it passes since migration 016 was applied to hosted |
+| Microsoft Edge 157, mobile emulation, 360 px | The same eight pages | **8 of 8 passed** (re-run 14:50 CAT; the challenge brief failed in the first run, as above) |
 | Microsoft Edge, signed in (two or three demo accounts) | — | **Not run**: needs a person with the demo password (§4) |
 | Firefox, desktop | — | **Not run**: not installed on this machine (§4) |
 | Android phone on mobile data | — | **Not run**: needs a real device (§4) |
