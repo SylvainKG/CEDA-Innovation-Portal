@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { makeFlight, useFlight } from './flight'
 import { brand } from '@/brand'
 
 /**
@@ -105,6 +106,57 @@ export function SunriseJourney({ className }: { className?: string }) {
         </g>
       ))}
       <image href={brand.mark.src} x={P3.x - birdW / 2 + 18} y={P3.y - birdH - 6} width={birdW} height={birdH} className="horizon-bird" />
+    </svg>
+  )
+}
+
+/**
+ * The home hero (post-freeze, ABM 22 Nov): the Okavango sunrise photograph with the swallow flying across it. The
+ * photo, the sun's glow, the dotted trail and the bird share one drawing, measured in the photo's own pixels, so they
+ * stay lined up at any size. The sun glows first; then the swallow sets off from the bottom-left corner and sweeps
+ * across the sky, over the sunrise, to the top right, in its own colours with a soft halo of light, while its trail
+ * draws behind it (one progress value: src/brand/flight.ts). When it lands, `onArrive` runs, so the page can finish
+ * the moment. Still for people who reduce motion. The flight stays inside the part of the photo every screen shows
+ * (x 76–1324 at 4:3).
+ */
+const DAWN_SUN = { x: 668, y: 746 }
+const DAWN = makeFlight([
+  [{ x: 120, y: 880 }, { x: 330, y: 720 }, { x: 520, y: 560 }, { x: 760, y: 470 }],
+  [{ x: 760, y: 470 }, { x: 950, y: 400 }, { x: 1060, y: 300 }, { x: 1190, y: 190 }],
+])
+
+export function DawnFlight({ photo, onArrive, className }: { photo: { src: string; alt: string }; onArrive?: () => void; className?: string }) {
+  const glow = useSvgId('dawn-glow')
+  const reveal = useSvgId('dawn-reveal')
+  const halo = useSvgId('dawn-halo')
+  const { birdRef, trailRef } = useFlight(DAWN, { target: 1, delay: 700, duration: 2600, grow: true, growFrom: 0.6, onArrive })
+  const birdW = 200
+  const birdH = (birdW * brand.mark.height) / brand.mark.width
+  return (
+    <svg viewBox="0 0 1400 936" preserveAspectRatio="xMidYMid slice" className={className} role="img" aria-label={photo.alt}>
+      <defs>
+        <radialGradient id={glow}>
+          <stop offset="0" stopColor="var(--ceda-gold)" stopOpacity="0.95" />
+          <stop offset="0.35" stopColor="var(--ceda-amber)" stopOpacity="0.55" />
+          <stop offset="1" stopColor="var(--ceda-orange)" stopOpacity="0" />
+        </radialGradient>
+        <mask id={reveal}>
+          <path ref={trailRef} d={DAWN.d} fill="none" stroke="#fff" strokeWidth="26" pathLength={1} strokeDasharray="1" strokeDashoffset="1" />
+        </mask>
+        {/* Keeps the swallow's own colours and gives it a soft halo of light, so its navy wings read on the dark sky. */}
+        <filter id={halo} x="-30%" y="-30%" width="160%" height="160%">
+          <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="#fff" floodOpacity="0.75" />
+          <feDropShadow dx="0" dy="0" stdDeviation="16" floodColor="#fdc80d" floodOpacity="0.45" />
+        </filter>
+      </defs>
+      <image href={photo.src} width="1400" height="936" preserveAspectRatio="xMidYMid slice" />
+      <circle cx={DAWN_SUN.x} cy={DAWN_SUN.y} r="190" fill={`url(#${glow})`} className="dawn-glow" />
+      <path d={DAWN.d} fill="none" stroke="#fff" strokeOpacity="0.92" strokeWidth="7" strokeLinecap="round" strokeDasharray="0.5 24" mask={`url(#${reveal})`} />
+      <g ref={birdRef} style={{ opacity: 0 }}>
+        <g className="flight-bob">
+          <image href={brand.mark.src} x={-birdW / 2} y={-birdH / 2} width={birdW} height={birdH} filter={`url(#${halo})`} />
+        </g>
+      </g>
     </svg>
   )
 }

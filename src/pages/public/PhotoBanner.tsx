@@ -14,7 +14,7 @@ export function PhotoBanner({ photo, eyebrow, title, children }: { photo: Photo;
         aria-hidden
         className="absolute inset-0 -z-10 bg-[linear-gradient(180deg,rgba(43,29,25,0.86),rgba(43,29,25,0.92))] md:bg-[linear-gradient(100deg,rgba(43,29,25,0.96)_0%,rgba(43,29,25,0.86)_42%,rgba(43,29,25,0.25)_100%)]"
       />
-      <div className="flex max-w-2xl flex-col items-start gap-4 px-6 pb-12 pt-10 md:px-12 md:pb-16 md:pt-14">
+      <div className="flex max-w-2xl flex-col items-start gap-4 px-6 pb-20 pt-10 md:px-12 md:pb-16 md:pt-14">
         <p className="text-sm font-bold uppercase tracking-wider text-[var(--ceda-gold)]">{eyebrow}</p>
         <h1 className="text-[2.25rem] font-normal leading-tight md:text-[2.75rem]">{title}</h1>
         {children}

@@ -49,13 +49,16 @@ export function ApplicantCasePage() {
         </Link>
       </p>
       <header className="flex flex-col gap-4">
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        {/* The case summary on the portal's sunrise card (post-freeze polish, ABM 22 Nov). */}
+        <div className="relative isolate flex flex-col gap-3 overflow-hidden rounded-[1.5rem] border border-line bg-[linear-gradient(120deg,var(--ceda-sky-start),var(--ceda-band-start))] px-5 pb-6 pt-5 shadow-1 md:flex-row md:items-start md:justify-between md:px-7">
+          <div aria-hidden className="pointer-events-none absolute -right-20 -top-28 -z-10 h-72 w-72 rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--ceda-gold)_40%,transparent),transparent_66%)]" />
+          <span aria-hidden className="absolute inset-x-0 bottom-0 h-1 bg-[linear-gradient(90deg,var(--ceda-gold),var(--ceda-amber),var(--ceda-orange),var(--ceda-maroon))]" />
           <div className="flex flex-col gap-2">
             <div className="flex flex-wrap items-center gap-2">
               <ReferencePill reference={c.reference} copyable />
               <StatusBadge status={c.status} audience="applicant" context={{ feedbackKind: waiting?.kind }} />
             </div>
-            <h1 className="text-h1 font-semibold">{c.title}</h1>
+            <h1 className="text-[1.75rem] font-semibold leading-tight md:text-[2rem]">{c.title}</h1>
             <p className="text-ink-muted">{c.challenge.title}</p>
           </div>
           {c.version ? (

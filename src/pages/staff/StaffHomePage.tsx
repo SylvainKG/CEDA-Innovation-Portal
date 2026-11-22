@@ -15,6 +15,7 @@ import { cn } from '@/lib/cn'
 import { useSession } from '@/lib/session'
 import { staffStatus } from '@/lib/status'
 import { roleLabel } from '@/navigation/role-labels'
+import { PageHeader } from '@/layouts/PageHeader'
 import { CommitteeHome } from './CommitteeView'
 
 const READ_ALL: readonly Role[] = ['screening_officer', 'adjudicator', 'admin']
@@ -169,18 +170,17 @@ export function StaffHomePage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        {main ? <p className="text-xs font-bold uppercase tracking-wider text-brand-text">{roleLabel(main)} portal</p> : null}
-        <h1 className="text-h1 font-semibold">
-          {greeting()}, {user.displayName}
-        </h1>
-        <p className="text-ink-muted">Prioritise the work that needs your attention.</p>
-      </div>
+      <PageHeader
+        eyebrow={main ? `${roleLabel(main)} portal` : undefined}
+        title={`${greeting()}, ${user.displayName}`}
+        intro="Prioritise the work that needs your attention."
+      />
 
       {tiles.length ? (
         <ul aria-label="Your figures" className={cn('grid grid-cols-1 gap-3 sm:grid-cols-2', tiles.length >= 4 ? 'lg:grid-cols-4' : 'lg:grid-cols-3')}>
           {tiles.map((t) => (
-            <li key={t.label} className="flex flex-col gap-1 rounded-md border border-line bg-surface-card p-4">
+            <li key={t.label} className="relative flex flex-col gap-1 overflow-hidden rounded-md border border-line bg-surface-card p-4 shadow-1 transition-shadow hover:shadow-2">
+              <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,var(--ceda-gold),var(--ceda-orange),var(--ceda-maroon))]" />
               <span className="text-sm text-ink-muted">{t.label}</span>
               <span className="text-[2rem] font-semibold leading-tight">{t.value}</span>
               {t.to ? (
@@ -197,8 +197,8 @@ export function StaffHomePage() {
       ) : null}
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <section aria-labelledby="home-next" className="flex flex-col rounded-md border border-line bg-surface-card lg:col-span-2">
-          <div className="flex flex-wrap items-start justify-between gap-2 border-b border-line p-4">
+        <section aria-labelledby="home-next" className="flex flex-col overflow-hidden rounded-md border border-line bg-surface-card shadow-1 lg:col-span-2">
+          <div className="flex flex-wrap items-start justify-between gap-2 border-b border-line bg-[var(--ceda-surface-warm)] p-4">
             <div>
               <h2 id="home-next" className="text-h3 font-semibold">
                 Your next tasks
@@ -235,8 +235,8 @@ export function StaffHomePage() {
           {tasks.length > 5 ? <p className="border-t border-line p-4 text-sm text-ink-muted">{tasks.length - 5} more in your queues.</p> : null}
         </section>
 
-        <section aria-labelledby="home-recent" className="flex flex-col rounded-md border border-line bg-surface-card">
-          <div className="flex flex-wrap items-start justify-between gap-2 border-b border-line p-4">
+        <section aria-labelledby="home-recent" className="flex flex-col overflow-hidden rounded-md border border-line bg-surface-card shadow-1">
+          <div className="flex flex-wrap items-start justify-between gap-2 border-b border-line bg-[var(--ceda-surface-warm)] p-4">
             <div>
               <h2 id="home-recent" className="text-h3 font-semibold">
                 Recent activity
@@ -270,8 +270,8 @@ export function StaffHomePage() {
       </div>
 
       {admin ? (
-        <section aria-labelledby="home-stages" className="flex flex-col rounded-md border border-line bg-surface-card">
-          <div className="border-b border-line p-4">
+        <section aria-labelledby="home-stages" className="flex flex-col overflow-hidden rounded-md border border-line bg-surface-card shadow-1">
+          <div className="border-b border-line bg-[var(--ceda-surface-warm)] p-4">
             <h2 id="home-stages" className="text-h3 font-semibold">
               Cases by stage
             </h2>
@@ -282,7 +282,7 @@ export function StaffHomePage() {
               <li key={s.label} className="grid grid-cols-[9rem_1fr_2rem] items-center gap-3 text-sm md:grid-cols-[12rem_1fr_2rem]">
                 <span>{s.label}</span>
                 <span aria-hidden className="h-2 rounded-full bg-surface-sunken">
-                  <span className="block h-2 rounded-full bg-brand" style={{ width: `${(s.n / maxStage) * 100}%` }} />
+                  <span className="block h-2 rounded-full bg-[linear-gradient(90deg,var(--ceda-gold),var(--ceda-orange))]" style={{ width: `${(s.n / maxStage) * 100}%` }} />
                 </span>
                 <span className="text-right font-semibold tabular-nums">{s.n}</span>
               </li>
