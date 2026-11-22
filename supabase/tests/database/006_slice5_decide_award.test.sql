@@ -3,7 +3,7 @@
 -- Case 0004 (Applicant C, in adjudication, two V1 scorecards): main path.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(45);
+select plan(52);
 
 create temp table ids (k text primary key, v text);
 grant all on ids to authenticated;
@@ -33,6 +33,23 @@ select throws_ok(format($$select public.record_decision(%L, 'approved', '')$$, (
   'PT422', 'VALIDATION', 'a decision needs a reason');
 select throws_ok(format($$select public.record_decision(%L, 'approved', 'Too early')$$, (select v from ids where k = 'c2')),
   'PT409', 'INVALID_STATE', 'a case still in evaluation cannot be decided');
+
+-- Positive: the admin absorbed the adjudicator and support roles (migration 017). Proven inside a savepoint so
+-- the rest of this file's flow (recorded as the demo adjudicator) still starts from a clean, undecided c4. Without
+-- 017's rows these eight assertions fail, which is what makes the suite notice whether the migration ran.
+savepoint admin_absorbed;
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-0000000000e1","role":"authenticated"}', true);
+select ok(private.has_permission('decision.record'), '017: the admin can record a decision');
+select ok(private.has_permission('decision.publish'), '017: the admin can publish a decision');
+select ok(private.has_permission('case.request_feedback'), '017: the admin can request feedback');
+select ok(private.has_permission('case.close'), '017: the admin can close a case');
+select ok(private.has_permission('chat.handle'), '017: the admin can handle support chat');
+select ok(private.has_permission('chat.stats'), '017: the admin can read chat statistics');
+insert into ids select 'adm_d', public.record_decision((select v::uuid from ids where k = 'c4'), 'approved', 'Admin decides (test).') ->> 'decision_id';
+select is(public.publish_decision((select v::uuid from ids where k = 'adm_d')) ->> 'case_status', 'approved',
+  '017: the admin records and publishes a decision, approving the case');
+rollback to savepoint admin_absorbed;
+select set_config('request.jwt.claims', '{"sub":"00000000-0000-4000-8000-0000000000d1","role":"authenticated"}', true);
 
 insert into ids select 'd1', public.record_decision((select v::uuid from ids where k = 'c4'), 'approved', 'Strong pilot evidence (test).') ->> 'decision_id';
 select is((select status from public.proposals where id = (select v::uuid from ids where k = 'c4')), 'in_adjudication',
