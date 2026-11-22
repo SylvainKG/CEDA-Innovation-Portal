@@ -68,7 +68,8 @@ async function signIn(page: Page, account: Account) {
   await page.getByLabel('Email address').fill(account.email)
   await page.getByLabel(/^Password/).fill(password)
   await page.getByRole('button', { name: 'Sign in' }).click()
-  await page.waitForURL((url) => !url.pathname.startsWith('/auth/'), { timeout: 20_000 })
+  // 30 s: the loading splash (#138) and Auth on a cold stack can together take most of 20 s (run 44994702069, attempt 1).
+  await page.waitForURL((url) => !url.pathname.startsWith('/auth/'), { timeout: 30_000 })
 }
 
 /**
