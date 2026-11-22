@@ -124,6 +124,44 @@ jobs:
           name: database-types
           path: database.types.ts
           retention-days: 30
+      - name: Export the API description (OpenAPI)
+        # ARC-01 / test plan S6: PostgREST's description of the API as a signed-in user sees it. PostgREST lists only
+        # the functions the requesting role may execute, and the workflow functions are granted to `authenticated`
+        # (D-02, 010_security_hardening), not to service_role, so the export is read with a short-lived `authenticated`
+        # token. The token is signed with the disposable CI stack's fixed demo JWT secret, not a project secret.
+        # Evidence only, so a failure here is reported but does not block the database gate.
+        continue-on-error: true
+        run: |
+          eval "$(supabase status -o env)"
+          if [ -z "${JWT_SECRET:-}" ]; then
+            echo "::error title=OpenAPI export::supabase status did not print JWT_SECRET; cannot sign an authenticated token"
+            exit 1
+          fi
+          apikey="${ANON_KEY:-$PUBLISHABLE_KEY}"
+          token=$(JWT_SECRET="$JWT_SECRET" node -e '
+            const c = require("crypto"), b = (o) => Buffer.from(JSON.stringify(o)).toString("base64url")
+            const now = Math.floor(Date.now() / 1000)
+            const h = b({ alg: "HS256", typ: "JWT" })
+            const p = b({ role: "authenticated", aud: "authenticated", iat: now, exp: now + 600 })
+            console.log(`${h}.${p}.${c.createHmac("sha256", process.env.JWT_SECRET).update(`${h}.${p}`).digest("base64url")}`)')
+          echo "::add-mask::$apikey"
+          echo "::add-mask::$token"
+          curl -sSf "${API_URL}/rest/v1/" -H "apikey: $apikey" -H "Authorization: Bearer $token" \
+            -H "Accept: application/openapi+json" -o openapi.json
+          jq -e '.swagger or .openapi' openapi.json > /dev/null
+          if jq -e '.paths | has("/rpc/submit_proposal")' openapi.json > /dev/null; then workflow=yes; else workflow=NO; fi
+          {
+            echo "OpenAPI (as a signed-in \`authenticated\` user): $(jq -r '.swagger // .openapi' openapi.json) description,"
+            echo "$(jq '.paths | length' openapi.json) paths, $(jq '[.paths | keys[] | select(startswith("/rpc/"))] | length' openapi.json) of them database functions (/rpc/)."
+            echo "Workflow functions present (\`/rpc/submit_proposal\`): **$workflow**."
+          } >> "$GITHUB_STEP_SUMMARY"
+          jq -e '.paths | has("/rpc/submit_proposal")' openapi.json > /dev/null
+      - uses: actions/upload-artifact@v4
+        if: hashFiles('openapi.json') != ''
+        with:
+          name: openapi
+          path: openapi.json
+          retention-days: 30
       - name: Stop Supabase
         if: always()
         run: supabase stop --no-backup
