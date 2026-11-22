@@ -24,11 +24,11 @@ Screens still being built are marked **[confirm at release]**; that line is chec
 
 **Register (applicants).** Choose **Register**. Enter your name, email address and a password of **at least 12 characters**, then accept the privacy notice. We email you a link: open it to verify your address, then sign in. Staff accounts are created by invitation from an administrator.
 
-**Sign in.** Use your email address and password. If either is wrong, the message doesn't say which, for your protection. If you try too often, wait a few minutes and try again. In the demo, **Choose a demo portal** under the form fills in a demo account's email address; you then type the demo password you were given.
+**Sign in.** Use your email address and password. If either is wrong, the message doesn't say which, for your protection. If you try too often, wait a few minutes and try again.
 
 **Forgot your password.** Choose **Forgot password?** under the password field and enter your email. If an account exists, we send a single-use link that expires. The message is the same whether or not an account exists.
 
-**Staff two-step sign-in.** Staff permissions require a second factor (an authenticator app); the server enforces this. The first time, the **Two-step sign-in** screen shows a QR code: scan it with an authenticator app (or type the key shown), then enter the 6-digit code. After that, enter a new code from the app when asked. Seeded demo staff accounts are exempt so that judges can sign in directly; the screen tells them so.
+**Staff two-step sign-in.** Staff permissions require a second factor (an authenticator app); the server enforces this. The first time, the **Two-step sign-in** screen shows a QR code: scan it with an authenticator app (or type the key shown), then enter the 6-digit code. After that, enter a new code from the app when asked. Seeded staff accounts used for evaluation are exempt so that evaluators can sign in directly; the screen then says "No authenticator code is needed for this account."
 
 **Notifications.** The bell in the header shows how many updates are unread; **Notifications** lists them. The count refreshes every so often while you are signed in. **Email alerts** are optional: switch them on or off on the Notifications page **[confirm at release]**. In this demonstration they are **Simulated** (queued but not sent).
 

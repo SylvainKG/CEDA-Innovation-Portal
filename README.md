@@ -17,6 +17,25 @@ Planning documents: `docs/blueprint/` (MVP blueprint, UI/UX specification) and `
 | See the Figma designs (PDF, one screen per file) | [`Figma pdf/`](Figma%20pdf/) (index in its README); build snapshots in [`docs/design/figma-handoff/snapshots/`](docs/design/figma-handoff/snapshots/) |
 | Change the logo or brand name | [`docs/design/brand.md`](docs/design/brand.md) (one file, `src/brand/index.ts`, plus favicons and the page title) |
 
+## Accounts for evaluators
+
+The sign-in page looks as it would in real use: it offers no account picker. Use these accounts on the hosted portal, all with **the same password, given with the submission** (never stored in this repository, D-17). Every account and all their data are fictional.
+
+| Sign in as | Role | Start at |
+|---|---|---|
+| `applicant.a@demo.ceda-portal.test` | Applicant (Lesedi Agro Demo) | My ideas: submit a new idea; follow it through the stages |
+| `applicant.b@demo.ceda-portal.test` | Applicant | Try to open Applicant A's idea: refused |
+| `applicant.e@demo.ceda-portal.test` | Applicant with an open question (CEDA-2026-0003) | My ideas: "Action required" |
+| `screening@demo.ceda-portal.test` | Screening officer | Screening queue |
+| `reviewer.1@demo.ceda-portal.test`, `reviewer.2@demo.ceda-portal.test` | Reviewers | My reviews: declare, then score |
+| `reviewer.3@demo.ceda-portal.test` | Reviewer not assigned to the demo case | Sees nothing of others' cases |
+| `adjudicator@demo.ceda-portal.test` | Adjudicator | Ready for decision |
+| `admin@demo.ceda-portal.test` | Administrator and auditor | All cases, Reports, Audit log, Users & roles, Settings |
+| `consultant@demo.ceda-portal.test` | Support consultant and support lead | Support inbox |
+| `committee.ext@demo.ceda-portal.test` | External committee member | Counts by stage and the case list only |
+
+Staff accounts don't ask for an authenticator code: the seeded staff accounts are exempt so evaluators can sign in directly (D-07; switched off for any real use). The 15-minute tour is in the [judge guide](docs/submission/judge-guide.md).
+
 **Quick install** (Node.js 20.19 or later, npm 10 or later; no backend, Docker or credentials needed):
 
 ```bash
