@@ -37,7 +37,7 @@ describe('shared shell, laid out to Sandra\'s 21 Nov frames', () => {
     const user = renderAt('/ideas')
     await screen.findByRole('heading', { level: 1, name: 'Welcome, Demo Applicant A' }, LOAD)
     const header = screen.getByRole('banner')
-    expect(within(header).getByText('DEMO')).toBeInTheDocument()
+    expect(within(header).queryByText('DEMO')).not.toBeInTheDocument() // no header pill (team lead, 22 Nov); the footer says demo
     const nav = within(header).getByRole('navigation', { name: 'Main' })
     expect(within(nav).getAllByRole('link').map((l) => l.textContent)).toEqual(['My ideas', 'Challenges', 'Help'])
     expect(within(nav).getByRole('link', { name: 'My ideas' })).toHaveAttribute('aria-current', 'page')
