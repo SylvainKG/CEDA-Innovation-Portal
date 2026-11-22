@@ -84,8 +84,8 @@ describe('routing and role shells (UI convenience; the server enforces access)',
     expect(await screen.findByRole('heading', { name: "We can't find this page" })).toBeInTheDocument()
   })
 
-  it('shows the DEMO badge in every shell', async () => {
+  it('says it is a demonstration in the footer (the header no longer carries a DEMO pill; team lead, 22 Nov)', async () => {
     renderAt('/')
-    expect(await screen.findByText('DEMO')).toBeInTheDocument()
+    expect(await screen.findByText(/Demo prototype with fictional data/)).toBeInTheDocument()
   })
 })

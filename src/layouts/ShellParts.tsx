@@ -173,7 +173,7 @@ export function MockRoleSwitcher({ compact = false }: { compact?: boolean }) {
 }
 
 /** The right end of a signed-in header: the bell and the account menu. `badge` keeps the DEMO pill here (public shell). */
-export function TopBarEnd({ badge = true }: { badge?: boolean }) {
+export function TopBarEnd({ badge = false }: { badge?: boolean }) {
   const { data: user } = useSession()
   return (
     <div className="flex shrink-0 items-center gap-2 md:gap-3">

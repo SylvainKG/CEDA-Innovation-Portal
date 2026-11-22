@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { Menu, ShieldCheck, X } from 'lucide-react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
-import { DemoBadge } from '@/components/DemoBadge'
 import { navFor } from '@/navigation/nav-config'
 import { roleLabel } from '@/navigation/role-labels'
 import { useSession } from '@/lib/session'
@@ -88,7 +87,6 @@ export function StaffShell() {
                 <div className="lg:hidden">
                   <Brand />
                 </div>
-                <DemoBadge />
               </div>
               <TopBarEnd badge={false} />
             </div>

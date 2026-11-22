@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
 import { ButtonLink } from '@/components/ButtonLink'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { DemoBadge } from '@/components/DemoBadge'
 import { cn } from '@/lib/cn'
 import { Brand, Footer, MockRoleSwitcher, SkipLink, TopBarEnd } from './ShellParts'
 import { useSession } from '@/lib/session'
@@ -40,7 +39,6 @@ export function PublicShell() {
         <div className="mx-auto flex max-w-content items-center justify-between gap-4 px-4 py-2">
           <div className="flex shrink-0 items-center gap-3">
             <Brand />
-            <DemoBadge />
           </div>
           <nav aria-label="Main" className="hidden items-center gap-1 xl:flex">
             {LINKS.map((l) => (

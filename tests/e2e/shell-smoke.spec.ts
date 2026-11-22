@@ -43,7 +43,8 @@ for (const p of pages) {
     await page.goto(p.path)
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(p.heading)
     await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1)
-    await expect(page.getByText('DEMO', { exact: false }).first()).toBeVisible()
+    // The header no longer carries a DEMO pill (team lead, 22 Nov); every page's footer says it is a demonstration.
+    await expect(page.getByRole('contentinfo').getByText(/Demo prototype with fictional data/)).toBeVisible()
     expect(await horizontalOverflow(page)).toBe(0)
   })
 }
