@@ -5,6 +5,15 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 ## [Unreleased]
 
 - `feature` **OpenAPI export of the database API** (ARC-01, test plan S6). The Database workflow's Supabase-stack job now saves PostgREST's own description of the API (every exposed table and function) as the `openapi` artifact of each run, with the number of paths in the job summary. It is read as a signed-in (`authenticated`) user, with a short-lived token signed by the disposable CI stack's demo JWT secret: PostgREST lists only the functions the caller may execute, and the workflow functions are granted to `authenticated`, so a service-role read showed only 4 of them. The summary states whether `/rpc/submit_proposal` is present, and the step fails if it isn't. Evidence only, so a failure is reported without blocking the database gate.
+- `docs` **Phase 0 decisions closed: D-01, D-02, D-07, D-14, D-16, D-35** (blueprint §1.3, §5 Phase 0, §12; BCR-001 Part C). Each register row now records the agreed result and the evidence it was checked against on 22 Nov:
+  - D-01: the stack on `main`, with Amplify hosting instead of Vercel (D-44);
+  - D-02: on hosted, no browser write grants on the 33 tables, RLS on all of them, pinned by `010_security_privileges`;
+  - D-07: `demo_mfa_exempt` on, with all 13 accounts seeded demo accounts, and the flag must be off for real use;
+  - D-14: EU Central, p95 315 ms from Gaborone, Mumbai Not run;
+  - D-16: values agreed, measurement Not run;
+  - D-35: manual fallback.
+
+  Stacey's re-check table is added to BCR-001, and the phase-00 record and claim C-18 are updated. Open follow-up: list the D-07 flag in the release notes.
 - `chore` **Release checklist brought up to date** (`docs/submission/release-checklist.md`, #64). It adds:
   - resolving every [confirm at release] mark;
   - Stacey's exact reset of staging before the freeze;
