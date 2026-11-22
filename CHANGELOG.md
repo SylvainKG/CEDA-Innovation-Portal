@@ -4,6 +4,8 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `docs` **BCR-004: Stacey's sign-off recorded** (`docs/blueprint/change-requests/BCR-004-peolwane-ai-assistant.md`). The row records "Approved with conditions, both met", as in the #122 review, and the status line names both approvals. The data-handling note no longer says "if approved".
+
 - `docs` **Draft release note** (`artifacts/phase-07/release.md`, release checklist §2). It covers:
   - what's in the release;
   - the demo configuration that must change for real use: the demo two-step exemption (D-07, BCR-001 Part C), demo data and passwords;
