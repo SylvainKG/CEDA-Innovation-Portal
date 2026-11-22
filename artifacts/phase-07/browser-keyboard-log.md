@@ -72,6 +72,7 @@ With #94 applied, all three dialogs return focus to the button that opened them 
 | Challenges admin: challenge and rubric links | both | 20–24 px tall | Obvious |
 | Challenge brief "Read the FAQs"; Register "Sign in" | both | 20 px tall | Obvious |
 | Action dialogs lose focus on close | both | WCAG 2.4.3 | **Fixed in #94** (awaiting review) |
+| Challenge brief on **staging** (`/challenges/water-smart-agriculture-2026`, signed out) | both | "Something went wrong": `challenge_versions` returns 401 (found in the P7-02 Edge run, §5) | Fix in #148 (migration 016), approved 22 Nov; not yet on staging |
 
 Text links inside a sentence or a table cell can be exempt from the 44 px target under WCAG 2.5.8. The spec (§3.3) asks for 44 px on every control, so these are listed.
 
@@ -79,10 +80,29 @@ Text links inside a sentence or a table cell can be exempt from the 44 px target
 
 | Check | Why | Who can run it |
 |---|---|---|
-| Firefox and Edge (desktop) | Only Chromium is installed in the test container | Anyone on a laptop, on the judging URL |
+| Firefox (desktop) | Not installed on the machines used so far (§5) | Anyone on a laptop, on the judging URL |
+| Edge signed in as demo accounts | The demo password can't be typed in by the scripted run (§5) | Anyone with the judge-guide password |
 | Safari, iPhone; Chrome, Android phone | Needs a real device | Anyone with a phone |
 | Screen reader (NVDA, VoiceOver) | Needs a person | Sylvain or Obvious |
 | The same sweep in Supabase mode (real backend) | Needs the journey settings on #72 | Sylvain, once they are added |
 | Timed key tasks with a person | Needs a person and a stopwatch | Any teammate |
 
 Checks still Not run at upload stay labelled **Not run** in the final evidence.
+
+## 5. Browser and device matrix on staging (P7-02)
+
+| | |
+|---|---|
+| Site | Staging, `https://main.d270qrk6a7zs47.amplifyapp.com` (real backend: **look only, nothing submitted**) |
+| Run | 22 Nov 2026, about 08:50 UTC (10:50 CAT), by Obvious |
+| Method | Scripted, signed out: each page opened fresh and checked for one `h1`, the DEMO label, no sideways scroll, no error page and no console errors. Phone width is Edge's own mobile emulation (360 px, touch), **not** a phone |
+
+| Browser / device | What was checked | Result |
+|---|---|---|
+| Microsoft Edge 157, Windows 11 desktop, 1280 px | Signed out: home, challenges, challenge brief, sign in, register, FAQs, contacts, privacy | **7 of 8 passed.** Challenge brief **failed**: "Something went wrong", `challenge_versions` 401 (§3, fixed by #148, not yet on staging) |
+| Microsoft Edge 157, mobile emulation, 360 px | The same eight pages | **7 of 8 passed**; the challenge brief failed the same way |
+| Microsoft Edge, signed in (two or three demo accounts) | — | **Not run**: needs a person with the demo password (§4) |
+| Firefox, desktop | — | **Not run**: not installed on this machine (§4) |
+| Android phone on mobile data | — | **Not run**: needs a real device (§4) |
+
+**Load time (observation only, not D-16 evidence).** From this desktop connection, the first heading appeared after 1.4–17.6 s (cold loads, signed out). These are not phone measurements on mobile data, so **timed key tasks stay Not run** (C-18).
