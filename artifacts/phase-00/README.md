@@ -20,18 +20,19 @@
 | `figma-handoff/` first snapshot | Sandra | Not run | |
 | Tokens → Tailwind theme; shell + navigation skeleton; state kit | Obvious | **Passed** (independent re-check) | PR #6 review comments: 55 unit tests, browser check at 360/1280 px; now covered by the E2E smoke suite |
 | Region latency measured (D-14) | Stacey + Sylvain | Partly run: EU Central (hosted project) p50 263 ms, p95 315 ms; Mumbai comparison Not run | `region-latency.md` |
-| Every member runs the same commit locally | All | **Partly run:** Stacey on `0311e5e` (`main`, 22 Nov), all Passed. Sylvain's row is from `f126c10` (17 Nov); Sandra and Obvious Not run | Table below |
+| Every member runs the same commit locally | All | **Partly run, on the same commit `85aee03`:** ABM (22 Nov) with every column Passed, including `supabase start`, `db reset` and 513/513 pgTAP; Stacey (22 Nov) with every column Passed except the local database stack (no Docker; the database suites pass 513/513 on the PGlite stand-in). Sylvain's row is from `f126c10` (17 Nov). Sandra and Obvious not yet recorded | Table below |
 
 ## Same commit on every machine
 
-Commit: `0311e5e` (`main`, 22 Nov 2026, after migration 016). A row run on another commit names its commit in Notes.
+Commit: `85aee03` (`main`, 22 Nov 2026, after migration 016). A row run on another commit names it in Notes.
 
 | Member | OS | Node / npm | Docker | Supabase CLI | `npm ci` | `supabase start` | `db reset` | lint | typecheck | test | build | Notes |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Sandra | | | | | | | | | | | | |
 | Obvious | | | | | | | | | | | | |
-| Stacey | Windows 11 Pro (10.0.26300) | 25.0.0 / 11.6.2 | Not installed | 2.108.0 | Passed (467 packages) | Not run (no Docker) | Not run (no Docker); the same migrations, seed and suites pass in CI on the Supabase stack (`main` `cd17218`, run 45004119862: `Files=14, Tests=513`, PASS) | Passed | Passed | Passed (49 files, 354/354) | Passed | Run on `0311e5e`, 22 Nov 2026, from a clean checkout (`npm ci`). Database suites on the PGlite stand-in (`tools/pglite-db-tests`, `npm test`): **513/513**, including `014_public_catalogue`. Earlier run: `621307e`, 16 Nov (55/55) |
+| Stacey | Windows 11 Pro (10.0.26300) | 25.0.0 / 11.6.2 | Not installed | 2.108.0 | Passed (467 packages) | Not run (no Docker) | Not run (no Docker); the same migrations, seed and suites pass on the Supabase stack in ABM's row and in CI (run 45004119862, `Files=14, Tests=513`, PASS) | Passed | Passed | Passed (354/354 in 49 files) | Passed | Commit `85aee03` (origin/main), 22 Nov 2026, from a clean checkout (`npm ci`). Database suites on the PGlite stand-in (`tools/pglite-db-tests`, `npm test`): **513/513**, including `014_public_catalogue`. The same results on `0311e5e` (it differs only in one document). Earlier run: `621307e`, 16 Nov (55/55) |
 | Sylvain | Ubuntu 24.04 (cloud container) | 22.23.4 / 10.9.9 | 29.9.2 | Not installed | Passed | Not run | Not run (PGlite stand-in: 457 assertions passed on `db/security-checks`, 16 Nov) | Passed | Passed | Passed (55/55) | Passed | Commit `f126c10` (17 Nov) |
+| ABM | Windows 11 Pro (10.0.26300) | 24.14.0 / 11.14.0 | 29.6.1 (Docker Desktop) | 2.115.0 | Passed (467 packages) | Passed (first start pulls the images: 33 min) | Passed (migrations 001–016 and the seed); `supabase test db` 513/513 in 14 files | Passed | Passed | Passed (354/354 in 49 files) | Passed (one chunk over 500 kB: a warning, not a failure) | Commit `85aee03` (origin/main), 22 Nov 2026 |
 
 ## Results summary
 

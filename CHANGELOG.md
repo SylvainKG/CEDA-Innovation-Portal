@@ -4,14 +4,14 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
-- `docs` **Phase 0 "same commit on every machine": Stacey's row on `0311e5e`** (`artifacts/phase-00/README.md`). The table now names its commit (`main` `0311e5e`, 22 Nov, after migration 016). Stacey's run is from a clean checkout:
+- `docs` **Phase 0 "same commit on every machine": Stacey's row on `85aee03`, the commit of ABM's row** (`artifacts/phase-00/README.md`). The table now names that commit (`main`, 22 Nov, after migration 016). Stacey's run is from a clean checkout:
   - `npm ci`: 467 packages;
   - lint and type-check: clean;
   - Vitest: 354/354 in 49 files;
   - build: Passed;
   - the database suites on the PGlite stand-in: 513/513.
 
-  `supabase start` and `db reset` are Not run (no Docker); the same files pass on the Supabase stack in CI (run 45004119862, 513/513). The other members' rows are still to be recorded.
+  `supabase start` and `db reset` are Not run (no Docker); the same files pass on the Supabase stack in ABM's row and in CI (run 45004119862, 513/513). Sandra's and Obvious's rows are still to be recorded, and Sylvain's is from 17 Nov.
 
 - `test` **A signed-out visitor opens the challenge brief** (`hosted-journey.spec.ts`, a read-only test; regression for #148). It is the judges' first click, and every other journey test signs in first. Without migration 016 it failed on a throwaway stack from `main` (run 45003244482: "Something went wrong"); with it, the whole journey passes 8/8 (run 45004151958).
 - `repair` **Signed-out visitors can open challenge briefs again** (migration 016). The `challenge_versions` read policy (001) let an applicant keep seeing the version of their own case through a plain subquery on `proposals`; signed-out visitors have no access to `proposals`, so every read of `challenge_versions` failed with 42501 ("permission denied for table proposals") and no challenge brief opened on the hosted build. The check now runs in a security-definer helper, `private.owns_case_on_version()`, as 011 did for `challenges`; the policy's meaning is unchanged. The helper is added to the 010 allow-lists.
