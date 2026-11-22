@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Menu, ShieldCheck, X } from 'lucide-react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { DemoBadge } from '@/components/DemoBadge'
 import { navFor } from '@/navigation/nav-config'
 import { roleLabel } from '@/navigation/role-labels'
@@ -11,27 +11,38 @@ import { PeolwaneAssistant } from '@/features/assistant/PeolwaneAssistant'
 
 function StaffNav({ onNavigate }: { onNavigate?: () => void }) {
   const { data: user } = useSession()
+  const { pathname } = useLocation()
   const items = navFor(user?.roles ?? [])
   const main = user?.roles.find((r) => r !== 'auditor') ?? user?.roles[0]
   return (
     <div className="flex h-full flex-col gap-3">
       {main ? <p className="rounded-md bg-surface-sunken px-3 py-2 text-xs font-semibold uppercase tracking-wide text-ink-muted">{roleLabel(main)} portal</p> : null}
       <ul className="flex flex-col gap-1">
-        {items.map((item) => (
-          <li key={item.to}>
-            <NavLink
-              to={item.to}
-              end={item.to === '/staff'}
-              onClick={onNavigate}
-              className={({ isActive }) =>
-                cn('flex min-h-touch items-center gap-3 rounded-md px-3 text-ink no-underline hover:bg-surface-sunken', isActive && 'bg-brand-subtle font-semibold')
-              }
-            >
+        {items.map((item) => {
+          const cls = (active: boolean) =>
+            cn('flex min-h-touch items-center gap-3 rounded-md px-3 text-ink no-underline hover:bg-surface-sunken', active && 'bg-brand-subtle font-semibold')
+          const content = (
+            <>
               <item.icon aria-hidden className="h-5 w-5" />
               {item.label}
-            </NavLink>
-          </li>
-        ))}
+            </>
+          )
+          // Settings spans several pages (challenges, rubrics, content, roles, chat), so it is current on any of them.
+          const current = item.activeFor?.some((p) => pathname.startsWith(p)) ?? false
+          return (
+            <li key={item.to}>
+              {item.activeFor ? (
+                <Link to={item.to} onClick={onNavigate} aria-current={current ? 'page' : undefined} className={cls(current)}>
+                  {content}
+                </Link>
+              ) : (
+                <NavLink to={item.to} end={item.to === '/staff'} onClick={onNavigate} className={({ isActive }) => cls(isActive)}>
+                  {content}
+                </NavLink>
+              )}
+            </li>
+          )
+        })}
       </ul>
       <p className="mt-auto flex items-start gap-2 rounded-md bg-surface-sunken p-3 text-xs">
         <ShieldCheck aria-hidden className="h-5 w-5 shrink-0" />

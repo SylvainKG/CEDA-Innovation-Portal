@@ -15,6 +15,8 @@ describe('status wording (spec §6)', () => {
     expect(applicantStatus('action_required', { feedbackKind: 'clarification' }).label).toBe('Action required: answer a question')
     expect(applicantStatus('action_required', { feedbackKind: 'revision' }).label).toBe('Action required: revise your idea')
     expect(staffStatus('action_required', { feedbackKind: 'revision' }).label).toBe('Waiting on applicant (revision)')
+    // Without the request's kind (staff lists), the badge doesn't guess (handoff-notes #39).
+    expect(staffStatus('action_required').label).toBe('Waiting on applicant')
   })
 
   it('maps statuses to the five public stages', () => {
@@ -58,6 +60,12 @@ describe('navigation by role (navigation-map.md)', () => {
 
   it('gives reviewers My reviews only', () => {
     expect(labels(['reviewer'])).toEqual(['Home', 'My reviews'])
+  })
+
+  it('gives admins Users & roles next to Settings, as in the admin frame (handoff-notes #40)', () => {
+    expect(labels(['admin'])).toEqual(['Home', 'Screening queue', 'Ready for decision', 'All cases', 'Reports', 'Audit log', 'Users & roles', 'Settings'])
+    expect(navFor(['admin']).find((i) => i.label === 'Users & roles')?.to).toBe('/admin/users')
+    expect(labels(['adjudicator'])).not.toContain('Users & roles')
   })
 
   it('lands auditors on the audit log, since they have no Home', () => {

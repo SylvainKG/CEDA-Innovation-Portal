@@ -98,6 +98,7 @@ describe('Slice 4: clarification loop', () => {
   it('shows the seeded open clarification to staff', async () => {
     await as('screening_officer')
     const user = renderAt(`/staff/cases/${CASE_3}`)
+    expect(await screen.findByText('Waiting on applicant (clarification)', {}, LOAD)).toBeInTheDocument()
     await user.click(await screen.findByRole('tab', { name: 'Feedback' }, LOAD))
     expect(await within(screen.getByRole('tabpanel')).findByText('Please confirm the district of your pilot farms (DEMO).')).toBeInTheDocument()
     expect(within(screen.getByRole('tabpanel')).getByText('Open')).toBeInTheDocument()
@@ -122,11 +123,14 @@ describe('Slice 4: revision request with a roadmap', () => {
     await staff.type(within(dialog).getByLabelText('Task 2'), 'Name the pilot site.')
     await staff.click(within(dialog).getByRole('button', { name: 'Send revision request' }))
     expect(await screen.findByText(/Revision request sent/)).toBeInTheDocument()
+    // The badges name the open request's kind on both case pages (handoff-notes #39).
+    expect(await screen.findByText('Waiting on applicant (revision)', {}, LOAD)).toBeInTheDocument()
 
     await as('applicant')
     document.body.innerHTML = ''
     renderAt(`/ideas/${CASE_8}`)
     expect(await screen.findByText('CEDA asks you to revise your idea', {}, LOAD)).toBeInTheDocument()
+    expect(screen.getByText('Action required: revise your idea')).toBeInTheDocument()
     const panel = screen.getByRole('tabpanel')
     expect(within(panel).getByText('Roadmap · 0 of 2 tasks addressed')).toBeInTheDocument()
     expect(within(panel).getByText('Add a line-item budget.')).toBeInTheDocument()
