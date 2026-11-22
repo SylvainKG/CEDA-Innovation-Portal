@@ -7,6 +7,7 @@ import { api } from '@/lib/api'
 import type { AdminChallenge, CommandOutcome } from '@/lib/api/types'
 import { formatDateCAT } from '@/lib/format'
 import { challengeKeys, fromCat, STATUS_WORD } from './challenge-shared'
+import { SettingsNav } from './SettingsNav'
 
 
 /**
@@ -27,6 +28,7 @@ export function ChallengesPage() {
   ]
   return (
     <div className="flex flex-col gap-6">
+      <SettingsNav />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-h1 font-semibold">Challenges</h1>
         {!creating ? <Button onClick={() => setCreating(true)}>New challenge</Button> : null}
