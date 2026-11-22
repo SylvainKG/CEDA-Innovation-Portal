@@ -62,23 +62,57 @@ describe('T01 public home', () => {
     expect(within(card).queryByRole('link', { name: /^View challenge/ })).not.toBeInTheDocument()
   })
 
-  it('has the intro, the challenges (open first, closed labelled) and the five steps', async () => {
+  it('keeps Home focused on the Peolwane story and links to dedicated challenge and process pages', async () => {
     renderAt('/')
     const intro = (await screen.findByRole('heading', { level: 1, name: 'A new dawn for innovation in Botswana' })).closest('section') as HTMLElement
-    // One action leads into the open challenges; Sign in and Register stay in the navigation (post-freeze design).
-    expect(within(intro).getByRole('link', { name: 'Submit an innovation' })).toHaveAttribute('href', '/challenges')
-    expect(within(intro).getByRole('link', { name: 'How it works' })).toHaveAttribute('href', '#how-it-works')
+    expect(within(intro).getByRole('link', { name: 'Browse challenges' })).toHaveAttribute('href', '/challenges')
+    expect(within(intro).getByRole('link', { name: 'How it works' })).toHaveAttribute('href', '/how-it-works')
     expect(await within(intro).findByRole('link', { name: 'Read the brief: Water-Smart Agriculture Challenge 2026' })).toHaveAttribute(
       'href',
       '/challenges/water-smart-agriculture-2026',
     )
-    await screen.findByText('Closed — not accepting submissions')
-    const cards = screen.getAllByRole('article')
-    expect(within(cards[0] as HTMLElement).getByRole('heading', { name: 'Water-Smart Agriculture Challenge 2026' })).toBeInTheDocument()
-    expect(within(cards[0] as HTMLElement).getByRole('link', { name: 'View challenge: Water-Smart Agriculture Challenge 2026' })).toHaveAttribute('href', '/challenges/water-smart-agriculture-2026')
-    expect(within(cards[1] as HTMLElement).getByText('Closed — not accepting submissions')).toBeInTheDocument()
-    const steps = within(screen.getByRole('heading', { name: 'From submission to award' }).closest('section') as HTMLElement).getAllByRole('listitem')
-    expect(steps).toHaveLength(5)
+    expect(screen.getByRole('link', { name: 'Browse all challenges' })).toHaveAttribute('href', '/challenges')
+    expect(screen.getByRole('img', { name: 'Portrait of Mr. Khalala A. Mokefane' }).getAttribute('src')).toContain('CEDA%20CEO%20Mkefane-7193.jpg')
+    expect(screen.getByRole('link', { name: /Portrait and role: CEDA Executive Management/ })).toHaveAttribute('href', 'https://www.ceda.co.bw/executive-management')
+    expect(screen.queryByRole('article')).not.toBeInTheDocument()
+    expect(document.querySelector('details')).toBeNull()
+    expect(screen.queryByText('From submission to award')).not.toBeInTheDocument()
+  })
+
+  it('shows the key destinations in the public navbar and keeps the Peolwane logo as Home', async () => {
+    renderAt('/')
+    const nav = screen.getByRole('navigation', { name: 'Main' })
+    expect(within(nav).getByRole('link', { name: 'Challenges' })).toHaveAttribute('href', '/challenges')
+    expect(within(nav).getByRole('link', { name: 'How it works' })).toHaveAttribute('href', '/how-it-works')
+    expect(within(nav).getByRole('link', { name: 'About Us' })).toHaveAttribute('href', '/about')
+    expect(within(nav).queryByRole('link', { name: 'FAQs' })).not.toBeInTheDocument()
+    expect(within(nav).getByRole('link', { name: 'Contact' })).toHaveAttribute('href', '/help/contacts')
+    expect(within(screen.getByRole('navigation', { name: 'Footer' })).getByRole('link', { name: 'FAQs' })).toHaveAttribute('href', '/help/faqs')
+    expect(screen.getByRole('link', { name: 'Peolwane · CEDA Innovation Portal' })).toHaveAttribute('href', '/')
+  })
+})
+
+describe('How it works page', () => {
+  it('explains the five real stages and links into the challenge and account flows', async () => {
+    renderAt('/how-it-works')
+    expect(await screen.findByRole('heading', { level: 1, name: 'How the CEDA innovation process works' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Choose a challenge' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Prepare your idea' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Submit and keep your reference' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'CEDA reviews your proposal' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Respond and follow the decision' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Explore challenges' })).toHaveAttribute('href', '/challenges')
+    expect(screen.getByRole('link', { name: 'Read the privacy notice' })).toHaveAttribute('href', '/privacy')
+  })
+})
+
+describe('About Us page', () => {
+  it('explains Peolwane, its CEDA connection and prototype status', async () => {
+    renderAt('/about')
+    expect(await screen.findByRole('heading', { level: 1, name: 'About Us' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'A CEDA initiative' })).toBeInTheDocument()
+    expect(screen.getByText(/demonstration prototype with fictional example data/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'See how it works' })).toHaveAttribute('href', '/how-it-works')
   })
 })
 

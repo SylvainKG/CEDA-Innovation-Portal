@@ -17,6 +17,22 @@ The code token names are fixed so implementation can start now. Only values chan
 
 ## Colour
 
+**CEDA sunrise tokens (post-freeze, ABM, 22 Nov 2026).** These support Peolwane's CEDA-owned public artwork and footer. The Peolwane logo remains the portal mark. The palette is taken from CEDA's sunrise identity; text must use the existing accessible text tokens or the contrast-approved foreground for that surface.
+
+| Code token | Value | Use |
+|---|---|---|
+| `ceda-maroon` | `#9E2420` | Sunrise land, emphasis |
+| `ceda-orange` | `#F26A21` | Sunrise land, decorative highlights |
+| `ceda-amber` | `#F8A51B` | Sunrise land |
+| `ceda-gold` | `#FDC80D` | Sunrise and dark-surface accent |
+| `ceda-brown` | `#5B3D34` | Wordmark colour |
+| `ceda-night` | `#2B1D19` | Dark bands and footer |
+| `ceda-sky-start` / `ceda-sky-end` | `#FFFAF3` / `#FFE3C2` | Decorative illustration sky |
+| `ceda-rain` | `#3F6FA8` | Decorative raindrops |
+| `ceda-footer-text` | `#E9DCD5` | Muted text on the dark footer |
+| `ceda-surface-warm` | `#FFF8EF` | Warm page gradient |
+| `ceda-band-start` / `ceda-band-end` | `#FFF3E2` / `#FFE0B8` | Closing call-to-action band |
+
 | Code token | Figma variable | Value | Source (Figma / placeholder) | Use |
 |---|---|---|---|---|
 | `brand-primary` | `--orange` | `#F58220` | Figma (Make CSS) | Primary buttons, active nav, links, focus border. **White text on it = 2.59:1 (fails)**; as text on white = 2.59:1 (fails) |

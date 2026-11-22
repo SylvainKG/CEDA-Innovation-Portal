@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { lazy, Suspense, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { ChevronDown } from 'lucide-react'
@@ -7,6 +7,8 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/states/States
 import { api } from '@/lib/api'
 import type { ContentKind, ContentPage } from '@/lib/api/types'
 import { assistantConfig } from '@/features/assistant/leseding'
+
+const BranchNetworkMap = lazy(() => import('./BranchNetworkMap').then((module) => ({ default: module.BranchNetworkMap })))
 
 /**
  * T03 content variants (spec T03, HLP-01), built from the written spec (BCR-003; design review pending):
@@ -19,9 +21,9 @@ function useContent(kind: ContentKind) {
   return useQuery({ queryKey: ['content', kind], queryFn: () => api.content.list(kind), staleTime: 5 * 60_000 })
 }
 
-function PageFrame({ title, intro, children }: { title: string; intro?: ReactNode; children: ReactNode }) {
+function PageFrame({ title, intro, wide = false, children }: { title: string; intro?: ReactNode; wide?: boolean; children: ReactNode }) {
   return (
-    <div className="flex max-w-form flex-col gap-6">
+    <div className={`flex ${wide ? 'w-full max-w-content' : 'max-w-form'} flex-col gap-6`}>
       <div className="flex flex-col gap-2">
         <h1 className="text-h1 font-semibold">{title}</h1>
         {intro ? <p className="text-ink-muted">{intro}</p> : null}
@@ -111,7 +113,10 @@ export function ContactsPage() {
   const contacts = useContent('contact')
   const referrals = useContent('referral')
   return (
-    <PageFrame title="Regulatory contacts" intro="Offices that can help with registration, licensing, standards and intellectual property.">
+    <PageFrame wide title="Contact and branch network" intro="Find a CEDA branch, check how to get there, or reach the regulatory offices and support programmes listed below.">
+      <Suspense fallback={<div role="status" className="min-h-[22rem] rounded-md border border-line bg-surface-card p-5 text-ink-muted sm:min-h-[27rem]">Loading the interactive branch map…</div>}>
+        <BranchNetworkMap />
+      </Suspense>
       <section aria-labelledby="contacts-heading" className="flex flex-col gap-3">
         <h2 id="contacts-heading" className="text-h2 font-semibold">
           Regulatory offices

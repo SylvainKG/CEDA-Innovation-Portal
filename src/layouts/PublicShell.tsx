@@ -6,15 +6,18 @@ import { CEDA, telHref } from '@/brand/ceda-info'
 import { cn } from '@/lib/cn'
 import { Brand, Footer, MockRoleSwitcher, SkipLink, TopBarEnd } from './ShellParts'
 import { useSession } from '@/lib/session'
+import { homeFor } from '@/navigation/nav-config'
 import { PeolwaneAssistant } from '@/features/assistant/PeolwaneAssistant'
+import { PageTransition } from './PageTransition'
 
 const LINKS = [
   { to: '/challenges', label: 'Challenges' },
-  { to: '/#how-it-works', label: 'How it works' },
+  { to: '/how-it-works', label: 'How it works' },
+  { to: '/about', label: 'About Us' },
   { to: '/help/contacts', label: 'Contact' },
 ]
 
-/** Where "Submit an innovation" leads: the open challenges, then "Start an idea" (sign in or register on the way). */
+/** People choose a challenge before starting an idea; the challenge brief explains the next step. */
 const SUBMIT_TO = '/challenges'
 
 /** Scrolled past the contact strip (desktop), so the bar floats as a pill. */
@@ -50,13 +53,13 @@ function useScrolledPast(threshold: number) {
  * - The bar stays at the top. Once the page scrolls, it lifts into a floating, rounded, frosted bar with a soft
  *   shadow, the effect used on the First Minds website, in Peolwane's colours. Without motion (reduced-motion
  *   setting) it changes at once.
- * - Links: Challenges, How it works and Contact (FAQs live in the footer), with an orange underline that grows on hover and stays on
- *   the current page. "Sign in" is a quiet text link; "Submit an innovation" is the one filled button and leads
- *   to the open challenges.
+ * - Links: Challenges, How it works, About Us and Contact, with an orange underline that grows on hover and stays on
+ *   the current page. FAQs remain in the footer. The Peolwane logo returns Home. "Sign in" is a quiet text link; "Browse challenges" is
+ *   the one filled button.
  * - Below 1024 px a menu button opens a panel with the same links, both actions and the contact details. The panel
  *   closes on a link, Escape, a tap outside it, or as soon as the page scrolls.
  *
- * A signed-in person (e.g. on two-step sign-in) has the account menu instead of "Sign in" / "Submit an innovation".
+ * A signed-in person (e.g. on two-step sign-in) has the account menu instead of the sign-in and browse actions.
  */
 export function PublicShell() {
   const [open, setOpen] = useState(false)
@@ -64,6 +67,9 @@ export function PublicShell() {
   const home = pathname === '/'
   const floating = useScrolledPast(FLOAT_AFTER)
   const { data: user } = useSession()
+  // A signed-in person on a public page (the home page) gets one button back to their own workspace; not mid-sign-in.
+  const workspace =
+    user && !pathname.startsWith('/auth/') ? { to: homeFor(user.roles), label: user.roles.includes('applicant') ? 'My ideas' : 'My workspace' } : null
 
   // The panel closes when the page changes...
   useEffect(() => setOpen(false), [pathname])
@@ -104,8 +110,7 @@ export function PublicShell() {
             </div>
             <nav aria-label="Main" className="hidden items-center gap-1 lg:flex">
               {LINKS.map((l) => (
-                // "How it works" is a section of the home page, so it is never marked as the current page.
-                <NavLink key={l.to} to={l.to} className={({ isActive }) => cn('site-nav__link', isActive && !l.to.includes('#') && 'site-nav__link--active')}>
+                <NavLink key={l.to} to={l.to} className={({ isActive }) => cn('site-nav__link', isActive && 'site-nav__link--active')}>
                   {l.label}
                 </NavLink>
               ))}
@@ -117,10 +122,15 @@ export function PublicShell() {
                     Sign in
                   </Link>
                   <ButtonLink to={SUBMIT_TO} className="hidden whitespace-nowrap !rounded-full md:inline-flex">
-                    Submit an innovation
+                    Browse challenges
                   </ButtonLink>
                 </>
               )}
+              {workspace ? (
+                <ButtonLink to={workspace.to} className="hidden whitespace-nowrap !rounded-full md:inline-flex">
+                  {workspace.label}
+                </ButtonLink>
+              ) : null}
               <TopBarEnd badge={false} />
               <button
                 type="button"
@@ -145,7 +155,7 @@ export function PublicShell() {
                   className={({ isActive }) =>
                     cn(
                       'flex min-h-touch items-center rounded-md px-3 font-semibold no-underline hover:bg-surface-sunken',
-                      isActive && !l.to.includes('#') ? 'text-brand-text' : 'text-ink',
+                      isActive ? 'text-brand-text' : 'text-ink',
                     )
                   }
                   onClick={() => setOpen(false)}
@@ -157,21 +167,31 @@ export function PublicShell() {
             {user ? null : (
               <div className="flex flex-col gap-2 border-t border-line pt-3">
                 <ButtonLink to={SUBMIT_TO} className="w-full !rounded-full" onClick={() => setOpen(false)}>
-                  Submit an innovation
+                  Browse challenges
                 </ButtonLink>
                 <ButtonLink to="/auth/sign-in" variant="secondary" className="w-full !rounded-full" onClick={() => setOpen(false)}>
                   Sign in
                 </ButtonLink>
               </div>
             )}
+            {workspace ? (
+              <div className="flex flex-col gap-2 border-t border-line pt-3">
+                <ButtonLink to={workspace.to} className="w-full !rounded-full" onClick={() => setOpen(false)}>
+                  {workspace.label}
+                </ButtonLink>
+              </div>
+            ) : null}
             <ContactLinks className="flex flex-col border-t border-line pt-2 text-sm" />
           </div>
         ) : null}
       </header>
-      <main id="main" className={home ? 'w-full flex-1' : 'mx-auto w-full max-w-content flex-1 px-4 py-6'}>
-        <Outlet />
+      {/* Every page fills at least the window below the navigation, so the footer always starts below the fold. */}
+      <main id="main" className={home ? 'w-full flex-1' : 'mx-auto min-h-[calc(100svh-4rem)] w-full max-w-content flex-1 px-4 py-6 lg:min-h-[calc(100svh-6.75rem)]'}>
+        <PageTransition>
+          <Outlet />
+        </PageTransition>
       </main>
-      <div className="mx-auto w-full max-w-content px-4">
+      <div className="mx-auto w-full max-w-content px-4 pt-4">
         <MockRoleSwitcher />
       </div>
       <Footer chatSpace />

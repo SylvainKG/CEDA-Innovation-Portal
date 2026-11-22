@@ -142,20 +142,6 @@
   }
 }
 
-/*
- * CEDA's sunrise palette (post-freeze, ABM 22 Nov): the four colours of the sun and land in CEDA's logo, the brown of
- * its wordmark, and a deep "night" brown for dark bands. Used by the brand artwork (src/brand/Horizon.tsx), the
- * home page and the footer. Text on these: white on maroon/night/brown; #1f1f1f on orange/amber/gold.
- */
-:root {
-  --ceda-maroon: #9e2420;
-  --ceda-orange: #f26a21;
-  --ceda-amber: #f8a51b;
-  --ceda-gold: #fdc80d;
-  --ceda-brown: #5b3d34;
-  --ceda-night: #2b1d19;
-}
-
 @layer components {
   .horizon-sun {
     transform-box: fill-box;
@@ -272,6 +258,138 @@
     .horizon-draw {
       animation: none;
       stroke-dashoffset: 0;
+    }
+  }
+}
+
+/*
+ * Moving between pages (post-freeze, ABM 22 Nov): the page fade is in PageTransition (Web Animations, so it leaves no
+ * transform behind); here, the thin sunrise-coloured line along the top of the window while a page's data loads
+ * (RouteProgress), and skeletons that shimmer instead of pulsing. All of it is still with the reduced-motion setting.
+ */
+@layer components {
+  /* The five stages on the home page's dark band and the How it works overview, joined by the swallow's dotted
+     flight: down the left on phones and tablets, across from 1024 px. */
+  .process-rail__stage:not(:last-child)::after {
+    position: absolute;
+    top: 52px;
+    bottom: -12px;
+    left: 23px;
+    border-left: 2px dotted var(--rail-colour, var(--ceda-gold));
+    content: '';
+  }
+  @media (min-width: 1024px) {
+    .process-rail__stage:not(:last-child)::after {
+      top: 23px;
+      bottom: auto;
+      left: 58px;
+      right: -18px;
+      border-left: 0;
+      border-top: 2px dotted var(--rail-colour, var(--ceda-gold));
+    }
+  }
+  .how-it-works-step:not(:last-child)::after {
+    position: absolute;
+    inset: 43px auto -18px 23px;
+    width: 2px;
+    background: linear-gradient(var(--ceda-orange), var(--ceda-gold));
+    content: '';
+  }
+  .ceda-branch-map .leaflet-control-attribution {
+    font-size: 14px;
+  }
+  .ceda-branch-map .leaflet-control-zoom a {
+    color: var(--text-primary);
+  }
+  .ceda-map-pin-shell {
+    border: 0;
+    background: transparent;
+  }
+  .ceda-map-pin {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    place-items: center;
+    transform: rotate(-45deg);
+    border: 3px solid var(--surface-card);
+    border-radius: 50% 50% 50% 0;
+    background: var(--ceda-maroon);
+    box-shadow: var(--shadow-1);
+    transition: transform 140ms ease, background-color 140ms ease;
+  }
+  .ceda-map-pin > span {
+    width: 7px;
+    height: 7px;
+    transform: rotate(45deg);
+    border-radius: 50%;
+    background: var(--ceda-gold);
+  }
+  .ceda-map-pin--selected {
+    z-index: 2;
+    transform: rotate(-45deg) scale(1.18);
+    background: var(--ceda-orange);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .ceda-map-pin {
+      transition: none;
+    }
+  }
+
+  .route-progress {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 60;
+    height: 3px;
+    overflow: hidden;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 320ms ease;
+  }
+  .route-progress--on {
+    opacity: 1;
+    transition-duration: 120ms;
+  }
+  .route-progress > span {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 40%;
+    border-radius: 0 3px 3px 0;
+    background: linear-gradient(90deg, var(--ceda-gold), var(--ceda-orange), var(--ceda-maroon));
+    animation: route-progress 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  }
+  @keyframes route-progress {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(260%);
+    }
+  }
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--surface-sunken) 25%,
+      color-mix(in srgb, var(--surface-sunken) 35%, #ffffff) 50%,
+      var(--surface-sunken) 75%
+    );
+    background-size: 200% 100%;
+    animation: skeleton-shimmer 1.4s ease-in-out infinite;
+  }
+  @keyframes skeleton-shimmer {
+    from {
+      background-position: 200% 0;
+    }
+    to {
+      background-position: -200% 0;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .skeleton {
+      animation: none;
+    }
+    .route-progress > span {
+      width: 100%;
+      animation: none;
     }
   }
 }
