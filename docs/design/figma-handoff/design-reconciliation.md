@@ -7,7 +7,7 @@
 
 - **Snapshot set complete.** Every screen in the route map has a current snapshot in [`snapshots/`](snapshots/): 28 Figma frames and 19 build captures (47 files, 2.1 MB; the largest is 169 KB). See the snapshot log in [`snapshots/README.md`](snapshots/README.md).
 - **Every implemented screen matches its snapshot, or the difference is logged** in [`handoff-notes.md`](handoff-notes.md) (#2–#40). The table below lists each screen with its result.
-- **Two fixes are proposed before freeze** (UI merges stop 16:00 CAT): the admin settings pages have no link in the navigation (#40), and the staff status badge says "clarification" when a revision is open (#39). Both are logged and owned below. Neither is in this PR.
+- **Two fixes are open before freeze** (UI merges stop 16:00 CAT): #142 links the admin settings pages from the navigation (#40), and #143 makes the status badges name an open revision (#39). Neither is in this PR.
 - **Not reconciled back into Figma (§8.4 step 8).** The frames live in Sandra's Figma file and were not redrawn before the freeze. Until they are, the differences listed here are the record, and the build plus these snapshots are the reference. When Sandra is back, she updates the frames to match the decisions below or keeps them logged.
 
 ## Two kinds of snapshot
@@ -63,8 +63,8 @@
 
 | Item | Owner | When |
 |---|---|---|
-| #40: add Users & roles, and the other settings pages, to the admin navigation | ABM (UI) | Before 16:00 CAT, if the team agrees |
-| #39: pass the open request's kind to the staff status badge | ABM (UI) | Before 16:00 CAT, or after judging |
+| #40: Users & roles and the other settings pages in the admin navigation | ABM (UI), PR #142 | Review and merge before 16:00 CAT |
+| #39: status badges name an open revision | ABM (UI), PR #143 | Review and merge before 16:00 CAT |
 | Redraw the frames to the decisions in #16–#38, or keep them logged (§8.4 step 8) | Sandra (ABM as backup) | After judging, when Sandra is back |
 | Snapshots of the dialogs with no frame (assign reviewers, revision request, publish, award), the T08 Feedback and Decision tabs and the V2 verification block | ABM | After judging; each needs case state set up in the session |
 | Mobile 360 snapshots | ABM | After judging. The 360 px checks are recorded in `staging-review-checklist.md`; only desktop is captured |
