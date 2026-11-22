@@ -46,7 +46,7 @@ export function RolesPage() {
       <div className="flex flex-col gap-1">
         <h1 className="text-h1 font-semibold">Roles</h1>
         <p className="text-ink-muted">
-          What each role can do. Give roles to people on <Link to="/admin/users">Users and roles</Link>.
+          What each role can do. Give roles to people on <Link to="/admin/users">Users & roles</Link>.
         </p>
       </div>
       <div aria-live="polite">{msg ? <Banner kind={msg.kind}>{msg.text}</Banner> : null}</div>

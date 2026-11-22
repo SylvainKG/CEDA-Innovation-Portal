@@ -57,7 +57,7 @@ export function AdminUsersPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div className="flex flex-col gap-1">
           <p className="text-xs font-bold uppercase tracking-wider text-brand-text">Admin settings</p>
-          <h1 className="text-h1 font-semibold">Users and roles</h1>
+          <h1 className="text-h1 font-semibold">Users & roles</h1>
           <p className="text-ink-muted">Manage accounts and role-based access. Every change is recorded in the audit log.</p>
         </div>
         <Button
