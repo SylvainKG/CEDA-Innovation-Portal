@@ -122,10 +122,37 @@
 .peolwane-panel__online span, .peolwane-panel__section-label span { width: .5rem; height: .5rem; border-radius: 50%; background: var(--feedback-success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--feedback-success) 16%, transparent); }
 .peolwane-panel__close { z-index: 1; display: grid; width: 2.75rem; height: 2.75rem; flex: 0 0 auto; place-items: center; border: 1px solid color-mix(in srgb, var(--surface-card) 26%, transparent); border-radius: 50%; color: var(--surface-card); background: color-mix(in srgb, var(--surface-card) 10%, transparent); cursor: pointer; }
 .peolwane-panel__close:hover { background: color-mix(in srgb, var(--surface-card) 20%, transparent); }
-.peolwane-panel__mode { display: flex; gap: .35rem; padding: .7rem 1rem; border-bottom: 1px solid var(--border-default); background: var(--surface-card); }
-.peolwane-mode-button { display: inline-flex; min-height: 2.75rem; flex: 1; align-items: center; justify-content: center; gap: .45rem; border: 1px solid transparent; border-radius: .8rem; color: var(--text-secondary); background: transparent; font: inherit; font-size: 1rem; font-weight: 650; cursor: pointer; transition: background .18s ease, color .18s ease, border .18s ease; }
-.peolwane-mode-button:hover { background: var(--surface-sunken); }
-.peolwane-mode-button--active { border-color: var(--border-input); color: var(--brand-primary-text); background: var(--brand-primary-subtle); }
+.peolwane-panel__mode { display: flex; align-items: center; justify-content: center; gap: .75rem; padding: .55rem 1rem; border-bottom: 1px solid var(--border-default); background: var(--surface-card); }
+.peolwane-mode-label { display: inline-flex; align-items: center; gap: .4rem; color: var(--text-secondary); font-size: 1rem; font-weight: 650; transition: color .18s ease; }
+.peolwane-mode-label--active { color: var(--brand-primary-text); }
+/* The switch: 44 px tall hit area, 52 × 28 px track. Checked = voice conversation. */
+.peolwane-mode-switch { position: relative; display: inline-flex; width: 3.25rem; height: 2.75rem; flex: 0 0 auto; align-items: center; border: 0; padding: 0; background: transparent; cursor: pointer; }
+.peolwane-mode-switch::before { position: absolute; inset: .5rem 0; border: 1px solid var(--border-input); border-radius: var(--radius-pill); background: var(--surface-sunken); content: ''; transition: background .2s ease, border-color .2s ease; }
+.peolwane-mode-switch[aria-checked='true']::before { border-color: transparent; background: var(--brand-primary); }
+.peolwane-mode-switch__thumb { position: absolute; top: 50%; left: .25rem; width: 1.25rem; height: 1.25rem; border-radius: 50%; background: var(--surface-card); box-shadow: var(--shadow-1); transform: translateY(-50%); transition: transform .2s cubic-bezier(.16,1,.3,1); }
+.peolwane-mode-switch[aria-checked='true'] .peolwane-mode-switch__thumb { transform: translate(1.5rem, -50%); }
+
+/* Voice mode: the orb replaces the conversation. */
+.peolwane-voice-stage { display: flex; min-height: 14rem; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: .5rem; overflow-y: auto; padding: 1.25rem 1.25rem 1rem; text-align: center; background: radial-gradient(ellipse at 50% 28%, color-mix(in srgb, var(--ceda-band-end) 30%, transparent), transparent 58%), var(--surface-card); }
+.peolwane-voice-stage__caption { width: 100%; max-width: 22rem; }
+.peolwane-voice-stage__caption p { margin: 0; overflow-wrap: anywhere; }
+.peolwane-voice-stage__you { margin-bottom: .4rem !important; color: var(--text-secondary); font-size: .875rem; font-style: italic; }
+.peolwane-voice-stage__answer { display: -webkit-box; overflow: hidden; color: var(--text-primary); font-size: 1rem; line-height: 1.5; -webkit-box-orient: vertical; -webkit-line-clamp: 6; }
+.peolwane-voice-stage__hint { color: var(--text-secondary); font-size: .9375rem; line-height: 1.5; }
+
+/* Leseding orb: markup, colours and timing as given by Leseding (integration guide, 23 Nov), to match their console. */
+.les-orb { position: relative; width: 118px; height: 118px; display: flex; align-items: center; justify-content: center; margin: 0 auto; flex: 0 0 auto; }
+.les-orb .les-orb-core { width: 70px; height: 70px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fbd38d, #F6931E 55%, #D27511); box-shadow: 0 0 46px rgba(245,166,35,.5); transition: opacity .3s, transform .3s; }
+.les-orb .les-orb-ring { position: absolute; width: 70px; height: 70px; border-radius: 50%; border: 1px solid rgba(245,166,35,.35); opacity: 0; }
+.les-orb[data-state="idle"] .les-orb-core { opacity: .5; transform: scale(.9); }
+.les-orb[data-state="listening"] .les-orb-core { animation: les-breathe 1.6s ease-in-out infinite; }
+.les-orb[data-state="listening"] .les-orb-ring { animation: les-ring 1.6s ease-out infinite; }
+.les-orb[data-state="thinking"] .les-orb-core { animation: les-spin 1.2s linear infinite; background: radial-gradient(circle at 35% 30%, #cbd5e1, #64748b 60%, #475569); box-shadow: 0 0 38px rgba(100,116,139,.5); }
+.les-orb[data-state="speaking"] .les-orb-core { animation: les-pulse .7s ease-in-out infinite; }
+@keyframes les-breathe { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+@keyframes les-pulse { 0%,100% { transform: scale(1); box-shadow: 0 0 46px rgba(245,166,35,.5); } 50% { transform: scale(1.14); box-shadow: 0 0 74px rgba(245,166,35,.75); } }
+@keyframes les-ring { 0% { transform: scale(.6); opacity: .8; } 100% { transform: scale(1.95); opacity: 0; } }
+@keyframes les-spin { to { transform: rotate(360deg); } }
 .peolwane-panel__conversation { display: flex; min-height: 8rem; flex: 1; flex-direction: column; overflow: hidden; background: radial-gradient(ellipse at 85% 4%, color-mix(in srgb, var(--ceda-band-end) 22%, transparent), transparent 36%), var(--surface-card); }
 .peolwane-panel__section-label { display: flex; flex: 0 0 auto; align-items: center; gap: .45rem; padding: .75rem 1.15rem .25rem; color: var(--text-secondary); font-size: .75rem; font-weight: 800; letter-spacing: .12em; }
 .peolwane-panel__section-label span { width: .4rem; height: .4rem; background: var(--ceda-orange); box-shadow: none; }
@@ -186,8 +213,9 @@
   .peolwane-panel__online { font-size: .875rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .peolwane-launcher, .peolwane-sidebar-launcher, .peolwane-mode-button, .peolwane-input-row { transition: none; }
+  .peolwane-launcher, .peolwane-sidebar-launcher, .peolwane-mode-label, .peolwane-mode-switch::before, .peolwane-mode-switch__thumb, .peolwane-input-row { transition: none; }
   .peolwane-sidebar-launcher:hover { transform: none; }
+  .les-orb .les-orb-core, .les-orb .les-orb-ring { animation: none !important; }
   .peolwane-panel, .peolwane-panel--closing { animation: none; }
   .peolwane-typing i, .peolwane-voice-control .peolwane-voice-control--listening { animation: none; }
 }

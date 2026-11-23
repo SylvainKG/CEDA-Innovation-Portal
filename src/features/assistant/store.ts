@@ -25,6 +25,21 @@ export interface AssistantState {
   messages: AssistantMessage[]
   error: string | null
   voiceUnavailable: string | null
+  /** True once the spoken answer's audio is actually playing (the orb's "speaking" state), not while it downloads. */
+  playing: boolean
+}
+
+export type OrbState = 'idle' | 'listening' | 'thinking' | 'speaking'
+
+/**
+ * Maps the assistant's status to the Leseding orb's four states (Leseding's integration guide, 23 Nov):
+ * recording → listening; transcribing, answering and fetching the speech → thinking; speech audio playing → speaking.
+ */
+export function orbState(status: AssistantStatus, playing: boolean): OrbState {
+  if (status === 'listening') return 'listening'
+  if (status === 'transcribing' || status === 'thinking') return 'thinking'
+  if (status === 'speaking') return playing ? 'speaking' : 'thinking'
+  return 'idle'
 }
 
 export const ASSISTANT_NAME = 'Peolwane AI'
@@ -43,6 +58,7 @@ const initial = (): AssistantState => ({
   messages: [greeting()],
   error: null,
   voiceUnavailable: null,
+  playing: false,
 })
 
 function newSessionId(): string {
@@ -207,6 +223,7 @@ async function playReply(config: AssistantConfig, text: string) {
     if (typeof URL.createObjectURL !== 'function' || typeof Audio === 'undefined') throw new Error('no audio')
     audioUrl = URL.createObjectURL(blob)
     audio = new Audio(audioUrl)
+    audio.onplaying = () => set({ playing: true })
     audio.onended = () => stopSpeaking()
     audio.onerror = () => stopSpeaking()
     await audio.play()
@@ -217,6 +234,7 @@ async function playReply(config: AssistantConfig, text: string) {
 
 export function stopSpeaking() {
   if (audio) {
+    audio.onplaying = null
     audio.onended = null
     audio.onerror = null
     try {
@@ -230,7 +248,8 @@ export function stopSpeaking() {
     URL.revokeObjectURL?.(audioUrl)
     audioUrl = null
   }
-  if (state.status === 'speaking') set({ status: 'idle' })
+  if (state.status === 'speaking') set({ status: 'idle', playing: false })
+  else if (state.playing) set({ playing: false })
 }
 
 /** Starts listening. Falls back to text, with the reason, when the microphone can't be used. */
