@@ -398,7 +398,8 @@ export const mockStaff: StaffPort = {
   async recordDecision({ proposalId, outcome, reason }) {
     await wait()
     // Contract §4.5 order: permission → can read → outcome → in adjudication → not already published → reason.
-    if (!(await roles()).includes('adjudicator')) return refused('FORBIDDEN', "You don't have access to this action.")
+    // decision.record is the admin's permission (absorbed the adjudicator, migration 017).
+    if (!(await roles()).includes('admin')) return refused('FORBIDDEN', "You don't have access to this action.")
     const c = allCases().find((x) => x.id === proposalId)
     if (!c) return refused('FORBIDDEN', "You don't have access to this action.")
     if (outcome !== 'approved' && outcome !== 'not_approved') return refused('VALIDATION', 'Choose Approved or Not approved.', { outcome: 'Required' })
@@ -416,7 +417,7 @@ export const mockStaff: StaffPort = {
 
   async publishDecision({ decisionId }) {
     await wait()
-    if (!(await roles()).includes('adjudicator')) return refused('FORBIDDEN', "You don't have access to this action.")
+    if (!(await roles()).includes('admin')) return refused('FORBIDDEN', "You don't have access to this action.")
     const entry = [...state.decisions.entries()].find(([, list]) => list.some((d) => d.id === decisionId))
     if (!entry) return refused('FORBIDDEN', "You don't have access to this action.")
     const [caseId, list] = entry
@@ -454,7 +455,7 @@ export const mockStaff: StaffPort = {
   async closeCase({ proposalId, reason }) {
     await wait()
     const r = await roles()
-    if (!r.some((x) => x === 'screening_officer' || x === 'adjudicator')) return refused('FORBIDDEN', "You don't have access to this action.")
+    if (!r.some((x) => x === 'screening_officer' || x === 'admin')) return refused('FORBIDDEN', "You don't have access to this action.")
     const c = allCases().find((x) => x.id === proposalId)
     if (!c) return refused('FORBIDDEN', "You don't have access to this action.")
     const text = reason.trim()

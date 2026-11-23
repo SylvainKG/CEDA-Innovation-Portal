@@ -62,10 +62,10 @@ describe('navigation by role (navigation-map.md)', () => {
     expect(labels(['reviewer'])).toEqual(['Home', 'My reviews'])
   })
 
-  it('gives admins Users & roles next to Settings, as in the admin frame (handoff-notes #40)', () => {
-    expect(labels(['admin'])).toEqual(['Home', 'Screening queue', 'Ready for decision', 'All cases', 'Reports', 'Audit log', 'Users & roles', 'Settings'])
+  it('gives admins the full staff navigation, including the absorbed decision, support and committee work', () => {
+    expect(labels(['admin'])).toEqual(['Home', 'Screening queue', 'Ready for decision', 'All cases', 'Reports', 'Audit log', 'Support inbox', 'Users & roles', 'Settings'])
     expect(navFor(['admin']).find((i) => i.label === 'Users & roles')?.to).toBe('/admin/users')
-    expect(labels(['adjudicator'])).not.toContain('Users & roles')
+    expect(labels(['screening_officer'])).not.toContain('Users & roles')
   })
 
   it('lands auditors on the audit log, since they have no Home', () => {
@@ -74,9 +74,12 @@ describe('navigation by role (navigation-map.md)', () => {
     expect(homeFor(['admin'])).toBe('/staff')
   })
 
-  it('shows chat statistics (Reports) to the support lead but not to a consultant', () => {
-    expect(labels(['support_consultant'])).not.toContain('Reports')
-    expect(labels(['support_consultant', 'support_lead'])).toContain('Reports')
+  it('leaves the absorbed roles (adjudicator, consultant, committee) with no navigation of their own', () => {
+    // Their work moved to the Administrator (migration 017).
+    expect(labels(['admin'])).toEqual(expect.arrayContaining(['Ready for decision', 'Support inbox', 'All cases', 'Reports']))
+    expect(labels(['adjudicator'])).toEqual([])
+    expect(labels(['support_consultant', 'support_lead'])).toEqual([])
+    expect(labels(['committee_member'])).toEqual([])
   })
 })
 

@@ -1,6 +1,6 @@
 import type { ConfigAdminPort } from '../config-admin'
 import { fromRpcError, rpcError } from '../errors'
-import type { AdminRole, CommandOutcome, PermissionOption } from '../types'
+import { isActiveRole, type AdminRole, type CommandOutcome, type PermissionOption, type Role } from '../types'
 import { mockContentInternals } from './content'
 import { mockSession } from './session'
 
@@ -39,7 +39,24 @@ const seedRoles = (): AdminRole[] => [
   r('screening_officer', 'Screening officer', true, ['case.read_all', 'case.screen', 'case.request_feedback', 'case.close', 'case.note']),
   r('reviewer', 'Reviewer', true, ['scorecard.submit', 'case.request_feedback', 'case.note']),
   r('adjudicator', 'Adjudicator', true, ['case.read_all', 'case.request_feedback', 'case.close', 'case.note', 'scorecard.read_panel', 'decision.record', 'decision.publish', 'report.read']),
-  r('admin', 'Administrator', true, ['case.read_all', 'case.assign', 'case.note', 'scorecard.read_panel', 'award.record', 'role.manage', 'config.manage', 'report.read', 'audit.read']),
+  // Administrator absorbed the adjudicator, support consultant/lead and committee roles (migration 017).
+  r('admin', 'Administrator', true, [
+    'case.read_all',
+    'case.assign',
+    'case.note',
+    'case.request_feedback',
+    'case.close',
+    'scorecard.read_panel',
+    'decision.record',
+    'decision.publish',
+    'award.record',
+    'role.manage',
+    'config.manage',
+    'report.read',
+    'audit.read',
+    'chat.handle',
+    'chat.stats',
+  ]),
   r('support_consultant', 'Support consultant', true, ['chat.handle']),
   r('support_lead', 'Support lead', true, ['chat.handle', 'chat.stats']),
   r('committee_member', 'Committee member', false, ['case.read_status']),
@@ -65,7 +82,9 @@ function checkPermissions(list: string[]) {
 
 export const mockConfigAdmin: ConfigAdminPort = {
   async roleSetup() {
-    return { roles: structuredClone(state.roles), permissions: PERMISSIONS.map((p) => ({ ...p })) }
+    // Absorbed roles stay in state for history but are not shown in the roles editor (migration 017).
+    const roles = structuredClone(state.roles).filter((role) => isActiveRole(role.key as Role))
+    return { roles, permissions: PERMISSIONS.map((p) => ({ ...p })) }
   },
 
   async createRole({ key, label, permissions, requiresMfa }) {

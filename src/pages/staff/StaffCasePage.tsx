@@ -59,14 +59,15 @@ export function StaffCasePage() {
   const canPanel = Boolean(user?.roles.some((r) => r === 'adjudicator' || r === 'admin'))
   // case.note (contract §2): screening officers, reviewers, adjudicators and admins. Never applicants.
   const canNote = Boolean(user?.roles.some((r) => r === 'screening_officer' || r === 'reviewer' || r === 'adjudicator' || r === 'admin'))
-  // decision.record / decision.publish: adjudicator. award.record: admin (D-05). case.close: screening officer, adjudicator.
-  const canDecide = Boolean(user?.roles.includes('adjudicator'))
+  // decision.record / decision.publish and award.record: the admin (absorbed the adjudicator, migration 017).
+  // case.close: screening officer, admin.
+  const canDecide = Boolean(user?.roles.includes('admin'))
   const canAward = Boolean(user?.roles.includes('admin'))
-  const canClose = Boolean(user?.roles.some((r) => r === 'screening_officer' || r === 'adjudicator')) && !['approved', 'awarded', 'draft', 'closed'].includes(c.status)
+  const canClose = Boolean(user?.roles.some((r) => r === 'screening_officer' || r === 'admin')) && !['approved', 'awarded', 'draft', 'closed'].includes(c.status)
   // case.read_all holders see decisions, drafts included (contract §3).
-  const canSeeDecision = Boolean(user?.roles.some((r) => r === 'screening_officer' || r === 'adjudicator' || r === 'admin'))
-  // case.request_feedback + case.read_all (contract §2, §4.4): screening officers and adjudicators, while the case is being reviewed.
-  const canAsk = Boolean(user?.roles.some((r) => r === 'screening_officer' || r === 'adjudicator')) && ['submitted', 'in_evaluation', 'in_adjudication'].includes(c.status)
+  const canSeeDecision = Boolean(user?.roles.some((r) => r === 'screening_officer' || r === 'admin'))
+  // case.request_feedback + case.read_all (contract §2, §4.4): screening officers and the admin, while the case is being reviewed.
+  const canAsk = Boolean(user?.roles.some((r) => r === 'screening_officer' || r === 'admin')) && ['submitted', 'in_evaluation', 'in_adjudication'].includes(c.status)
   const closeDialog = (open: boolean) => setDialog(open ? dialog : null)
   const stages = stagesFor({
     status: c.status,
@@ -341,7 +342,7 @@ function PrimaryAction({
     return (
       <div className="flex flex-wrap items-center gap-3">
         <ButtonLink to={`/staff/cases/${c.id}/panel`}>Open score panel</ButtonLink>
-        <span className="text-ink-muted">All reviews are in. The adjudicator records and publishes the decision.</span>
+        <span className="text-ink-muted">All reviews are in. The administrator records and publishes the decision.</span>
       </div>
     )
   }

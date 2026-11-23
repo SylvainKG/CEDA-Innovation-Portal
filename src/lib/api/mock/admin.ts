@@ -1,6 +1,6 @@
 import type { AdminPort } from '../admin'
 import { fromRpcError, rpcError } from '../errors'
-import type { AdminUser, CommandOutcome, RoleOption } from '../types'
+import { isActiveRole, type AdminUser, type CommandOutcome, type Role, type RoleOption } from '../types'
 import { mockSession } from './session'
 
 /**
@@ -30,16 +30,15 @@ const u = (id: string, full_name: string, roles: string[], organisation: string 
   roles,
 })
 
+// The adjudicator, support consultant/lead and committee demo accounts were absorbed into
+// the Administrator (migration 017); the admin now performs decisions, support chat and
+// committee oversight, so only the active roles keep demo accounts.
 const seed = (): AdminUser[] => [
   u('demo-applicant-a', 'Demo Applicant A', ['applicant'], 'Lesedi Agro Demo'),
   u('demo-screening', 'Demo Screening Officer', ['screening_officer']),
   u('demo-reviewer-1', 'Demo Reviewer 1', ['reviewer']),
   u('demo-reviewer-2', 'Demo Reviewer 2', ['reviewer']),
-  u('demo-adjudicator', 'Demo Adjudicator', ['adjudicator']),
   u('demo-admin', 'Demo Administrator', ['admin', 'auditor']),
-  u('demo-consultant', 'Demo Consultant', ['support_consultant']),
-  u('demo-support-lead', 'Demo Consultant (lead)', ['support_consultant', 'support_lead']),
-  u('demo-committee', 'Demo Committee (External)', ['committee_member']),
   u('demo-auditor', 'Demo Auditor', ['auditor']),
 ]
 
@@ -63,7 +62,8 @@ async function manager() {
 export const mockAdmin: AdminPort = {
   async listRoles() {
     await wait()
-    return ROLES.map((r) => ({ ...r }))
+    // Absorbed roles (adjudicator, support consultant/lead, committee) are no longer offered.
+    return ROLES.filter((r) => isActiveRole(r.key as Role)).map((r) => ({ ...r }))
   },
 
   async listUsers() {

@@ -31,20 +31,22 @@ export interface NavItem {
   activeFor?: readonly string[]
 }
 
+// Roles absorbed into Administrator (adjudicator, support consultant/lead, committee member)
+// no longer appear here; their work is now Administrator-only. See src/lib/api/types.ts.
 export const STAFF_NAV: readonly NavItem[] = [
   {
     label: 'Home',
     to: '/staff',
     icon: Home,
-    roles: ['screening_officer', 'reviewer', 'adjudicator', 'admin', 'support_consultant', 'support_lead', 'committee_member'],
+    roles: ['screening_officer', 'reviewer', 'admin'],
   },
   { label: 'Screening queue', to: '/staff/queue/screening', icon: ClipboardCheck, roles: ['screening_officer', 'admin'] },
   { label: 'My reviews', to: '/staff/reviews', icon: ListChecks, roles: ['reviewer'] },
-  { label: 'Ready for decision', to: '/staff/queue/decision', icon: Gavel, roles: ['adjudicator', 'admin'] },
-  { label: 'All cases', to: '/staff/cases', icon: FileSearch, roles: ['admin', 'committee_member'] },
-  { label: 'Reports', to: '/reports', icon: BarChart3, roles: ['adjudicator', 'admin', 'support_lead', 'committee_member'] },
+  { label: 'Ready for decision', to: '/staff/queue/decision', icon: Gavel, roles: ['admin'] },
+  { label: 'All cases', to: '/staff/cases', icon: FileSearch, roles: ['admin'] },
+  { label: 'Reports', to: '/reports', icon: BarChart3, roles: ['admin'] },
   { label: 'Audit log', to: '/audit', icon: ScrollText, roles: ['admin', 'auditor'] },
-  { label: 'Support inbox', to: '/support/inbox', icon: Inbox, roles: ['support_consultant', 'support_lead'] },
+  { label: 'Support inbox', to: '/support/inbox', icon: Inbox, roles: ['admin'] },
   // Laid out to Sandra's 21 Nov admin frame ("Users & roles" in the navigation; handoff-notes #40).
   { label: 'Users & roles', to: '/admin/users', icon: Users, roles: ['admin'] },
   {
