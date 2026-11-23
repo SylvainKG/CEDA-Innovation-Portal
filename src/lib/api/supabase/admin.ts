@@ -1,7 +1,7 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { AdminPort } from '../admin'
 import { ApiError, fromRpcError, rpcError } from '../errors'
-import type { AdminUser, ApiErrorCode, RoleOption } from '../types'
+import { isActiveRole, type AdminUser, type ApiErrorCode, type Role, type RoleOption } from '../types'
 
 interface ProfileRow {
   id: string
@@ -24,7 +24,8 @@ export function createSupabaseAdmin(client: SupabaseClient): AdminPort {
     async listRoles() {
       const { data, error } = await client.from('roles').select('key, label, requires_mfa').order('label')
       if (error) throw new ApiError('Could not load the roles', error)
-      return (data ?? []) as RoleOption[]
+      // Absorbed roles stay in the table for history but are not offered for granting (migration 017).
+      return ((data ?? []) as RoleOption[]).filter((r) => isActiveRole(r.key as Role))
     },
 
     async listUsers() {
