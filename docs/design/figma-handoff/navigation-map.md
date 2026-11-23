@@ -1,13 +1,13 @@
 # Navigation map
 
-**Maintained by:** Sandra · **Implemented by:** Obvious · **Source:** `02-figma-ui-ux-spec.md` §4 and §7 · **Last updated:** —
+**Maintained by:** Sandra · **Implemented by:** Obvious · **Post-freeze updates:** ABM · **Source:** `02-figma-ui-ux-spec.md` §4 and §7 · **Last updated:** 22 Nov 2026
 Update this file if the existing Figma design uses different navigation; log the difference in `handoff-notes.md` (D-33).
 
 ## Shells
 
 | Shell | Who | Desktop (≥ 1024 px) | Mobile (< 768 px) |
 |---|---|---|---|
-| Public | Signed-out visitors | Top bar: logo · Challenges · Help · Sign in · Register | Top bar + menu drawer |
+| Public | Signed-out visitors | Top bar: Peolwane logo → Home · Challenges · How it works · About Us · Contact · Sign in · Browse challenges | Top bar + menu drawer |
 | Applicant | Applicant | Top bar: logo · My ideas · Challenges · Help · notifications · account; chat launcher | Top bar + bottom nav: My ideas · Challenges · Help · Chat |
 | Staff | All other roles | Left side nav (240 px, collapsible) + top bar with case search, notifications, account | Top bar + drawer nav |
 
@@ -47,3 +47,5 @@ Every shell has a DEMO badge, a skip link and a footer (Privacy · Fault support
 | T13 | `/reports` |
 | T14 | `/audit` |
 | T15 | Widget on T03/T04/T06/T08; `/support/inbox` |
+| T16 | `/how-it-works` (standalone public process guide) |
+| T17 | `/about` (About Us) |

@@ -53,7 +53,7 @@ describe('shared shell, laid out to Sandra\'s 21 Nov frames', () => {
     expect(account).toHaveFocus()
 
     expect(screen.getByRole('link', { name: 'Chat with CEDA' })).toHaveAttribute('href', '/support/chat')
-    // Footer: Peolwane is a CEDA product, with CEDA's website, head office and offices.
+    // The slim workspace footer: Peolwane is a CEDA product, with help links, the toll-free number and CEDA's website.
     const footer = within(screen.getByRole('contentinfo'))
     expect(footer.getByText(/· Demo prototype with fictional data$/)).toBeInTheDocument()
     expect(footer.getByRole('heading', { name: /a CEDA product$/ })).toBeInTheDocument()
@@ -61,9 +61,43 @@ describe('shared shell, laid out to Sandra\'s 21 Nov frames', () => {
     expect(site).toHaveAttribute('href', 'https://www.ceda.co.bw')
     expect(site).toHaveAttribute('target', '_blank')
     expect(site).toHaveAttribute('rel', 'noopener noreferrer')
+    expect(footer.getByRole('link', { name: 'FAQs' })).toHaveAttribute('href', '/help/faqs')
+    expect(footer.getByRole('link', { name: 'Contact and branches' })).toHaveAttribute('href', '/help/contacts')
+    expect(footer.getByRole('link', { name: 'Toll-free 0800 600 253' })).toHaveAttribute('href', 'tel:0800600253')
+  })
+
+  it('public footer: CEDA head office, phone numbers, email and branch map', async () => {
+    renderAt('/')
+    await screen.findByRole('heading', { level: 1, name: 'A new dawn for innovation in Botswana' }, LOAD)
+    const footer = within(screen.getByRole('contentinfo'))
+    expect(footer.getByRole('heading', { name: /a CEDA product$/ })).toBeInTheDocument()
+    expect(footer.getByRole('link', { name: /Visit CEDA's main website/ })).toHaveAttribute('href', 'https://www.ceda.co.bw')
     expect(footer.getByText('Four Thirty Square, Plot 54350')).toBeInTheDocument()
     expect(footer.getByRole('link', { name: 'Tel +267 317 0895' })).toHaveAttribute('href', 'tel:+2673170895')
-    expect(footer.getByRole('link', { name: /Addresses and phone numbers on ceda.co.bw/ })).toHaveAttribute('href', 'https://www.ceda.co.bw/contact-us')
+    expect(footer.getByRole('link', { name: /View CEDA's interactive branch map/ })).toHaveAttribute('href', 'https://www.ceda.co.bw/branch-network')
+    expect(footer.getByText(/· Demo prototype with fictional data$/)).toBeInTheDocument()
+  })
+
+  it('an applicant keeps the applicant navigation on Challenges, briefs and Help, and the logo leads to My ideas', async () => {
+    await as('applicant')
+    renderAt('/challenges')
+    await screen.findByRole('heading', { level: 1, name: 'Challenges' }, LOAD)
+    const header = screen.getByRole('banner')
+    const nav = within(header).getByRole('navigation', { name: 'Main' })
+    expect(within(nav).getAllByRole('link').map((l) => l.textContent)).toEqual(['My ideas', 'Challenges', 'Help'])
+    expect(within(nav).getByRole('link', { name: 'Challenges' })).toHaveAttribute('aria-current', 'page')
+    expect(within(header).queryByRole('link', { name: 'About Us' })).not.toBeInTheDocument()
+    expect(within(header).getByRole('link', { name: 'Peolwane · CEDA Innovation Portal' })).toHaveAttribute('href', '/ideas')
+    expect(screen.getByRole('link', { name: 'Chat with CEDA' })).toBeInTheDocument()
+  })
+
+  it('staff keep the staff navigation on shared pages such as the FAQs', async () => {
+    await as('admin')
+    renderAt('/help/faqs')
+    await screen.findByRole('heading', { level: 1, name: 'Frequently asked questions' }, LOAD)
+    expect(screen.getAllByRole('navigation', { name: 'Staff' }).length).toBeGreaterThan(0)
+    expect(screen.queryByRole('link', { name: 'About Us' })).not.toBeInTheDocument()
+    expect(screen.getAllByRole('link', { name: 'Peolwane · CEDA Innovation Portal' })[0]).toHaveAttribute('href', '/staff')
   })
 
   it('hides the chat button on the chat page itself', async () => {

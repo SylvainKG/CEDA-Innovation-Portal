@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState } from 'react'
 import { RouterProvider } from 'react-router-dom'
+import { RouteProgress } from '@/components/RouteProgress'
 import { createAppRouter } from '@/routes/router'
 import { useAuthSync } from '@/lib/session'
 
@@ -19,6 +20,7 @@ export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthSync />
+      <RouteProgress />
       <RouterProvider router={router} />
     </QueryClientProvider>
   )

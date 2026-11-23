@@ -225,7 +225,7 @@ describe('sign out', () => {
     // Sign out sits in the account menu on the avatar (decision #19).
     press('Account: Demo Applicant A')
     press('Sign out')
-    expect(await screen.findByRole('heading', { level: 1, name: 'Submit your innovation to CEDA' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'A new dawn for innovation in Botswana' })).toBeInTheDocument()
     expect(window.localStorage.getItem('ceda.draft.local.p1')).toBeNull()
     expect(window.localStorage.getItem('ceda.submit.key.p1')).toBeNull()
     expect(await mockSession.getSession()).toBeNull()

@@ -52,6 +52,22 @@ describe('T03 FAQs', () => {
 })
 
 describe('T03 contacts, support and privacy', () => {
+  it('shows the interactive branch map, region filters and official location link', async () => {
+    renderAt('/help/contacts')
+    const network = (await screen.findByRole('heading', { name: 'CEDA branches across Botswana' })).closest('section') as HTMLElement
+    const branchList = within(network).getByRole('list', { name: 'Branches in the selected region' })
+    const branches = ['Gaborone', 'Hukuntsi', 'Kanye', 'Molepolole', 'Tsabong', 'Francistown', 'Letlhakane', 'Palapye', 'Selebi-Phikwe', 'Tutume', 'Ghanzi', 'Kasane', 'Maun', 'Shakawe']
+    for (const branch of branches) expect(within(branchList).getByText(branch, { exact: true })).toBeInTheDocument()
+    expect(await within(network).findByRole('region', { name: 'Interactive map of CEDA branches in Botswana' })).toBeInTheDocument()
+    expect(within(network).getByRole('link', { name: /CEDA’s official branch page/ })).toHaveAttribute('href', 'https://www.ceda.co.bw/branch-network')
+    fireEvent.click(within(network).getByRole('button', { name: 'South' }))
+    const southList = within(network).getByRole('list', { name: 'Branches in the selected region' })
+    expect(within(southList).getByRole('button', { name: 'Hukuntsi' })).toBeInTheDocument()
+    expect(within(southList).queryByRole('button', { name: 'Francistown' })).not.toBeInTheDocument()
+    fireEvent.click(within(southList).getByRole('button', { name: /Tsabong/ }))
+    expect(within(network).getByText('This is an approximate town-centre pin. Confirm the branch address with CEDA before travelling.')).toBeInTheDocument()
+  })
+
   it('shows regulatory offices and referral programmes as separate, labelled sections', async () => {
     renderAt('/help/contacts')
     const offices = (await screen.findByRole('heading', { name: 'Regulatory offices' })).closest('section') as HTMLElement
