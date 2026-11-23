@@ -23,11 +23,12 @@ This portal is a **demonstration prototype that uses fictional data only**. It i
 | Email queue | `email_outbox` | Opt-in email alerts (NTF-02) | No browser access; only the relay function (service role). Emails carry the reference and a link, **never proposal content or outcomes** |
 | Chat messages | `chat_sessions`, `chat_messages` | Support (CHT-01) | The applicant and the consultant handling the conversation; statistics are counts only |
 | Copies on the applicant's device | Browser local storage: unsaved draft answers (`ceda.draft.local.*`) and pending submit keys (`ceda.submit.key.*`) | Typing is never lost when the connection drops; a lost submit reply can be checked without creating a duplicate (APP-01, APP-03) | Anyone using that browser profile. **Rule: the frontend clears both on sign-out**, and draft copies once the server confirms the save (**Proposed**: requested in the review of PR #18, not built yet) |
+| Peolwane AI conversation | Current tab's `sessionStorage` (`ceda.peolwane.session.v1`): completed text turns, conversation ID/turn count and mode | Restore the site-help conversation after navigation or reload | Anyone with access to that browser tab and same-origin page scripts. Clears when the tab closes; not linked to an account or sent to the portal backend. The typed/spoken question itself is sent to Leseding AI as described below |
 | Audit trail | `audit_events` | Accountability (SEC-01, SEC-03) | Administrator and auditor. Contains who, what, when and outcome; **no passwords, no proposal text, no note text** |
 
 **Data minimisation:** the form stores only fields the published challenge form defines (unknown fields are dropped); phone is optional; file names are kept as display names only, never in storage paths.
 
-**No external AI:** no proposal data is sent to any AI service (D-25). The completeness meter and field help (INN-03) are rule-based.
+**No proposal or case data goes to external AI** (D-25, narrowed by BCR-004, approved 21 Nov 2026): no proposal, attachment, score, note or decision is sent to any AI service. The completeness meter and field help (INN-03) are rule-based. The one exception is **Peolwane AI**, the optional site-help assistant: it receives only what a person types or says in its panel, never page, form or account data. It is shown only when the Leseding key is configured (`docs/process/peolwane-ai.md`).
 
 ## 2. How access is controlled
 
@@ -61,6 +62,7 @@ Not automated in the MVP. Proposed process: the request goes to the portal admin
 |---|---|---|
 | Supabase (Postgres, Auth, Storage, Realtime, Edge Functions) | Database, authentication, files | **EU Central (Frankfurt)**. Measured from Gaborone on mobile data: p50 263 ms, p95 315 ms (`artifacts/phase-00/region-latency.md`, D-14); the Mumbai comparison is not run. Free plan now; Pro recommended from judging (runbook §1) |
 | Web hosting: AWS Amplify (`docs/process/hosting-aws-amplify.md`); staging `https://main.d270qrk6a7zs47.amplifyapp.com` | Serves the static frontend; holds no proposal data | AWS region to be recorded |
+| Leseding AI Engine (Google Gemini) | **Peolwane AI, site-help assistant only.** Receives what a person types or says in the assistant's panel, transcribes it, answers and produces the spoken reply. Never receives proposal, case or account data | **To be confirmed with Leseding**, as are its retention terms |
 | SMTP provider | **None for the MVP** (deferred, 17 Nov 2026). Opt-in alerts are queued but not sent; the admin outbox view shows **Simulated** | — |
 
 Data leaves Botswana because no African Supabase region exists. This is recorded as a known limitation for any real deployment.
@@ -75,4 +77,5 @@ The named contact (backlog DEF-01/OPS-03) is alerted; affected access is revoked
 - Retention and data-subject requests are manual.
 - Demo staff MFA exemption (D-07) must be off for real use.
 - The web host's region is still to be recorded; the Mumbai latency comparison is not run.
+- Peolwane AI: the Leseding AI Engine's location and its retention of transcripts and questions are not yet confirmed (BCR-004). Completed chat text is also held in the current tab's session storage until the tab closes; see the privacy page.
 - Device copies (local storage) depend on the frontend clearing them on sign-out; on a shared computer, the applicant must sign out.

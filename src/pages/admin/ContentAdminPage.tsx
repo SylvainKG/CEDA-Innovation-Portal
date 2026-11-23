@@ -4,6 +4,7 @@ import { Banner, Button, PlainMarkdown, TextField } from '@/components'
 import { ErrorState, LoadingState } from '@/components/states/States'
 import { api } from '@/lib/api'
 import type { AdminContentKind, AdminContentPage, CommandOutcome } from '@/lib/api/types'
+import { SettingsNav } from './SettingsNav'
 
 const KEY = ['admin', 'content'] as const
 const KINDS: { kind: AdminContentKind; label: string }[] = [
@@ -37,6 +38,7 @@ export function ContentAdminPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      <SettingsNav />
       <div className="flex flex-col gap-1">
         <h1 className="text-h1 font-semibold">Content</h1>
         <p className="text-ink-muted">Help pages, contacts and legal wording. Only published pages are shown to the public.</p>

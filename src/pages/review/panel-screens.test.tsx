@@ -56,7 +56,7 @@ describe('scoring arithmetic (contract §4.3)', () => {
 
 describe('T07 Ready for decision', () => {
   it('lists cases in adjudication with scores, aggregate and a link to the panel', async () => {
-    await as('adjudicator')
+    await as('admin')
     renderAt('/staff/queue/decision')
     expect(await screen.findByRole('heading', { level: 1, name: 'Ready for decision' })).toBeInTheDocument()
     expect(await screen.findAllByText('2/2')).not.toHaveLength(0)
@@ -68,15 +68,19 @@ describe('T07 Ready for decision', () => {
 
 describe('T09 score panel', () => {
   it('shows the criterion × reviewer matrix, weighted scores, aggregate and reasons', async () => {
-    await as('adjudicator')
+    await as('admin')
     const user = renderAt(`/staff/cases/${CASE_4}/panel`)
-    expect(await screen.findByRole('heading', { level: 1, name: 'Score panel' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Fog-net water harvesting' })).toBeInTheDocument()
+    expect(screen.getByText('Score panel')).toBeInTheDocument()
     expect(screen.getByText('Version 1 · 2 of 2 reviews submitted')).toBeInTheDocument()
     const table = screen.getByRole('table')
     const innovation = within(table).getByRole('row', { name: /Innovation/ })
-    expect(within(innovation).getAllByRole('cell').map((c) => c.textContent)).toEqual(['5', '4', '4.50', '1'])
+    // Each reviewer's cell holds the score and that score's reason behind "Reason"; the last cell is the spread.
+    expect(within(innovation).getAllByRole('cell').map((c) => c.querySelector('[data-score]')?.textContent ?? c.textContent)).toEqual(['5', '4', '1'])
     const weighted = within(table).getByRole('row', { name: /Weighted score/ })
-    expect(within(weighted).getAllByRole('cell').map((c) => c.textContent)).toEqual(['4.30', '3.75', '4.03', '0.55'])
+    const cells = within(weighted).getAllByRole('cell')
+    expect(cells.slice(0, 2).map((c) => c.textContent)).toEqual(['4.30', '3.75'])
+    expect(cells[2]).toHaveTextContent('Panel average 4.03 out of 5spread 0.55')
     expect(screen.queryByText('Large spread')).not.toBeInTheDocument()
     await user.click(screen.getAllByText('Demo Reviewer 1').find((el) => el.closest('summary'))!)
     expect(screen.getAllByText('Fictional seeded reason for this score (DEMO).').length).toBeGreaterThan(0)
@@ -84,7 +88,7 @@ describe('T09 score panel', () => {
 
   it('flags a spread of 2 or more and warns while reviews are outstanding', async () => {
     mockReviewControls.submitAs(R2_ON_8, [5, 5, 5, 5])
-    await as('adjudicator')
+    await as('admin')
     renderAt(`/staff/cases/${CASE_8}/panel`)
     expect(await screen.findByText(/1 of 2 reviews? outstanding\. A decision is not available yet\./)).toBeInTheDocument()
 
@@ -103,8 +107,8 @@ describe('T09 score panel', () => {
     expect((await mockReview.getPanel(CASE_8))?.submitted_count).toBe(1)
   })
 
-  it('the staff case page offers the panel to adjudicators once the case is in adjudication', async () => {
-    await as('adjudicator')
+  it('the staff case page offers the panel to admins once the case is in adjudication', async () => {
+    await as('admin')
     renderAt(`/staff/cases/${CASE_4}`)
     expect(await screen.findByRole('link', { name: 'Open score panel' })).toHaveAttribute('href', `/staff/cases/${CASE_4}/panel`)
   })

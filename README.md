@@ -5,6 +5,42 @@ A demonstration prototype for the CEDA Innovation Portal Hackathon (Botswana). I
 
 Planning documents: `docs/blueprint/` (MVP blueprint, UI/UX specification) and `docs/design/figma-handoff/`.
 
+## Start here
+
+| If you want to | Read or run |
+|---|---|
+| Try the portal as a judge | [`docs/submission/judge-guide.md`](docs/submission/judge-guide.md) (demo accounts, the main journey, access checks) |
+| Understand the design and evidence | [`docs/submission/technical-proposal.md`](docs/submission/technical-proposal.md) and [`docs/testing/claim-register.md`](docs/testing/claim-register.md) |
+| Install and run it locally | `scripts/install.sh --serve` (below) |
+| Deploy or operate it | [`docs/runbook.md`](docs/runbook.md) and [`docs/process/hosting-aws-amplify.md`](docs/process/hosting-aws-amplify.md) |
+| Read the data-handling note | [`docs/submission/data-handling-note.md`](docs/submission/data-handling-note.md) |
+| See the Figma designs (PDF, one screen per file) | [`Figma pdf/`](Figma%20pdf/) (index in its README); build snapshots in [`docs/design/figma-handoff/snapshots/`](docs/design/figma-handoff/snapshots/) |
+| Change the logo or brand name | [`docs/design/brand.md`](docs/design/brand.md) (one file, `src/brand/index.ts`, plus favicons and the page title) |
+
+## Accounts for evaluators
+
+The sign-in page looks as it would in real use: it offers no account picker. Use these accounts on the hosted portal, all with **the same password, given with the submission** (never stored in this repository, D-17). Every account and all their data are fictional.
+
+| Sign in as | Role | Start at |
+|---|---|---|
+| `applicant.a@demo.ceda-portal.test` | Applicant (Lesedi Agro Demo) | My ideas: submit a new idea; follow it through the stages |
+| `applicant.b@demo.ceda-portal.test` | Applicant | Try to open Applicant A's idea: refused |
+| `applicant.e@demo.ceda-portal.test` | Applicant with an open question (CEDA-2026-0003) | My ideas: "Action required" |
+| `screening@demo.ceda-portal.test` | Screening officer | Screening queue |
+| `reviewer.1@demo.ceda-portal.test`, `reviewer.2@demo.ceda-portal.test` | Reviewers | My reviews: declare, then score |
+| `reviewer.3@demo.ceda-portal.test` | Reviewer not assigned to the demo case | Sees nothing of others' cases |
+| `admin@demo.ceda-portal.test` | Administrator (also decisions, support chat and committee oversight) and auditor | All cases, Ready for decision, Reports, Support inbox, Audit log, Users & roles, Settings |
+
+The Administrator now carries every staff duty beyond screening and reviewing: recording and publishing decisions, recording awards, handling support chat, and the programme oversight the external committee used to have. Earlier builds split these across separate adjudicator, support-consultant and committee accounts; those roles have been folded into the Administrator, so there is one staff account to try them from.
+
+Staff accounts don't ask for an authenticator code: the seeded staff accounts are exempt so evaluators can sign in directly (D-07; switched off for any real use). The 15-minute tour is in the [judge guide](docs/submission/judge-guide.md).
+
+**Quick install** (Node.js 20.19 or later, npm 10 or later; no backend, Docker or credentials needed):
+
+```bash
+scripts/install.sh --serve   # npm ci, lint, type-check, tests, demo build, then http://localhost:4173
+```
+
 ## Frontend
 
 React 18 + TypeScript + Vite, Tailwind CSS, Radix UI, React Router 7, TanStack Query, Vitest. Architecture decisions are in [`docs/adr/ADR-001-frontend-architecture.md`](docs/adr/ADR-001-frontend-architecture.md).
@@ -28,15 +64,16 @@ npm run dev             # http://localhost:5173
 | `npm run typecheck` | TypeScript check only |
 | `npm run lint` | ESLint (including the rule that only `src/lib/api/` may import Supabase) |
 | `npm run test` | Unit and component tests (Vitest) |
+| `npm run test:e2e -- --trace off` | Browser tests (Playwright, 360 and 1280 px) against a local mock build, or a deployed site with `E2E_BASE_URL` |
 
 ### Environment variables (names only)
 | Name | Purpose |
 |---|---|
-| `VITE_API_MODE` | `mock` (typed mock adapters, no backend). `supabase` arrives with the API contract |
-| `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | Supabase project (public by design; RLS protects data). Not used yet |
+| `VITE_API_MODE` | `mock` (typed mock adapters, fictional data, no backend) or `supabase` (the real backend: Supabase Auth, RLS and the workflow RPCs) |
+| `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` | Supabase project URL and publishable key, needed when `VITE_API_MODE=supabase` (public by design; RLS protects data). Never the service-role key |
 
 ### Mock session (development only)
-With `VITE_API_MODE=mock`, the sign-in page offers fictional demo personas so the team can preview each role's navigation. **This is not authentication** and grants no access to data. Real sign-in arrives with Supabase Auth.
+With `VITE_API_MODE=mock`, the sign-in page also offers fictional demo personas so the team can preview each role. **This is not authentication** and grants no access to real data. With `VITE_API_MODE=supabase`, sign-in is Supabase Auth with the seeded demo accounts (`docs/submission/judge-guide.md`).
 
 ### Project structure
 ```
@@ -47,7 +84,8 @@ src/
   routes/           route table and route guards (UI convenience; the server enforces access)
   lib/api/          typed API ports and adapters (the only place allowed to talk to Supabase)
   lib/              status wording, CAT date formatting, helpers
-  pages/            screens (unbuilt routes show an honest "Not built yet" placeholder)
+  pages/            screens, one folder per area (public, auth, applicant, staff, review, admin, support, oversight, help)
+  brand/            the logo, name and tagline, in one place (docs/design/brand.md)
   styles/           design tokens (tokens.css) and base styles
 ```
 
@@ -59,7 +97,7 @@ Postgres schema, row-level security, workflow functions and the demo seed live i
 supabase/
   migrations/       one numbered sequence (owner: backend lead)
   seed.sql          fictional demo data: one account per role, 8 cases (demo case becomes CEDA-2026-0009)
-  tests/database/   pgTAP tests (access isolation, negatives N1–N10, idempotency, append-only history)
+  tests/database/   pgTAP tests (access isolation, negatives N1–N11, idempotency, append-only history)
   functions/        Edge Functions (attachment-url: 60-second download links; email-relay: outbox sender; invite-staff)
 scripts/            set-demo-passwords.mjs (sets DEMO_PASSWORD on seeded accounts through the Auth admin API)
 tools/pglite-db-tests/  runs migrations + seed + pgTAP without Docker (stand-in, not the Supabase stack)
@@ -75,7 +113,7 @@ node --env-file=.env scripts/set-demo-passwords.mjs   # needs SUPABASE_URL, SUPA
 
 ### Without Docker
 ```bash
-cd tools/pglite-db-tests && npm install && npm test
+cd tools/pglite-db-tests && npm ci && npm test   # npm ci keeps the committed lockfile unchanged
 ```
 
 ### Backend environment variables (names only)
@@ -87,3 +125,6 @@ cd tools/pglite-db-tests && npm install && npm test
 | `RELAY_SECRET` | Edge Function secret | Shared secret the scheduler sends as `x-relay-secret` to `email-relay` |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASSWORD`, `SMTP_FROM` | Edge Function secrets | SMTP for `email-relay`. Unset = no email is sent and the outbox is shown as Simulated |
 | `PORTAL_URL` | Edge Function secret | Link in emails and the staff invitation redirect |
+| `SUPABASE_DB_URL` | Local `.env` only (backend lead) | Session-pooler URL of the hosted project, for the hosted test runner, the restore drill and the reset tool |
+| `SUPABASE_CA_CERT` | Local `.env` only | Path to the Supabase CA certificate file (kept outside the repo); those tools verify TLS with it and stop without it |
+| `STAGING_PROJECT_REF` | Local `.env` only | The project the staging reset tool may act on; it refuses any other project, and refuses after code freeze (#68) |

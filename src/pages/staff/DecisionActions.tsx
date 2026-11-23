@@ -4,8 +4,9 @@ import { useCaseCommand } from '@/features/staff/queries'
 import { api } from '@/lib/api'
 import type { DecisionOutcome, StaffCase } from '@/lib/api/types'
 import { activeDecision } from '@/features/staff/case-view'
-import { formatDateTimeCAT } from '@/lib/format'
+import { formatDateCAT, formatDateTimeCAT } from '@/lib/format'
 import { AWARD_MAX_MINOR, AWARD_MIN_MINOR, formatBWP, parseBWP } from '@/lib/money'
+import { RequiredTag } from '@/components/ErrorSummary'
 
 /**
  * Slice 5 (spec T08 Decision tab, T10 decision/publish/award/close; contract §4.5), built from the written spec
@@ -125,10 +126,9 @@ export function RecordDecisionDialog({ c, open, onOpenChange, onDone }: { c: Sta
       audited
     >
       <CommandBanner state={command.state} failed="The decision was not saved." />
-      <p className="text-sm">Assessed version: Version {c.version?.version_no ?? 1} (current)</p>
       <fieldset className="flex flex-col gap-2" aria-describedby={errors.outcome ? `${id}-oerr` : undefined}>
-        <legend className="font-semibold">
-          Outcome <span className="text-sm font-normal text-ink-muted">Required</span>
+        <legend className="flex w-full items-baseline font-semibold">
+          Outcome <RequiredTag />
         </legend>
         {(['approved', 'not_approved'] as const).map((o) => (
           <label key={o} className="flex min-h-touch items-center gap-3">
@@ -154,6 +154,13 @@ export function RecordDecisionDialog({ c, open, onOpenChange, onDone }: { c: Sta
         onChange={(e) => setReason(e.target.value)}
         error={errors.reason ?? (command.state.kind === 'refused' ? command.state.fields?.reason : undefined)}
       />
+      {/* Sandra's record-decision frame: the version being decided on, in a grey box under the form. */}
+      <div className="flex flex-col gap-1">
+        <p className="font-semibold">Assessed version</p>
+        <p className="rounded-md bg-surface-sunken px-3 py-2 text-sm">
+          Version {c.version?.version_no ?? 1} (current){c.version?.submitted_at ? ` · submitted ${formatDateCAT(c.version.submitted_at)}` : ''}
+        </p>
+      </div>
     </Dialog>
   )
 }

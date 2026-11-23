@@ -59,7 +59,9 @@ export const mockChatControls = {
 
 const wait = () => new Promise<void>((resolve) => setTimeout(resolve, state.latencyMs))
 const refused = (...args: Parameters<typeof rpcError>): CommandOutcome<never> => fromRpcError(rpcError(...args))
-const HANDLE: readonly Role[] = ['support_consultant', 'support_lead']
+// The admin absorbed the support consultant/lead role (migration 017): admins handle chat and read its statistics.
+const HANDLE: readonly Role[] = ['admin', 'support_consultant', 'support_lead']
+const STATS: readonly Role[] = ['admin', 'support_lead']
 const isAdmin = async () => Boolean((await mockSession.getSession())?.roles.includes('admin'))
 
 function sweep() {
@@ -186,7 +188,7 @@ export const mockChat: ChatPort = {
   async statistics({ from, to }) {
     await wait()
     const user = await mockSession.getSession()
-    if (!user || !user.roles.includes('support_lead')) return null
+    if (!user || !user.roles.some((r) => STATS.includes(r))) return null
     sweep()
     const rows = state.sessions.filter((s) => (!from || s.queued_at >= from) && (!to || s.queued_at < to))
     const handled = rows.filter((s) => s.accepted_at)

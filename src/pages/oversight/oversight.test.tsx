@@ -47,7 +47,10 @@ describe('T11 notifications (NTF-01)', () => {
     await as('applicant')
     const user = renderAt('/notifications')
     expect(await screen.findByRole('heading', { name: 'Notifications', level: 1 }, LOAD)).toBeInTheDocument()
-    expect(screen.getByText('1 unread')).toBeInTheDocument()
+    expect(screen.getByText('3 unread')).toBeInTheDocument()
+    // The applicant's sample notifications (demo data) appear with the seeded ones.
+    expect(screen.getByRole('link', { name: /^Unread: ?Clarification requested/ })).toHaveAttribute('href', '/ideas/30000000-0000-4000-8000-000000000008')
+    expect(screen.getByText('Reply from CEDA support')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /^Unread: ?Your idea is under review/ })).toHaveAttribute('href', '/ideas/30000000-0000-4000-8000-000000000008')
     expect(screen.getByText('Idea submitted')).toBeInTheDocument()
     // Another person's notification (the reviewer's "New case to review") never appears.
@@ -70,7 +73,7 @@ describe('T11 notifications (NTF-01)', () => {
 
 describe('T13 reports (RPT-01)', () => {
   it('reconciles with the seed: 8 cases, 4 applicants, one award of BWP 250,000', async () => {
-    await as('adjudicator')
+    await as('admin')
     const user = renderAt('/reports')
     expect(await screen.findByRole('heading', { name: 'Reports', level: 1 }, LOAD)).toBeInTheDocument()
     expect(within(screen.getByText('Ideas submitted', { selector: 'span' }).parentElement!).getByText('8')).toBeInTheDocument()
@@ -133,7 +136,7 @@ describe('T14 audit log (SEC-03)', () => {
   })
 
   it('is closed to everyone but admins and auditors, and pages by id', async () => {
-    await as('adjudicator')
+    await as('reviewer')
     renderAt('/audit')
     expect(await screen.findByRole('heading', { name: NO_ACCESS }, LOAD)).toBeInTheDocument()
     expect(await mockOversight.queryAudit({})).toBeNull()

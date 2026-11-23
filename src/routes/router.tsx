@@ -2,7 +2,7 @@ import type { ReactElement } from 'react'
 import { createBrowserRouter, type RouteObject } from 'react-router-dom'
 import { ApplicantShell } from '@/layouts/ApplicantShell'
 import { PublicShell } from '@/layouts/PublicShell'
-import { RoleShell } from '@/layouts/RoleShell'
+import { RoleShell, SiteShell } from '@/layouts/RoleShell'
 import { StaffShell } from '@/layouts/StaffShell'
 import { NotFoundState } from '@/components/states/States'
 import { STAFF_ROLES, type Role } from '@/lib/api/types'
@@ -37,7 +37,10 @@ import { ReceiptPage } from '@/pages/applicant/ReceiptPage'
 import { MyIdeasPage } from '@/pages/applicant/MyIdeasPage'
 import { ApplicantCasePage } from '@/pages/applicant/ApplicantCasePage'
 import { RevisePage } from '@/pages/applicant/RevisePage'
-import { ChallengesPage, PublicHome } from '@/pages/public/PublicHome'
+import { PublicHome } from '@/pages/public/PublicHome'
+import { ChallengesPage } from '@/pages/public/ChallengesPage'
+import { HowItWorksPage } from '@/pages/public/HowItWorksPage'
+import { AboutPage } from '@/pages/public/AboutPage'
 import { ChallengeBriefPage } from '@/pages/public/ChallengeBriefPage'
 import { apiMode } from '@/lib/api'
 import { RequireRole } from './guards'
@@ -50,18 +53,12 @@ export const routes: RouteObject[] = [
     element: <PublicShell />,
     children: [
       { path: '/', element: <PublicHome /> },
-      { path: '/challenges', element: <ChallengesPage /> },
-      { path: '/challenges/:slug', element: <ChallengeBriefPage /> },
       { path: '/auth/sign-in', element: <SignInPage /> },
       { path: '/auth/register', element: <RegisterPage /> },
       { path: '/auth/verify', element: <VerifyEmailPage /> },
       { path: '/auth/forgot', element: <ForgotPasswordPage /> },
       { path: '/auth/reset', element: <ResetPasswordPage /> },
       { path: '/auth/mfa', element: <MfaPage /> },
-      { path: '/help/faqs', element: <FaqPage /> },
-      { path: '/help/contacts', element: <ContactsPage /> },
-      { path: '/help/support', element: <SupportPage /> },
-      { path: '/privacy', element: <PrivacyPage /> },
       // Development-only component gallery: only registered in mock mode, never with a real backend.
       ...(apiMode === 'mock'
         ? [
@@ -71,6 +68,20 @@ export const routes: RouteObject[] = [
             },
           ]
         : []),
+    ],
+  },
+  {
+    // Shared by visitors and signed-in people: each keeps their own navigation here (SiteShell).
+    element: <SiteShell />,
+    children: [
+      { path: '/challenges', element: <ChallengesPage /> },
+      { path: '/challenges/:slug', element: <ChallengeBriefPage /> },
+      { path: '/how-it-works', element: <HowItWorksPage /> },
+      { path: '/about', element: <AboutPage /> },
+      { path: '/help/faqs', element: <FaqPage /> },
+      { path: '/help/contacts', element: <ContactsPage /> },
+      { path: '/help/support', element: <SupportPage /> },
+      { path: '/privacy', element: <PrivacyPage /> },
     ],
   },
   {
@@ -91,15 +102,15 @@ export const routes: RouteObject[] = [
       { path: '/staff', element: guard(STAFF_ROLES, <StaffHomePage />) },
       { path: '/staff/queue/screening', element: guard(['screening_officer', 'admin'], <ScreeningQueuePage />) },
       { path: '/staff/reviews', element: guard(['reviewer'], <MyReviewsPage />) },
-      { path: '/staff/queue/decision', element: guard(['adjudicator', 'admin'], <DecisionQueuePage />) },
-      { path: '/staff/cases', element: guard(['admin', 'committee_member'], <AllCasesPage />) },
+      { path: '/staff/queue/decision', element: guard(['admin'], <DecisionQueuePage />) },
+      { path: '/staff/cases', element: guard(['admin'], <AllCasesPage />) },
       { path: '/staff/cases/:id', element: guard(STAFF_ROLES, <StaffCasePage />) },
       { path: '/staff/cases/:id/score', element: guard(['reviewer'], <ScorePage />) },
       // Reviewers too: the server shows them the panel only after they have submitted their own scorecard.
-      { path: '/staff/cases/:id/panel', element: guard(['adjudicator', 'admin', 'reviewer'], <PanelPage />) },
-      { path: '/reports', element: guard(['adjudicator', 'admin', 'support_lead', 'committee_member'], <ReportsPage />) },
+      { path: '/staff/cases/:id/panel', element: guard(['admin', 'reviewer'], <PanelPage />) },
+      { path: '/reports', element: guard(['admin'], <ReportsPage />) },
       { path: '/audit', element: guard(['admin', 'auditor'], <AuditPage />) },
-      { path: '/support/inbox', element: guard(['support_consultant', 'support_lead'], <SupportInboxPage />) },
+      { path: '/support/inbox', element: guard(['admin'], <SupportInboxPage />) },
       { path: '/admin/challenges', element: guard(['admin'], <AdminChallengesPage />) },
       { path: '/admin/challenges/:id', element: guard(['admin'], <ChallengeEditorPage />) },
       { path: '/admin/rubrics/:id', element: guard(['admin'], <RubricEditorPage />) },

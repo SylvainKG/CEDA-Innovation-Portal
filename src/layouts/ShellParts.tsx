@@ -1,11 +1,15 @@
-import { Bell, LogOut } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { ArrowUp, ExternalLink, LogOut, Mail, MapPin, Phone } from 'lucide-react'
+import { NotificationsPanel } from './NotificationsPanel'
 import { Link, useNavigate } from 'react-router-dom'
-import cedaLogo from '@/assets/ceda-logo.png'
+import { BRANDS, brand } from '@/brand'
+import { HorizonEdge } from '@/brand/Horizon'
+import { CEDA, telHref } from '@/brand/ceda-info'
 import { DemoBadge } from '@/components/DemoBadge'
-import { useNotifications } from '@/features/oversight/queries'
 import { apiMode } from '@/lib/api'
 import { MOCK_ROLE_OPTIONS, mockRoleOf } from '@/lib/api/mock/session'
 import type { Role } from '@/lib/api/types'
+import { homeFor } from '@/navigation/nav-config'
 import { roleLabel } from '@/navigation/role-labels'
 import { useSession, useSignOut, useSwitchDemoRole } from '@/lib/session'
 
@@ -20,57 +24,228 @@ export function SkipLink() {
   )
 }
 
+/**
+ * The logo is the way Home. Visitors go to the public home page; a signed-in person goes to the home of their own
+ * workspace (My ideas for applicants, the staff home or first queue for staff), so the logo never drops them out of
+ * the navigation they are working in.
+ */
 export function Brand() {
+  const { data: user } = useSession()
   return (
-    <Link to="/" className="flex min-h-touch items-center gap-3 font-bold text-ink no-underline">
-      {/* Official CEDA logo, upscaled from the supplied 447 px PNG; replace with CEDA's vector file when available. */}
-      <img src={cedaLogo} alt="CEDA" width={1432} height={900} className="h-10 w-auto" />
-      {/* Logo alone on phones so the text cannot collide with the DEMO badge; still read out as "CEDA Innovation Portal". */}
-      <span className="sr-only md:not-sr-only">Innovation Portal</span>
+    <Link to={user ? homeFor(user.roles) : '/'} className="flex min-h-touch items-center gap-3 font-bold text-ink no-underline">
+      {/* The mark and names come from src/brand (one place to change the brand). */}
+      <img src={brand.mark.src} alt="" width={brand.mark.width} height={brand.mark.height} className="h-10 w-auto" />
+      {/* Read out as the full name at every width; the text shows from 768 px so it can't collide with the DEMO badge. */}
+      <span className="sr-only">{brand.fullName}</span>
+      <span aria-hidden className="hidden flex-col leading-tight md:flex">
+        <span>{brand.header.title}</span>
+        {brand.header.subtitle ? <span className="text-sm font-normal text-ink-muted">{brand.header.subtitle}</span> : null}
+      </span>
     </Link>
   )
 }
 
-export function Footer() {
+/** Help and legal links, in every footer. */
+const FOOTER_LINKS = [
+  { to: '/help/faqs', label: 'FAQs' },
+  { to: '/help/support', label: 'Fault support' },
+  { to: '/privacy', label: 'Privacy' },
+]
+
+const footerLink = 'inline-flex min-h-touch items-center gap-2 text-white no-underline hover:text-[var(--ceda-gold)] hover:underline'
+const footerHeading = 'text-sm font-bold uppercase tracking-wider text-[var(--ceda-gold)]'
+
+function toTop() {
+  const reduce = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' })
+}
+
+function CedaTile({ className }: { className: string }) {
   return (
-    <footer className="mt-12 border-t border-line bg-surface-card">
-      <nav aria-label="Footer" className="mx-auto flex max-w-content flex-wrap items-center gap-x-4 px-4 py-4 text-sm">
-        <Link to="/privacy" className="inline-flex min-h-touch min-w-touch items-center">Privacy</Link>
-        <Link to="/help/support" className="inline-flex min-h-touch min-w-touch items-center">Fault support</Link>
-        <Link to="/help/faqs" className="inline-flex min-h-touch min-w-touch items-center">FAQs</Link>
-        <Link to="/help/contacts" className="inline-flex min-h-touch min-w-touch items-center">Contacts</Link>
-        <span className="text-ink-muted">Demonstration prototype with fictional data.</span>
-      </nav>
-    </footer>
+    <span className="shrink-0 self-start rounded-md bg-white p-1.5 shadow-1">
+      <img src={BRANDS.ceda.logo.src} alt={`${CEDA.name} (${CEDA.shortName})`} width={BRANDS.ceda.logo.width} height={BRANDS.ceda.logo.height} className={className} />
+    </span>
+  )
+}
+
+/** The last line of every footer: copyright and the demo notice. */
+function FooterLegal() {
+  return (
+    <p className="flex flex-wrap gap-x-2">
+      <span>
+        © {new Date().getFullYear()} {CEDA.shortName}
+      </span>
+      <span>{brand.fullName} · Demo prototype with fictional data</span>
+    </p>
+  )
+}
+
+/** A footer column heading: gold capitals over a short orange rule. */
+function FooterHeading({ id, children }: { id: string; children: string }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <h2 id={id} className={footerHeading}>
+        {children}
+      </h2>
+      <span aria-hidden className="h-0.5 w-8 rounded-full bg-[var(--ceda-orange)]" />
+    </div>
+  )
+}
+
+/** A contact line: the icon in a soft round chip, a small label above the value. */
+function ContactItem({ href, icon: Icon, label, value, className = '' }: { href: string; icon: typeof Phone; label: string; value: string; className?: string }) {
+  return (
+    <a href={href} className={`group flex min-h-touch items-center gap-3 text-white no-underline ${className}`}>
+      <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-[var(--ceda-gold)] transition-colors group-hover:bg-[var(--ceda-gold)] group-hover:text-ink">
+        <Icon className="h-4 w-4" />
+      </span>
+      <span className="flex flex-col leading-tight">
+        <span className="text-[0.8125rem] text-[var(--ceda-footer-text)]">{label}</span>{' '}
+        <span className="font-semibold group-hover:text-[var(--ceda-gold)] group-hover:underline">{value}</span>
+      </span>
+    </a>
   )
 }
 
 /**
- * The bell (spec T11, NTF-01): the unread count as a badge, refreshed every 30 seconds and on returning to the tab.
- * The accessible name says the count ("Notifications, 3 unread"); the badge is only a visual repeat of it.
+ * Footer, on CEDA's sunrise (post-freeze, ABM 22 Nov; not the judged build). Two sizes:
+ *
+ * - `site` (public pages): a band of the hero's land, then four columns on CEDA's night brown from 1024 px (two on
+ *   tablets, one on phones): Peolwane as a CEDA product, CEDA's head office, how to reach CEDA, and help. Each column
+ *   has a gold heading over a short orange rule; contact lines have their icon in a round chip with a small label, so
+ *   the details read at a glance without crowding.
+ * - `app` (applicant and staff workspaces): one slim band with the same links, so a working screen ends quietly.
+ *
+ * `chatSpace` keeps the bottom row clear of the floating Peolwane AI assistant. CEDA's details come from
+ * `src/brand/ceda-info.ts`; Peolwane is a CEDA product (team, 21 Nov).
  */
-export function NotificationsLink() {
-  const list = useNotifications()
-  const unread = (list.data ?? []).filter((n) => !n.read_at).length
-  const name = unread ? `Notifications, ${unread} unread` : 'Notifications'
+export function Footer({ chatSpace = false, variant = 'site' }: { chatSpace?: boolean; variant?: 'site' | 'app' }) {
+  if (variant === 'app') return <AppFooter chatSpace={chatSpace} />
   return (
-    <Link
-      to="/notifications"
-      aria-label={name}
-      className="relative inline-flex min-h-touch min-w-touch items-center justify-center gap-2 rounded-md px-2 text-ink no-underline hover:bg-surface-sunken"
-    >
-      <span className="relative inline-flex">
-        <Bell aria-hidden className="h-5 w-5" />
-        {unread ? (
-          <span aria-hidden className="absolute -right-2 -top-2 min-w-[1.25rem] rounded-full bg-brand px-1 text-center text-xs font-semibold leading-5 text-brand-on">
-            {unread > 9 ? '9+' : unread}
-          </span>
-        ) : null}
-      </span>
-      <span aria-hidden className="hidden md:inline">
-        Notifications
-      </span>
-    </Link>
+    <footer className="mt-16 text-sm" data-print="hide">
+      <HorizonEdge className="block h-10 w-full md:h-16" />
+      {/* Always dark (CEDA's night brown); white on it is above 15:1, the muted text above 9:1. */}
+      <div className="bg-[var(--ceda-night)] text-[var(--ceda-footer-text)]">
+        <div className="mx-auto grid max-w-content grid-cols-1 gap-x-12 gap-y-7 px-4 pb-8 pt-6 md:grid-cols-2 md:gap-y-9 md:pb-10 md:pt-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.7fr)]">
+          <section aria-labelledby="footer-about" className="flex flex-col gap-4 md:col-span-2 lg:col-span-1">
+            <div className="flex items-center gap-3">
+              <CedaTile className="h-10 w-auto" />
+              <div className="flex flex-col">
+                <h2 id="footer-about" className="text-base font-semibold text-white">
+                  {brand.header.title} · a {CEDA.shortName} product
+                </h2>
+                <span>{brand.tagline}</span>
+              </div>
+            </div>
+            <p className="max-w-sm leading-relaxed">
+              The innovation portal of the {CEDA.name} ({CEDA.shortName}), Botswana: answer CEDA&apos;s challenges with your ideas and follow them from
+              submission to award.
+            </p>
+            <a
+              href={CEDA.website}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex min-h-touch items-center gap-2 self-start rounded-full border border-white/25 px-4 font-semibold text-white no-underline hover:border-[var(--ceda-gold)] hover:text-[var(--ceda-gold)]"
+            >
+              <ExternalLink aria-hidden className="h-4 w-4 shrink-0" />
+              Visit {CEDA.shortName}&apos;s main website<span className="sr-only"> (www.ceda.co.bw, opens in a new tab)</span>
+            </a>
+          </section>
+          <section aria-labelledby="footer-office" className="flex flex-col gap-4">
+            <FooterHeading id="footer-office">Head office</FooterHeading>
+            <address className="flex gap-3 not-italic leading-relaxed">
+              <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-[var(--ceda-gold)]">
+                <MapPin className="h-4 w-4" />
+              </span>
+              <span className="text-white/90">
+                {CEDA.headOffice.lines.map((l) => (
+                  <span key={l} className="block">
+                    {l}
+                  </span>
+                ))}
+                <span className="block text-[var(--ceda-footer-text)]">{CEDA.headOffice.postal}</span>
+              </span>
+            </address>
+            <a href={CEDA.branchNetworkPage} target="_blank" rel="noopener noreferrer" className={`${footerLink} font-semibold`}>
+              <ExternalLink aria-hidden className="h-4 w-4 shrink-0 text-[var(--ceda-gold)]" />
+              View CEDA&apos;s interactive branch map<span className="sr-only"> (opens in a new tab)</span>
+            </a>
+          </section>
+          <section aria-labelledby="footer-contact" className="flex flex-col gap-3">
+            <FooterHeading id="footer-contact">Contact</FooterHeading>
+            {/* Tel and toll-free side by side on phones, the email below; one per line from 768 px. */}
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 md:flex md:flex-col">
+              <ContactItem href={telHref(CEDA.headOffice.phone)} icon={Phone} label="Tel" value={CEDA.headOffice.phone} />
+              <ContactItem href={telHref(CEDA.headOffice.tollFree)} icon={Phone} label="Toll-free" value={CEDA.headOffice.tollFree} />
+              <ContactItem href={`mailto:${CEDA.headOffice.email}`} icon={Mail} label="Email" value={CEDA.headOffice.email} className="col-span-2" />
+            </div>
+          </section>
+          <section aria-labelledby="footer-help" className="flex flex-col gap-3">
+            <FooterHeading id="footer-help">Help</FooterHeading>
+            <nav aria-label="Footer" className="flex flex-wrap gap-x-6 md:flex-col">
+              {[...FOOTER_LINKS, { to: '/help/contacts', label: 'Contact and branches' }].map((l) => (
+                <Link key={l.to} to={l.to} className={`${footerLink} font-semibold`}>
+                  {l.label}
+                </Link>
+              ))}
+            </nav>
+          </section>
+        </div>
+        <div className="border-t border-white/10">
+          <div className={`mx-auto flex max-w-content flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-4 ${chatSpace ? 'md:pr-56' : ''}`}>
+            <FooterLegal />
+            <button
+              type="button"
+              onClick={toTop}
+              className="inline-flex min-h-touch items-center gap-2 rounded-full border border-white/25 px-4 font-semibold text-white hover:border-[var(--ceda-gold)] hover:text-[var(--ceda-gold)]"
+            >
+              <ArrowUp aria-hidden className="h-4 w-4" />
+              Back to top
+            </button>
+          </div>
+        </div>
+      </div>
+    </footer>
+  )
+}
+
+/** The slim footer of the signed-in workspaces: the sunrise as a thin line, then one band of links. */
+function AppFooter({ chatSpace }: { chatSpace: boolean }) {
+  return (
+    <footer className="mt-10 text-sm" data-print="hide">
+      <div aria-hidden className="h-1 bg-[linear-gradient(90deg,var(--ceda-gold),var(--ceda-amber),var(--ceda-orange),var(--ceda-maroon))]" />
+      <div className="bg-[var(--ceda-night)] text-[var(--ceda-footer-text)]">
+        <div className={`mx-auto flex max-w-content flex-col gap-x-8 gap-y-2 px-4 py-3 lg:flex-row lg:items-center lg:justify-between ${chatSpace ? 'md:pr-56' : ''}`}>
+          <section aria-labelledby="footer-about" className="flex items-center gap-3 lg:min-w-[26rem] lg:max-w-lg">
+            <CedaTile className="h-7 w-auto" />
+            <div className="flex flex-col">
+              <h2 id="footer-about" className="font-semibold text-white">
+                {brand.header.title} · a {CEDA.shortName} product
+              </h2>
+              <FooterLegal />
+            </div>
+          </section>
+          <nav aria-label="Footer" className="flex flex-wrap items-center gap-x-5 lg:justify-end">
+            {FOOTER_LINKS.map((l) => (
+              <Link key={l.to} to={l.to} className={footerLink}>
+                {l.label}
+              </Link>
+            ))}
+            <Link to="/help/contacts" className={footerLink}>
+              Contact and branches
+            </Link>
+            <a href={telHref(CEDA.headOffice.tollFree)} className={footerLink}>
+              <Phone aria-hidden className="h-4 w-4 shrink-0 text-[var(--ceda-gold)]" />
+              Toll-free {CEDA.headOffice.tollFree}
+            </a>
+            <a href={CEDA.website} target="_blank" rel="noopener noreferrer" className={footerLink}>
+              <ExternalLink aria-hidden className="h-4 w-4 shrink-0 text-[var(--ceda-gold)]" />
+              Visit {CEDA.shortName}&apos;s main website<span className="sr-only"> (www.ceda.co.bw, opens in a new tab)</span>
+            </a>
+          </nav>
+        </div>
+      </div>
+    </footer>
   )
 }
 
@@ -102,14 +277,82 @@ export function MockRoleSwitcher({ compact = false }: { compact?: boolean }) {
   )
 }
 
-export function TopBarEnd() {
+/** The right end of a signed-in header: the bell and the account menu. `badge` keeps the DEMO pill here (public shell). */
+export function TopBarEnd({ badge = false }: { badge?: boolean }) {
   const { data: user } = useSession()
   return (
-    <div className="flex shrink-0 items-center gap-1 md:gap-2">
-      <DemoBadge />
-      {user ? <NotificationsLink /> : null}
-      {user ? <span className="hidden text-sm text-ink-muted lg:inline">{user.displayName}</span> : null}
-      {user ? <SignOutButton /> : null}
+    <div className="flex shrink-0 items-center gap-2 md:gap-3">
+      {badge ? <DemoBadge /> : null}
+      {user ? <NotificationsPanel /> : null}
+      {user ? <AccountMenu /> : null}
+    </div>
+  )
+}
+
+const initials = (name: string) =>
+  name
+    .split(/\s+/)
+    .filter((w) => /^[A-Za-z]/.test(w))
+    .slice(0, 2)
+    .map((w) => w[0]!.toUpperCase())
+    .join('') || '?'
+
+/**
+ * The avatar with the person's initials, name and role (Sandra's 21 Nov frames). It opens a small menu with
+ * Sign out (decision #19, provisional default: "Put Sign out in a menu on the avatar"). Escape or a click
+ * outside closes it.
+ */
+function AccountMenu() {
+  const { data: user } = useSession()
+  const [open, setOpen] = useState(false)
+  const box = useRef<HTMLDivElement>(null)
+  const button = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    if (!open) return
+    const onDown = (e: MouseEvent) => {
+      if (box.current && !box.current.contains(e.target as Node)) setOpen(false)
+    }
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setOpen(false)
+        button.current?.focus()
+      }
+    }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open])
+  if (!user) return null
+  const subtitle = user.roles.length ? roleLabel(user.roles.find((r) => r !== 'auditor') ?? user.roles[0]!) : ''
+  return (
+    <div ref={box} className="relative" data-print="hide">
+      <button
+        ref={button}
+        type="button"
+        aria-expanded={open}
+        aria-controls="account-menu"
+        aria-label={`Account: ${user.displayName}`}
+        onClick={() => setOpen((v) => !v)}
+        className="flex min-h-touch items-center gap-2 rounded-full pr-1 text-left text-ink hover:bg-surface-sunken md:pr-3"
+      >
+        <span aria-hidden className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-semibold text-surface-card">
+          {initials(user.displayName)}
+        </span>
+        <span aria-hidden className="hidden max-w-[11rem] flex-col leading-tight lg:flex">
+          <span className="truncate text-sm font-semibold">{user.displayName}</span>
+          <span className="truncate text-xs text-ink-muted">{subtitle}</span>
+        </span>
+      </button>
+      {open ? (
+        <div id="account-menu" className="absolute right-0 top-full z-30 mt-2 w-56 rounded-md border border-line bg-surface-card p-2 shadow-1">
+          <p className="px-2 py-1 text-sm font-semibold">{user.displayName}</p>
+          {subtitle ? <p className="px-2 pb-2 text-xs text-ink-muted">{subtitle}</p> : null}
+          <SignOutButton />
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -128,11 +371,10 @@ function SignOutButton() {
         navigate('/')
         signOut.mutate()
       }}
-      className="inline-flex min-h-touch min-w-touch shrink-0 items-center justify-center gap-2 rounded-md px-2 text-ink hover:bg-surface-sunken"
+      className="flex min-h-touch w-full items-center gap-2 rounded-md px-2 text-ink hover:bg-surface-sunken"
     >
-      {/* Icon only below md, like Notifications, so the 360 px staff header does not scroll sideways (#47 e2e). */}
       <LogOut aria-hidden className="h-5 w-5" />
-      <span className="sr-only md:not-sr-only">Sign out</span>
+      Sign out
     </button>
   )
 }

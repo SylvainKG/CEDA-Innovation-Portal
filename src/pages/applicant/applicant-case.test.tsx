@@ -3,6 +3,7 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, useRoutes } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { mockFeedback, mockFeedbackControls } from '@/lib/api/mock/feedback'
 import { WATER_SMART_ID } from '@/lib/api/mock/fixtures'
 import { mockReview, mockReviewControls } from '@/lib/api/mock/review'
 import { mockSession } from '@/lib/api/mock/session'
@@ -69,11 +70,32 @@ async function reviewsIn() {
   if (r.kind !== 'ok' || !r.data.quorum_reached) throw new Error('quorum not reached')
 }
 
+/** Screening asks for a revision on case 0008 and Applicant A submits version 2 with a changed problem statement. */
+async function versionTwo() {
+  await as('screening_officer')
+  const asked = await mockFeedback.requestFeedback({ proposalId: CASE_8, kind: 'revision', message: 'Please strengthen the budget.', tasks: ['Add a line-item budget.'] })
+  if (asked.kind !== 'ok') throw new Error('request failed')
+  await as('applicant')
+  const task = (await mockFeedback.getRoadmap(CASE_8))?.find((r) => r.kind === 'revision')?.tasks[0]
+  const v1 = (await mockSubmission.getMyCase(CASE_8))?.version
+  if (!task || !v1) throw new Error('no task or version')
+  const sent = await mockSubmission.submitRevision({
+    proposalId: CASE_8,
+    clientRequestId: crypto.randomUUID(),
+    data: { ...v1.data, problem: 'Revised problem statement (DEMO).' },
+    changeNote: 'Added a line-item budget.',
+    taskResponses: [{ task_id: task.task_id, status: 'addressed', explanation: 'Added a budget table.' }],
+    declarationVersion: 'sample-2026-11-v1',
+  })
+  if (sent.kind !== 'ok') throw new Error('revision failed')
+}
+
 afterEach(() => vi.restoreAllMocks())
 beforeEach(async () => {
   mockSubmissionControls.reset()
   mockStaffControls.reset()
   mockReviewControls.reset()
+  mockFeedbackControls.reset()
   window.localStorage.clear()
   await as(null)
 })
@@ -84,15 +106,48 @@ describe('T08 applicant case view', () => {
     const user = renderAt(`/ideas/${CASE_8}`)
     expect(await screen.findByRole('heading', { level: 1, name: 'Rainwater tanks for poultry farms' }, LOAD)).toBeInTheDocument()
     expect(screen.getByText('Under review')).toBeInTheDocument()
-    expect(screen.getByText('Only you and the CEDA staff assigned to your case can see this idea.')).toBeInTheDocument()
+    expect(screen.getByText('Only you and CEDA staff assigned to this case can see your idea.')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'View receipt' })).toHaveAttribute('href', `/ideas/${CASE_8}/receipt?v=1`)
+    expect(screen.getByRole('heading', { name: 'Submitted proposal' })).toBeInTheDocument()
+    expect(await screen.findByText(/^Version 1 \(current\) · submitted \d{1,2} \w{3} 2026$/)).toBeInTheDocument()
     expect(screen.getByText('Fictional problem statement (DEMO).')).toBeInTheDocument()
     await user.click(screen.getByRole('tab', { name: 'Decision' }))
     expect(within(screen.getByRole('tabpanel')).getByText("No decision yet. We'll notify you when CEDA publishes it.")).toBeInTheDocument()
   }, JOURNEY)
 
+  it('View receipt opens the receipt for the seeded idea’s version 1', async () => {
+    await as('applicant')
+    const user = renderAt(`/ideas/${CASE_8}`)
+    await user.click(await screen.findByRole('link', { name: 'View receipt' }, LOAD))
+    const heading = await screen.findByRole('heading', { level: 1 }, LOAD)
+    expect(heading).not.toHaveTextContent("We can't find this page")
+    const receipt = heading.closest('section') as HTMLElement
+    expect(within(receipt).getAllByText(/CEDA-2026-0008/).length).toBeGreaterThan(0)
+  }, JOURNEY)
+
+  it('picks a version: the current one by default with its change note, an earlier one on request', async () => {
+    await versionTwo()
+    const user = renderAt(`/ideas/${CASE_8}`)
+    await screen.findByRole('heading', { level: 1, name: 'Rainwater tanks for poultry farms' }, LOAD)
+    await user.click(screen.getByRole('tab', { name: 'Proposal' }))
+    expect(screen.getByRole('link', { name: 'View receipt' })).toHaveAttribute('href', `/ideas/${CASE_8}/receipt?v=2`)
+    const picker = await screen.findByRole('combobox', { name: 'Version' }, LOAD)
+    expect(within(picker).getAllByRole('option').map((o) => o.textContent)).toEqual([
+      expect.stringMatching(/^Version 2 \(current\) · submitted /),
+      expect.stringMatching(/^Version 1 · submitted /),
+    ])
+    expect(screen.getByText('Revised problem statement (DEMO).')).toBeInTheDocument()
+    expect(screen.getByText('Added a line-item budget.')).toBeInTheDocument()
+
+    await user.selectOptions(picker, '1')
+    expect(screen.getByText('Fictional problem statement (DEMO).')).toBeInTheDocument()
+    expect(screen.queryByText('Revised problem statement (DEMO).')).not.toBeInTheDocument()
+    expect(screen.getByText("You're looking at an earlier version. Your current version is Version 2.")).toBeInTheDocument()
+  }, JOURNEY)
+
   it('an unpublished decision stays invisible; once published the applicant sees it, the award and Next steps', async () => {
     await reviewsIn()
-    await as('adjudicator')
+    await as('admin')
     const d = await mockStaff.recordDecision({ proposalId: CASE_8, outcome: 'approved', reason: 'A practical, well-scored idea.' })
     if (d.kind !== 'ok') throw new Error('record failed')
 
@@ -100,7 +155,7 @@ describe('T08 applicant case view', () => {
     expect((await mockSubmission.getMyCase(CASE_8))?.decision).toBeNull()
     expect((await mockSubmission.listMyIdeas()).find((i) => i.id === CASE_8)?.status).toBe('in_adjudication')
 
-    await as('adjudicator')
+    await as('admin')
     await mockStaff.publishDecision({ decisionId: d.data.decision_id })
     await as('admin')
     await mockStaff.recordAward({ proposalId: CASE_8, amountMinor: 5_000_000, description: 'Pilot grant (DEMO).' })

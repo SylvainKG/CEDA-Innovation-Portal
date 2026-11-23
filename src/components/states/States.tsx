@@ -40,7 +40,7 @@ export function LoadingState({ what, lines = 4 }: { what: string; lines?: number
         Loading {what}
       </span>
       {Array.from({ length: lines }, (_, i) => (
-        <div key={i} aria-hidden className="h-6 animate-pulse rounded-sm bg-surface-sunken" style={{ width: `${90 - i * 12}%` }} />
+        <div key={i} aria-hidden className="skeleton h-6 rounded-sm" style={{ width: `${90 - i * 12}%` }} />
       ))}
     </div>
   )

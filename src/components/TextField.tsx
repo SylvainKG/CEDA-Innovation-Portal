@@ -1,6 +1,7 @@
 import { useId, type InputHTMLAttributes, type TextareaHTMLAttributes } from 'react'
 import { AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/cn'
+import { RequiredTag } from './ErrorSummary'
 
 interface BaseProps {
   label: string
@@ -15,7 +16,7 @@ export type TextFieldProps = InputProps | AreaProps
 
 /**
  * Text input or text area (spec §5):
- * - a persistent label above, with a "Required" marker written as text;
+ * - a persistent label above, with "REQUIRED" in small capitals at its right (Sandra's 21 Nov frames);
  * - help text;
  * - an error message with an icon;
  * - a character counter when maxLength is set.
@@ -46,9 +47,9 @@ export function TextField(props: TextFieldProps) {
 
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="font-semibold">
+      <label htmlFor={id} className="flex items-baseline font-semibold">
         {label}
-        {required ? <span className="ml-2 text-sm font-normal text-ink-muted">Required</span> : null}
+        {required ? <RequiredTag /> : null}
       </label>
       {help ? (
         <p id={helpId} className="text-sm text-ink-muted">

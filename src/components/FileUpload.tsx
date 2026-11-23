@@ -3,6 +3,7 @@ import { AlertCircle, CheckCircle2, FileText, RotateCcw, Upload } from 'lucide-r
 import { Button } from './Button'
 import { ProgressIndicator } from './ProgressIndicator'
 import { formatBytes } from '@/lib/format'
+import { RequiredTag } from './ErrorSummary'
 
 export type UploadState =
   | { kind: 'idle' }
@@ -54,7 +55,7 @@ export function FileUpload({ label, accept, maxSizeBytes, required, state, onFil
     <div className="flex flex-col gap-2">
       <label htmlFor={id} className="font-semibold">
         {label}
-        {required ? <span className="ml-2 text-sm font-normal text-ink-muted">Required</span> : null}
+        {required ? <RequiredTag /> : null}
       </label>
       <p id={hintId} className="text-sm text-ink-muted">
         Accepted: {accept.join(', ')} · up to {formatBytes(maxSizeBytes)}

@@ -1,4 +1,4 @@
-import { Check, Circle, CircleDot, Minus } from 'lucide-react'
+import { Check } from 'lucide-react'
 import type { PublicStage } from '@/lib/api/types'
 import { PUBLIC_STAGES } from '@/lib/status'
 import { formatDateCAT } from '@/lib/format'
@@ -24,20 +24,19 @@ const STATE_TEXT: Record<StageState, string> = {
   done: 'completed',
   current: 'current stage',
   upcoming: 'not reached yet',
-  skipped: 'skipped',
+  skipped: 'not needed',
 }
 
 /**
- * The five applicant-visible stages (spec §5 StageTimeline). The Feedback stage is shown only if it
- * occurred or is open; pass it as `upcoming` to hide it.
+ * The five applicant-visible stages (spec §5 StageTimeline), always all five as in Sandra's frames (#100
+ * decision 2): numbered circles, a tick once done. A stage the case went past without using (Feedback when
+ * CEDA asked nothing) is `skipped`: greyed, announced as "not needed", and the progress line runs through it.
  */
 export function StageTimeline({ stages, orientation = 'responsive', compact = false }: StageTimelineProps) {
   const byStage = new Map(stages.map((s) => [s.stage, s]))
-  const visible = PUBLIC_STAGES.filter((p) => {
-    const entry = byStage.get(p.id)
-    return p.id !== 'feedback' || (entry && (entry.state === 'done' || entry.state === 'current'))
-  })
+  const visible = PUBLIC_STAGES
   const horizontal = orientation === 'responsive'
+  const passed = (state: StageState) => state === 'done' || state === 'skipped'
 
   return (
     <ol
@@ -46,7 +45,6 @@ export function StageTimeline({ stages, orientation = 'responsive', compact = fa
     >
       {visible.map((p, i) => {
         const entry = byStage.get(p.id) ?? { stage: p.id, state: 'upcoming' as const }
-        const Icon = entry.state === 'done' ? Check : entry.state === 'current' ? CircleDot : entry.state === 'skipped' ? Minus : Circle
         return (
           <li
             key={p.id}
@@ -63,17 +61,23 @@ export function StageTimeline({ stages, orientation = 'responsive', compact = fa
                   entry.state === 'done' && 'border-brand bg-brand text-brand-on',
                   entry.state === 'current' && 'border-brand bg-brand-subtle text-brand-text',
                   entry.state === 'upcoming' && 'border-line-input bg-surface-card text-ink-muted',
-                  entry.state === 'skipped' && 'border-line bg-surface-sunken text-ink-muted',
+                  entry.state === 'skipped' && 'border-dashed border-line-input bg-surface-sunken text-ink-muted',
                 )}
               >
-                <Icon aria-hidden className="h-4 w-4" />
+                {entry.state === 'done' ? (
+                  <Check aria-hidden className="h-4 w-4" />
+                ) : (
+                  <span aria-hidden className="text-sm font-semibold leading-none">
+                    {i + 1}
+                  </span>
+                )}
               </span>
               {horizontal && i < visible.length - 1 ? (
-                <span aria-hidden className={cn('hidden h-0.5 flex-1 md:block', entry.state === 'done' ? 'bg-brand' : 'bg-line')} />
+                <span aria-hidden className={cn('hidden h-0.5 flex-1 md:block', passed(entry.state) ? 'bg-brand' : 'bg-line')} />
               ) : null}
             </span>
             <span className="flex flex-col">
-              <span className={cn('text-sm', entry.state === 'current' ? 'font-semibold text-ink' : 'text-ink')}>
+              <span className={cn('text-sm', entry.state === 'current' ? 'font-semibold text-ink' : entry.state === 'skipped' ? 'text-ink-muted' : 'text-ink')}>
                 {p.label}
                 <span className="sr-only">: {STATE_TEXT[entry.state]}</span>
               </span>

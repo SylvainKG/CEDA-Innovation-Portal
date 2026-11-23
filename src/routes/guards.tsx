@@ -14,7 +14,8 @@ export function RequireRole({ anyOf, children }: { anyOf: readonly Role[]; child
   const { data: user, isPending, isError, refetch } = useSession()
   if (isPending) return <LoadingState what="your session" />
   if (isError) return <ErrorState level="h1" message="We couldn't check your session." onRetry={() => void refetch()} />
-  if (!user) return <Navigate to={`/auth/sign-in?next=${encodeURIComponent(location.pathname)}`} replace />
+  // The query string comes too, so "Start an idea" (/ideas/new?challenge=…) returns to the same challenge after sign-in.
+  if (!user) return <Navigate to={`/auth/sign-in?next=${encodeURIComponent(location.pathname + location.search)}`} replace />
   if (!user.roles.some((r) => anyOf.includes(r))) return <ForbiddenState home={homeFor(user.roles)} />
   return <>{children}</>
 }

@@ -15,6 +15,8 @@ describe('status wording (spec §6)', () => {
     expect(applicantStatus('action_required', { feedbackKind: 'clarification' }).label).toBe('Action required: answer a question')
     expect(applicantStatus('action_required', { feedbackKind: 'revision' }).label).toBe('Action required: revise your idea')
     expect(staffStatus('action_required', { feedbackKind: 'revision' }).label).toBe('Waiting on applicant (revision)')
+    // Without the request's kind (staff lists), the badge doesn't guess (handoff-notes #39).
+    expect(staffStatus('action_required').label).toBe('Waiting on applicant')
   })
 
   it('maps statuses to the five public stages', () => {
@@ -60,15 +62,24 @@ describe('navigation by role (navigation-map.md)', () => {
     expect(labels(['reviewer'])).toEqual(['Home', 'My reviews'])
   })
 
+  it('gives admins the full staff navigation, including the absorbed decision, support and committee work', () => {
+    expect(labels(['admin'])).toEqual(['Home', 'Screening queue', 'Ready for decision', 'All cases', 'Reports', 'Audit log', 'Support inbox', 'Users & roles', 'Settings'])
+    expect(navFor(['admin']).find((i) => i.label === 'Users & roles')?.to).toBe('/admin/users')
+    expect(labels(['screening_officer'])).not.toContain('Users & roles')
+  })
+
   it('lands auditors on the audit log, since they have no Home', () => {
     expect(homeFor(['auditor'])).toBe('/audit')
     expect(homeFor(['applicant'])).toBe('/ideas')
     expect(homeFor(['admin'])).toBe('/staff')
   })
 
-  it('shows chat statistics (Reports) to the support lead but not to a consultant', () => {
-    expect(labels(['support_consultant'])).not.toContain('Reports')
-    expect(labels(['support_consultant', 'support_lead'])).toContain('Reports')
+  it('leaves the absorbed roles (adjudicator, consultant, committee) with no navigation of their own', () => {
+    // Their work moved to the Administrator (migration 017).
+    expect(labels(['admin'])).toEqual(expect.arrayContaining(['Ready for decision', 'Support inbox', 'All cases', 'Reports']))
+    expect(labels(['adjudicator'])).toEqual([])
+    expect(labels(['support_consultant', 'support_lead'])).toEqual([])
+    expect(labels(['committee_member'])).toEqual([])
   })
 })
 

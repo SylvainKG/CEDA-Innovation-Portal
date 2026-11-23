@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react'
+import { Download, Table2, X } from 'lucide-react'
 import { Banner, Button, DashboardCard } from '@/components'
 import { Tabs } from '@/components/Tabs'
 import { EmptyState, ErrorState, ForbiddenState, LoadingState } from '@/components/states/States'
@@ -70,25 +71,42 @@ export function ReportsPage() {
     }
   }
 
+  const challengeTitle = (id: string) => (challenges.data ?? []).find((c) => c.id === id)?.title ?? 'Selected challenge'
+  const period = filters.from || filters.to ? `${filters.from ?? 'the start'} to ${filters.to ?? 'today'}` : null
+  const clear = (patch: Partial<ReportFilters>) => {
+    const next = { ...filters, ...patch }
+    setFilters(next)
+    setDraft(next)
+    setPeriodError(null)
+  }
+
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-1">
-        <h1 className="text-h1 font-semibold">Reports</h1>
-        <p className="text-sm text-ink-muted">Generated {formatDateTimeCAT(r.generated_at)}. The period applies to when ideas were submitted (CAT).</p>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <p className="text-xs font-bold uppercase tracking-wider text-brand-text">Innovation portal</p>
+          <h1 className="text-h1 font-semibold">Reports</h1>
+          <p className="text-ink-muted">Operational indicators for administrators.</p>
+          <p className="text-sm text-ink-muted">Generated {formatDateTimeCAT(r.generated_at)}. The period applies to when ideas were submitted (CAT).</p>
+        </div>
+        <Button variant="secondary" icon={Download} loading={exporting} loadingLabel="Exporting…" onClick={() => void exportCsv()}>
+          Export CSV
+        </Button>
       </div>
 
+      {/* Sandra's reports frame: the filters in one card, then the applied ones as removable chips. */}
       <form
-        className="flex flex-wrap items-end gap-3"
+        className="flex flex-wrap items-end gap-4 rounded-md border border-line bg-surface-card p-4 shadow-1"
         aria-label="Report filters"
         onSubmit={(e) => {
           e.preventDefault()
           apply()
         }}
       >
-        <label className="flex flex-col gap-1 font-semibold">
+        <label className="flex min-w-0 max-w-full flex-col gap-1 font-semibold">
           Challenge
           <select
-            className="min-h-touch rounded-sm border border-line-input bg-surface-card px-2 text-base font-normal"
+            className="min-h-touch w-full min-w-0 max-w-full rounded-sm border border-line-input bg-surface-card px-2 text-base font-normal"
             value={draft.challengeId ?? ''}
             onChange={(e) => setDraft({ ...draft, challengeId: e.target.value || undefined })}
           >
@@ -100,32 +118,43 @@ export function ReportsPage() {
             ))}
           </select>
         </label>
-        <label className="flex flex-col gap-1 font-semibold">
-          From
-          <input type="date" className="min-h-touch rounded-sm border border-line-input bg-surface-card px-2 font-normal" value={draft.from ?? ''} onChange={(e) => setDraft({ ...draft, from: e.target.value || undefined })} />
-        </label>
-        <label className="flex flex-col gap-1 font-semibold">
-          To
-          <input
-            type="date"
-            className="min-h-touch rounded-sm border border-line-input bg-surface-card px-2 font-normal"
-            value={draft.to ?? ''}
-            aria-invalid={periodError ? true : undefined}
-            aria-describedby={periodError ? 'report-period-err' : undefined}
-            onChange={(e) => setDraft({ ...draft, to: e.target.value || undefined })}
-          />
-        </label>
+        <fieldset className="flex min-w-0 max-w-full flex-wrap items-end gap-3">
+          <legend className="mb-1 font-semibold">Date range (CAT)</legend>
+          <label className="flex min-w-0 max-w-full flex-col gap-1 text-sm">
+            From
+            <input type="date" className="min-h-touch rounded-sm border border-line-input bg-surface-card px-2 text-base" value={draft.from ?? ''} onChange={(e) => setDraft({ ...draft, from: e.target.value || undefined })} />
+          </label>
+          <label className="flex min-w-0 max-w-full flex-col gap-1 text-sm">
+            To
+            <input
+              type="date"
+              className="min-h-touch rounded-sm border border-line-input bg-surface-card px-2 text-base"
+              value={draft.to ?? ''}
+              aria-invalid={periodError ? true : undefined}
+              aria-describedby={periodError ? 'report-period-err' : undefined}
+              onChange={(e) => setDraft({ ...draft, to: e.target.value || undefined })}
+            />
+          </label>
+        </fieldset>
         <Button type="submit" variant="secondary">
           Apply filters
-        </Button>
-        <Button variant="secondary" loading={exporting} loadingLabel="Exporting…" onClick={() => void exportCsv()}>
-          Export CSV
         </Button>
       </form>
       {periodError ? (
         <p id="report-period-err" className="text-sm text-error" role="alert">
           {periodError}
         </p>
+      ) : null}
+      {filters.challengeId || period ? (
+        <div className="flex flex-wrap items-center gap-2" aria-label="Applied filters" role="group">
+          {filters.challengeId ? (
+            <Chip text={`Challenge: ${challengeTitle(filters.challengeId)}`} onRemove={() => clear({ challengeId: undefined })} />
+          ) : null}
+          {period ? <Chip text={`Date: ${period}`} onRemove={() => clear({ from: undefined, to: undefined })} /> : null}
+          <Button size="sm" variant="tertiary" onClick={() => clear({ challengeId: undefined, from: undefined, to: undefined })}>
+            Clear all
+          </Button>
+        </div>
       ) : null}
       {exportError ? <Banner kind="error">{exportError}</Banner> : null}
 
@@ -144,6 +173,19 @@ export function ReportsPage() {
         />
       )}
     </div>
+  )
+}
+
+/** An applied filter as a chip with a × to remove it (the same look as the queue filters' chips). */
+function Chip({ text, onRemove }: { text: string; onRemove: () => void }) {
+  return (
+    <span className="inline-flex items-center rounded-full bg-surface-sunken pl-3 text-sm">
+      {text}
+      <button type="button" onClick={onRemove} className="inline-flex min-h-touch min-w-touch items-center justify-center rounded-full hover:bg-surface-card">
+        <X aria-hidden className="h-4 w-4" />
+        <span className="sr-only">Remove filter: {text}</span>
+      </button>
+    </span>
   )
 }
 
@@ -216,7 +258,7 @@ function ChatStats({ s }: { s: ChatStatistics }) {
         <DashboardCard label="Average wait" value={wait} definition="From starting a chat to a consultant accepting it." />
         <DashboardCard label="Waiting now" value={s.waiting_now} definition="Chats in the queue at this moment." />
       </Tiles>
-      <BarList title="Chats per day" definition="Chats started each day (CAT)." unit="chats" rows={s.by_day.map((d) => ({ label: d.day, value: d.volume }))} />
+      <BarList title="Chats per day" definition="Chats started each day (CAT)." unit="chats" filtered={false} rows={s.by_day.map((d) => ({ label: d.day, value: d.volume }))} />
     </div>
   )
 }
@@ -236,18 +278,22 @@ function Impact({ r }: { r: ProgrammeReport }) {
  * One-series horizontal bar chart (dataviz method: magnitude → bars from a zero baseline in one hue; a single
  * series needs no legend because the title names it; values in ink, not the series colour; a table view).
  */
-function BarList({ title, definition, unit, rows }: { title: string; definition: string; unit: string; rows: { label: string; value: number }[] }) {
+function BarList({ title, definition, unit, rows, filtered = true }: { title: string; definition: string; unit: string; rows: { label: string; value: number }[]; /** false for all-time figures (chat). */ filtered?: boolean }) {
   const [asTable, setAsTable] = useState(false)
   const max = Math.max(1, ...rows.map((x) => x.value))
   const id = title.replace(/\W+/g, '-').toLowerCase()
   return (
-    <section aria-labelledby={id} className="flex flex-col gap-2 rounded-md bg-surface-card p-4 shadow-1">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 id={id} className="text-h3 font-semibold">
-          {title}
-        </h2>
-        <Button size="sm" variant="tertiary" aria-pressed={asTable} onClick={() => setAsTable(!asTable)}>
-          {asTable ? 'Show as chart' : 'Show as table'}
+    <section aria-labelledby={id} className="flex flex-col gap-3 rounded-md border border-line bg-surface-card p-4 shadow-1">
+      <div className="flex flex-wrap items-start justify-between gap-2 border-b border-line pb-3">
+        <div>
+          <h2 id={id} className="text-h3 font-semibold">
+            {title}
+          </h2>
+          <p className="text-sm text-ink-muted">{filtered ? 'Filtered by the controls above' : 'All time'}</p>
+        </div>
+        {/* A toggle with a steady label (Sandra's frame shows a "Show as table" tick box). */}
+        <Button size="sm" variant="tertiary" icon={Table2} aria-pressed={asTable} onClick={() => setAsTable(!asTable)}>
+          Show as table
         </Button>
       </div>
       {rows.length === 0 ? (
@@ -281,9 +327,12 @@ function BarList({ title, definition, unit, rows }: { title: string; definition:
           {rows.map((x) => (
             <li key={x.label} className="grid grid-cols-1 gap-1 md:grid-cols-[12rem_1fr] md:items-center" title={`${x.label}: ${x.value} ${unit}`}>
               <span className="text-sm">{x.label}</span>
-              <span className="flex items-center gap-2">
-                <span aria-hidden className="h-4 rounded-r bg-brand" style={{ width: `${(x.value / max) * 85}%`, minWidth: x.value > 0 ? '4px' : 0 }} />
-                <span className="text-sm tabular-nums">
+              <span className="flex items-center gap-3">
+                {/* The bar on a light track the full width (Sandra's frame), so every bar reads against the same scale. */}
+                <span aria-hidden className="h-4 flex-1 overflow-hidden rounded-sm bg-surface-sunken">
+                  <span className="block h-full rounded-r-sm bg-brand" style={{ width: `${(x.value / max) * 100}%`, minWidth: x.value > 0 ? '4px' : 0 }} />
+                </span>
+                <span className="w-10 shrink-0 text-right text-sm font-semibold tabular-nums">
                   {x.value}
                   <span className="sr-only"> {unit}</span>
                 </span>

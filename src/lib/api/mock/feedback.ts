@@ -78,7 +78,8 @@ export const mockFeedbackInternals = {
 const wait = () => new Promise<void>((resolve) => setTimeout(resolve, state.latencyMs))
 const refused = (...args: Parameters<typeof rpcError>): CommandOutcome<never> => fromRpcError(rpcError(...args))
 
-const ASK_ROLES = ['screening_officer', 'adjudicator'] as const
+// case.request_feedback: screening officer and admin (admin absorbed the adjudicator, migration 017).
+const ASK_ROLES = ['screening_officer', 'admin'] as const
 const READ_ALL = ['screening_officer', 'adjudicator', 'admin'] as const
 
 export const mockFeedback: FeedbackPort = {

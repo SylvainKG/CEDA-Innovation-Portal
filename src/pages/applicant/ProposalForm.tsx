@@ -9,6 +9,7 @@ import {
   CompletenessMeter,
   DeclarationPanel,
   ErrorState,
+  ErrorSummary as ErrorSummaryBox,
   FileUpload,
   LoadingState,
   NotFoundState,
@@ -600,13 +601,12 @@ function ErrorSummary({
   const generic = refusal && entries.length === 0 ? (refusal.message ?? 'Your idea was not submitted.') : null
   if (entries.length === 0 && !notSavedYet && !generic) return null
   return (
-    <div id="error-summary" tabIndex={-1} role="alert" className="flex flex-col gap-2 rounded-md bg-error-subtle p-4 outline-none">
-      <h3 className="text-h3 font-semibold">Your idea wasn't submitted yet</h3>
+    <ErrorSummaryBox title="Your idea wasn't submitted yet" level={3}>
       {notSavedYet ? <p>Your latest changes aren't saved yet. Check your connection; they will be sent automatically.</p> : null}
       {generic ? <p>{generic}</p> : null}
       {refusal?.message && entries.length > 0 ? <p>{refusal.message}</p> : null}
       {entries.length > 0 ? (
-        <ul className="list-disc pl-6">
+        <ul>
           {entries.map(([key, message]) => {
             const { label, step } = labelOf(key)
             return (
@@ -626,6 +626,6 @@ function ErrorSummary({
           })}
         </ul>
       ) : null}
-    </div>
+    </ErrorSummaryBox>
   )
 }

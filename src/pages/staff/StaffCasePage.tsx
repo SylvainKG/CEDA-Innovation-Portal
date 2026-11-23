@@ -17,6 +17,7 @@ import { formatBWP } from '@/lib/money'
 import type { CaseAssignment, ScreeningResult, StaffCase } from '@/lib/api/types'
 import { formatBytes, formatDateCAT, formatDateTimeCAT } from '@/lib/format'
 import { useSession } from '@/lib/session'
+import { RequiredTag } from '@/components/ErrorSummary'
 
 /**
  * T08 staff case workspace (spec T08), built from the written spec (BCR-003; design review pending). Slice 2:
@@ -28,6 +29,9 @@ export function StaffCasePage() {
   const { id } = useParams()
   const kase = useStaffCase(id)
   const { data: user } = useSession()
+  // case.read_all holders read the roadmap (contract §4.4); the status badge words an open request by its kind (handoff-notes #39).
+  const readsAll = Boolean(user?.roles.some((r) => r === 'screening_officer' || r === 'adjudicator' || r === 'admin'))
+  const roadmap = useRoadmap(readsAll ? id : undefined)
   const [screeningOpen, setScreeningOpen] = useState(false)
   const [assignOpen, setAssignOpen] = useState(false)
   const [removing, setRemoving] = useState<{ assignment: CaseAssignment; name: string } | null>(null)
@@ -55,14 +59,15 @@ export function StaffCasePage() {
   const canPanel = Boolean(user?.roles.some((r) => r === 'adjudicator' || r === 'admin'))
   // case.note (contract §2): screening officers, reviewers, adjudicators and admins. Never applicants.
   const canNote = Boolean(user?.roles.some((r) => r === 'screening_officer' || r === 'reviewer' || r === 'adjudicator' || r === 'admin'))
-  // decision.record / decision.publish: adjudicator. award.record: admin (D-05). case.close: screening officer, adjudicator.
-  const canDecide = Boolean(user?.roles.includes('adjudicator'))
+  // decision.record / decision.publish and award.record: the admin (absorbed the adjudicator, migration 017).
+  // case.close: screening officer, admin.
+  const canDecide = Boolean(user?.roles.includes('admin'))
   const canAward = Boolean(user?.roles.includes('admin'))
-  const canClose = Boolean(user?.roles.some((r) => r === 'screening_officer' || r === 'adjudicator')) && !['approved', 'awarded', 'draft', 'closed'].includes(c.status)
+  const canClose = Boolean(user?.roles.some((r) => r === 'screening_officer' || r === 'admin')) && !['approved', 'awarded', 'draft', 'closed'].includes(c.status)
   // case.read_all holders see decisions, drafts included (contract §3).
-  const canSeeDecision = Boolean(user?.roles.some((r) => r === 'screening_officer' || r === 'adjudicator' || r === 'admin'))
-  // case.request_feedback + case.read_all (contract §2, §4.4): screening officers and adjudicators, while the case is being reviewed.
-  const canAsk = Boolean(user?.roles.some((r) => r === 'screening_officer' || r === 'adjudicator')) && ['submitted', 'in_evaluation', 'in_adjudication'].includes(c.status)
+  const canSeeDecision = Boolean(user?.roles.some((r) => r === 'screening_officer' || r === 'admin'))
+  // case.request_feedback + case.read_all (contract §2, §4.4): screening officers and the admin, while the case is being reviewed.
+  const canAsk = Boolean(user?.roles.some((r) => r === 'screening_officer' || r === 'admin')) && ['submitted', 'in_evaluation', 'in_adjudication'].includes(c.status)
   const closeDialog = (open: boolean) => setDialog(open ? dialog : null)
   const stages = stagesFor({
     status: c.status,
@@ -71,13 +76,14 @@ export function StaffCasePage() {
       .map((e) => ({ stage: e.public_stage!, at: e.at }))
       .filter((s, i, all) => all.findIndex((x) => x.stage === s.stage) === i),
   })
+  const openKind = c.status === 'action_required' ? roadmap.data?.find((r) => r.status !== 'answered')?.kind : undefined
   const closedReason = c.status === 'closed' ? [...c.events].reverse().find((e) => e.to_status === 'closed')?.reason : undefined
 
   return (
     <div className="flex flex-col gap-6">
       <p>
         {canScreen ? (
-          <Link to="/staff/queue/screening">← Screening queue</Link>
+          <Link to="/staff/queue/screening" className="inline-flex min-h-touch items-center">← Screening queue</Link>
         ) : canAssign ? (
           <Link to="/staff/cases">← All cases</Link>
         ) : user?.roles.includes('adjudicator') ? (
@@ -87,18 +93,21 @@ export function StaffCasePage() {
         )}
       </p>
 
-      <header className="flex flex-col gap-3">
-        <div className="flex flex-wrap items-center gap-2">
-          <ReferencePill reference={c.reference} copyable />
-          <StatusBadge status={c.status} audience="staff" context={{ decisionDrafted: Boolean(activeDecision(c) && !activeDecision(c)?.published_at) }} />
-        </div>
-        <h1 className="text-h1 font-semibold">{c.title}</h1>
-        <p className="text-ink-muted">
-          {c.challenge.title} · Submitted {formatDateTimeCAT(c.submitted_at)}
-        </p>
-        <StageTimeline stages={stages} compact />
-        {closedReason ? <Banner kind="info" title="Closed">{closedReason}</Banner> : null}
-        {notice ? <Banner kind="success">{notice}</Banner> : null}
+      {/* Laid out to Sandra's 21 Nov staff case frame: pills, title and challenge on the left, the actions on the right,
+          the five-step stepper in a card below. */}
+      <header className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="flex min-w-0 flex-col gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <ReferencePill reference={c.reference} copyable />
+              <StatusBadge status={c.status} audience="staff" context={{ decisionDrafted: Boolean(activeDecision(c) && !activeDecision(c)?.published_at), feedbackKind: openKind }} />
+            </div>
+            <h1 className="break-words text-h1 font-semibold">{c.title}</h1>
+            <p className="text-sm text-ink-muted">
+              {c.challenge.title} · Submitted {formatDateTimeCAT(c.submitted_at)}
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2 md:justify-end">
         <PrimaryAction
           c={c}
           canScreen={canScreen}
@@ -111,7 +120,7 @@ export function StaffCasePage() {
           onDialog={setDialog}
         />
         {canAsk || canClose ? (
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 md:justify-end">
             {canAsk ? (
               <>
                 <Button variant="secondary" size="sm" onClick={() => setDialog('clarify')}>
@@ -129,6 +138,13 @@ export function StaffCasePage() {
             ) : null}
           </div>
         ) : null}
+          </div>
+        </div>
+        <div className="rounded-md border border-line bg-surface-card p-4">
+          <StageTimeline stages={stages} compact />
+        </div>
+        {closedReason ? <Banner kind="info" title="Closed">{closedReason}</Banner> : null}
+        {notice ? <Banner kind="success">{notice}</Banner> : null}
       </header>
 
       <Tabs
@@ -326,7 +342,7 @@ function PrimaryAction({
     return (
       <div className="flex flex-wrap items-center gap-3">
         <ButtonLink to={`/staff/cases/${c.id}/panel`}>Open score panel</ButtonLink>
-        <span className="text-ink-muted">All reviews are in. The adjudicator records and publishes the decision.</span>
+        <span className="text-ink-muted">All reviews are in. The administrator records and publishes the decision.</span>
       </div>
     )
   }
@@ -348,26 +364,31 @@ function ProposalTab({ c }: { c: StaffCase }) {
   const answers = c.version.data
   const docLabel = (key: string | null) => c.required_docs.find((d) => d.key === key)?.label
   return (
-    <div className="flex max-w-form flex-col gap-6">
-      <p className="text-sm text-ink-muted">
-        Version {c.version.version_no} · submitted {formatDateTimeCAT(c.version.submitted_at)} · declaration {c.version.declaration_version}
-      </p>
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-5 rounded-md border border-line bg-surface-card p-5">
+        <div>
+          <h2 className="text-h3 font-semibold">Submitted proposal · Version {c.version.version_no}</h2>
+          <p className="text-sm text-ink-muted">
+            Submitted {formatDateTimeCAT(c.version.submitted_at)} · declaration {c.version.declaration_version}
+          </p>
+        </div>
       {c.form_schema.sections.map((section) => (
-        <section key={section.key} aria-labelledby={`sec-${section.key}`} className="flex flex-col gap-3 rounded-md bg-surface-card p-4 shadow-1">
-          <h2 id={`sec-${section.key}`} className="text-h3 font-semibold">
+        <section key={section.key} aria-labelledby={`sec-${section.key}`} className="flex flex-col gap-3 border-t border-line pt-4">
+          <h3 id={`sec-${section.key}`} className="font-semibold">
             {section.title}
-          </h2>
+          </h3>
           <dl className="flex flex-col gap-3">
             {section.fields.map((f) => (
               <div key={f.key} className="flex flex-col gap-1">
-                <dt className="text-sm font-semibold text-ink-muted">{f.label}</dt>
+                <dt className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{f.label}</dt>
                 <dd className="whitespace-pre-wrap break-words">{answers[f.key]?.trim() ? answers[f.key] : <span className="text-ink-muted">Not answered</span>}</dd>
               </div>
             ))}
           </dl>
         </section>
       ))}
-      <section aria-labelledby="sec-files" className="flex flex-col gap-3 rounded-md bg-surface-card p-4 shadow-1">
+      </div>
+      <section aria-labelledby="sec-files" className="flex flex-col gap-3 rounded-md border border-line bg-surface-card p-5">
         <h2 id="sec-files" className="text-h3 font-semibold">
           Files
         </h2>
@@ -504,7 +525,7 @@ function ScreeningDialog({
       ) : null}
       <fieldset className="flex flex-col gap-2" aria-describedby={errors.result || serverFields?.result ? `${groupId}-err` : undefined}>
         <legend className="font-semibold">
-          Result <span className="text-sm font-normal text-ink-muted">Required</span>
+          Result <RequiredTag />
         </legend>
         {(
           [

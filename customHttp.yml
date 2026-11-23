@@ -2,7 +2,12 @@
 # (docs/process/hosting-aws-amplify.md §6).
 # The CSP was proposed by Obvious (PR #6) and checked against the production
 # build: no violations on /, /ideas, /staff or /auth/sign-in. Inline styles are
-# needed by React style props and Radix. connect-src allows Supabase (HTTPS + Realtime).
+# needed by React style props and Radix. connect-src allows Supabase (HTTPS + Realtime) and the Leseding AI Engine
+# behind Peolwane AI; media-src blob: plays its spoken replies; microphone=(self) lets this site (only) ask for the
+# microphone for voice questions (docs/process/peolwane-ai.md). script-src stays 'self': no third-party script.
+# img-src also allows https://*.tile.openstreetmap.org for the Leaflet branch-network map on the contact page.
+# It also allows three hosts of published photos shown in place, with credit: www.ceda.co.bw (the CEO portrait on the
+# home page) and guardiansun.co.bw and dailynews.gov.bw (CEDA office photos on the contact page). Images only; no scripts.
 customHeaders:
   - pattern: '**'
     headers:
@@ -15,6 +20,6 @@ customHeaders:
       - key: Referrer-Policy
         value: strict-origin-when-cross-origin
       - key: Permissions-Policy
-        value: camera=(), microphone=(), geolocation=()
+        value: camera=(), microphone=(self), geolocation=()
       - key: Content-Security-Policy
-        value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"
+        value: "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.tile.openstreetmap.org https://www.ceda.co.bw https://guardiansun.co.bw https://dailynews.gov.bw; font-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://lesedingaiengine.co.bw; media-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'"

@@ -11,7 +11,8 @@ import { roleLabel } from '@/navigation/role-labels'
 import { AuthCard, FormErrorSummary, type FieldError } from './auth-ui'
 import { isEmail, REFUSAL_TEXT } from './auth-text'
 
-/** T02 Sign in (spec T02; built from the written spec, BCR-003). */
+
+/** T02 Sign in (spec T02; laid out to Sandra's sign-in frame, 21 Nov, #100). */
 export function SignInPage() {
   const navigate = useNavigate()
   const [params] = useSearchParams()
@@ -59,12 +60,19 @@ export function SignInPage() {
     setResent(outcome.kind === 'ok' ? 'sent' : outcome.reason)
   }
 
+  // The frame shows a refused sign-in in the same "There is a problem" box as a missing field. Wrong
+  // credentials link to the email field to try again; an unverified address keeps its own banner below.
+  const problems: FieldError[] =
+    refusal && refusal !== 'email_not_confirmed'
+      ? [{ id: refusal === 'invalid_credentials' ? 'signin-email' : undefined, message: REFUSAL_TEXT[refusal] }]
+      : errors
+
   return (
     <div className="flex flex-col gap-6 py-6">
-      <AuthCard title="Sign in">
+      <AuthCard title="Sign in" intro="Access your ideas or staff workspace.">
         {params.get('verified') === '1' ? <Banner kind="success">Your email is verified. Sign in to continue.</Banner> : null}
         {params.get('reset') === '1' ? <Banner kind="success">Your password was changed. Sign in with the new one.</Banner> : null}
-        <FormErrorSummary errors={errors} />
+        <FormErrorSummary errors={problems} />
         {refusal === 'email_not_confirmed' ? (
           <Banner
             kind="action"
@@ -81,8 +89,6 @@ export function SignInPage() {
                 ? REFUSAL_TEXT[resent]
                 : 'Open the link we sent when you registered, then sign in.'}
           </Banner>
-        ) : refusal ? (
-          <Banner kind="error">{REFUSAL_TEXT[refusal]}</Banner>
         ) : null}
         <form noValidate onSubmit={(e) => void onSubmit(e)} className="flex flex-col gap-4">
           <TextField
@@ -105,15 +111,15 @@ export function SignInPage() {
             onChange={(e) => setPassword(e.target.value)}
             error={errors.find((e) => e.id === 'signin-password')?.message}
           />
-          <Button type="submit" loading={busy} loadingLabel="Signing in…">
+          <p className="-mt-3 text-right">
+            <Link to="/auth/forgot" className="inline-flex min-h-touch items-center">Forgot password?</Link>
+          </p>
+          <Button type="submit" loading={busy} loadingLabel="Signing in…" className="w-full">
             Sign in
           </Button>
         </form>
-        <p>
-          <Link to="/auth/forgot" className="inline-flex min-h-touch items-center">Forgot your password?</Link>
-        </p>
-        <p>
-          New here? <Link to="/auth/register" className="inline-flex min-h-touch items-center">Register</Link>
+        <p className="text-center">
+          New to the portal? <Link to="/auth/register" className="inline-flex min-h-touch items-center">Register</Link>
         </p>
       </AuthCard>
       {apiMode === 'mock' ? <MockSessionPicker next={next} /> : null}
@@ -130,7 +136,7 @@ function MockSessionPicker({ next }: { next: string | null }) {
     navigate(next ?? homeFor(user?.roles ?? [role]))
   }
   return (
-    <section aria-labelledby="mock-heading" className="mx-auto w-full max-w-[440px] rounded-md bg-demo-subtle p-4">
+    <section aria-labelledby="mock-heading" className="mx-auto w-full max-w-[440px] rounded-md bg-demo-subtle p-4 lg:max-w-[1040px]">
       <h2 id="mock-heading" className="text-h3 font-semibold text-demo">
         Mock session (development only)
       </h2>

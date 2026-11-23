@@ -1,9 +1,11 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Banner, Button, TextField } from '@/components'
 import { ErrorState, LoadingState } from '@/components/states/States'
 import { api } from '@/lib/api'
 import type { AdminRole, CommandOutcome, PermissionOption } from '@/lib/api/types'
+import { SettingsNav } from './SettingsNav'
 
 type Msg = { kind: 'success' | 'error' | 'warning'; text: string; fields?: Record<string, string> } | null
 const KEY = ['admin', 'role-setup'] as const
@@ -40,9 +42,12 @@ export function RolesPage() {
   const { roles, permissions } = setup.data
   return (
     <div className="flex flex-col gap-6">
+      <SettingsNav />
       <div className="flex flex-col gap-1">
         <h1 className="text-h1 font-semibold">Roles</h1>
-        <p className="text-ink-muted">What each role can do. Give roles to people on Users and roles.</p>
+        <p className="text-ink-muted">
+          What each role can do. Give roles to people on <Link to="/admin/users">Users & roles</Link>.
+        </p>
       </div>
       <div aria-live="polite">{msg ? <Banner kind={msg.kind}>{msg.text}</Banner> : null}</div>
       <NewRole permissions={permissions} busy={busy} fields={msg?.fields} onCreate={(i) => act(() => api.configAdmin.createRole(i), `Role "${i.label.trim()}" added.`)} />
@@ -80,17 +85,20 @@ function Checklist({ id, permissions, value, onChange, disabled }: { id: string;
 
 function RoleRow({ role, permissions, busy, onSave }: { role: AdminRole; permissions: PermissionOption[]; busy: boolean; onSave: (p: string[]) => Promise<boolean> }) {
   const [value, setValue] = useState(role.permissions)
+  // The checklist renders only while the role is open: ten roles × twenty permissions is a lot of controls.
+  const [open, setOpen] = useState(false)
   const changed = [...value].sort().join() !== role.permissions.join()
   return (
     <li className="rounded-md bg-surface-card p-4 shadow-1">
-      <details>
+      <details onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}>
         <summary className="flex min-h-touch cursor-pointer flex-wrap items-baseline gap-x-3">
           <span className="font-semibold">{role.label}</span>
           <span className="text-sm text-ink-muted">
             {role.is_system ? 'Built-in' : 'Added'} · {role.permissions.length} permissions{role.requires_mfa ? ' · two-step sign-in' : ''}
           </span>
         </summary>
-        <div className="mt-3 flex flex-col gap-3">
+        {open ? (
+          <div className="mt-3 flex flex-col gap-3">
           {role.is_system ? <p className="text-sm text-ink-muted">Built-in roles keep their permissions. Add a new role to combine them differently.</p> : null}
           <fieldset>
             <legend className="sr-only">{role.label} permissions</legend>
@@ -103,7 +111,8 @@ function RoleRow({ role, permissions, busy, onSave }: { role: AdminRole; permiss
               </Button>
             </div>
           ) : null}
-        </div>
+          </div>
+        ) : null}
       </details>
     </li>
   )
