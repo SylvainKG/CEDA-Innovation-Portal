@@ -10,7 +10,7 @@ Publish the role manual inside the portal, so people read it where they work ins
 |---|---|
 | Route | `/help/manual`, in the `SiteShell` group beside the other help pages (visitors and signed-in people) |
 | Title | **How to use the portal** (eyebrow "Help") |
-| Sections | The nine sections of the manual: Everyone, Applicant, Screening officer, Reviewer, Adjudicator, Administrator, Support consultant and support lead, External committee member, Auditor |
+| Sections | The six sections of the manual since #162: Everyone, Applicant, Screening officer, Reviewer, Administrator, Auditor |
 | Navigation | A contents list at the top with an anchor per section (`#everyone`, `#applicant`, …); a "Back to contents" link after each section |
 | Signed-in people | Their own role sections open first and the others stay collapsed; visitors see Everyone and Applicant open |
 | Entry points | A new first item in the help side panel (`HELP_TOPICS`), a "User manual" footer link, and the staff and applicant Help links |
@@ -22,7 +22,7 @@ The page says what the portal does **today**. Nothing planned, flagged off or De
 - No database change, migration, RPC or new request. The manual is static text bundled with the app; it is not a `content_pages` kind, so administrators can't edit it from Content (that would need a migration after freeze).
 - No change to roles, permissions or any existing screen other than the help side panel, the footer links and the Help nav entry.
 - No screenshots in the first version (they go stale and weigh the bundle); text and icons only.
-- The **[confirm at release]** markers in the source manual are resolved against the judged build before the text is copied; none of them appears on the page.
+- The manual is the one finalised for `v1.0.1-judging` (#173, every **[confirm at release]** mark resolved); if any marker remains, it is resolved before the text is copied, and none appears on the page.
 - Wording marked **Sample** in the manual (for example email being Simulated) keeps the existing `SampleLabel`.
 - The toolkit preview (behind `VITE_TOOLKIT_PREVIEW`) is not mentioned.
 - **No merge into `main` without Sylvain's explicit approval.**
@@ -60,7 +60,7 @@ At 360 px: one column, the contents list wraps, no sideways scroll. From 1024 px
 
 | Minutes | Step |
 |---|---|
-| 0–20 | Resolve each **[confirm at release]** marker against the judged build (log in as each demo role). Fix the Markdown manual first, so both copies say the same thing |
+| 0–20 | Check the finalised manual against the judged build (log in as each demo role). Fix the Markdown manual first, so both copies say the same thing |
 | 20–45 | Write `content.ts` from the corrected manual |
 | 45–75 | `ManualPage.tsx`, route, side-panel, footer and nav links |
 | 75–95 | Tests (§6) |
@@ -71,7 +71,7 @@ At 360 px: one column, the contents list wraps, no sideways scroll. From 1024 px
 
 ## 6. Tests and acceptance
 
-- [ ] `/help/manual` renders for a visitor with the nine section headings in the manual's order, and the contents list links to each anchor.
+- [ ] `/help/manual` renders for a visitor with the six section headings in the manual's order, and the contents list links to each anchor.
 - [ ] Signed in as an applicant: the Applicant section is open; signed in as a reviewer: the Reviewer section is open. Everyone is open in both cases.
 - [ ] Every section can be opened and closed with the keyboard; `aria-expanded` reflects the state.
 - [ ] **Drift test:** every `## ` heading in `docs/submission/user-manual.md` has a matching section title in `content.ts` (read with `fs` in Vitest), so the two copies can't silently diverge.
@@ -89,7 +89,7 @@ At 360 px: one column, the contents list wraps, no sideways scroll. From 1024 px
 
 ## 8. Deliverables
 
-1. The `/help/manual` page with the nine role sections.
+1. The `/help/manual` page with the six sections.
 2. A static, typed copy of the manual, with a drift test against the Markdown source.
 3. Links from the help side panel, footer and navigation.
 4. Test results (the commands' summary lines) and the list of changed files.
