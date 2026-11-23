@@ -50,16 +50,29 @@
       border-color 400ms ease,
       box-shadow 400ms ease;
   }
+  /*
+   * Scrolled: frosted glass (team, 23 Nov). The page shows through as soft colour and shape, blurred enough that text
+   * behind it never competes with the links; a white rim and a soft shadow lift it off the page.
+   */
   .site-nav--floating .site-nav__bar {
     max-width: min(1160px, calc(100% - 24px));
     transform: translateY(10px);
     padding-inline: 12px;
-    border: 1px solid color-mix(in srgb, var(--border-default) 70%, transparent);
+    border: 1px solid rgba(255, 255, 255, 0.6);
     border-radius: var(--radius-pill);
-    background: color-mix(in srgb, var(--surface-card) 80%, transparent);
+    background: color-mix(in srgb, var(--surface-card) 70%, transparent);
+    -webkit-backdrop-filter: blur(22px) saturate(1.8);
+    backdrop-filter: blur(22px) saturate(1.8);
     box-shadow:
-      0 14px 40px rgba(0, 0, 0, 0.12),
-      inset 0 1px 0 rgba(255, 255, 255, 0.7);
+      0 14px 40px rgba(0, 0, 0, 0.14),
+      0 0 0 1px color-mix(in srgb, var(--border-default) 55%, transparent),
+      inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  }
+  /* Without backdrop blur the glass would be see-through, so it stays nearly opaque instead. */
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .site-nav--floating .site-nav__bar {
+      background: color-mix(in srgb, var(--surface-card) 96%, transparent);
+    }
   }
   .site-nav__link {
     position: relative;

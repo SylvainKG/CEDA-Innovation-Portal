@@ -104,8 +104,10 @@ export function PublicShell() {
     <div className="flex min-h-screen flex-col">
       <SkipLink />
       <ContactStrip />
-      <header className={cn('site-nav shell-header', floating && 'site-nav--floating')}>
-        <div className="site-nav__bar">
+      <header className={cn('site-nav', floating && 'site-nav--floating')}>
+        {/* The bar, not the header, carries the transition snapshot (shell-header): a snapshot name on the header would
+            stop the bar's frosted glass from seeing the page behind it. */}
+        <div className="site-nav__bar shell-header">
           <div className="mx-auto flex max-w-content items-center justify-between gap-4 px-4 py-2">
             <div className="flex shrink-0 items-center gap-3">
               <Brand />
