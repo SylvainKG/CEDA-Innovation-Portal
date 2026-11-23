@@ -563,3 +563,58 @@
     background: #fff;
   }
 }
+
+/* Planned toolkit preview: CEDA sunrise surfaces, quiet card lift, and short sheet motion. */
+.toolkit-preview__card {
+  animation: toolkit-card-in 360ms cubic-bezier(0.2, 0.7, 0.2, 1) backwards;
+  transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+.toolkit-preview__card:hover {
+  transform: translateY(-2px);
+  border-color: var(--ceda-amber);
+  box-shadow: var(--shadow-1);
+}
+.toolkit-preview__overlay[data-state='open'] {
+  animation: toolkit-overlay-in 180ms ease-out both;
+}
+.toolkit-preview__overlay[data-state='closed'] {
+  animation: toolkit-overlay-out 140ms ease-in both;
+}
+.toolkit-preview__sheet[data-state='open'] {
+  animation: toolkit-sheet-in 260ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.toolkit-preview__sheet[data-state='closed'] {
+  animation: toolkit-sheet-out 180ms cubic-bezier(0.4, 0, 0.8, 0.4) both;
+}
+@keyframes toolkit-card-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes toolkit-overlay-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes toolkit-overlay-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes toolkit-sheet-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes toolkit-sheet-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(12px); }
+}
+@media (min-width: 768px) {
+  @keyframes toolkit-sheet-in {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes toolkit-sheet-out {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(16px); }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .toolkit-preview__card,
+  .toolkit-preview__overlay,
+  .toolkit-preview__sheet {
+    animation: none !important;
+    transition: none !important;
+  }
+}
