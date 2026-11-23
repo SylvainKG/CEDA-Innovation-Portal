@@ -1,3 +1,5 @@
+:root { --peolwane-applicant-bar: 3.7rem; }
+
 .peolwane-launcher {
   position: fixed;
   right: 1.25rem;
@@ -39,7 +41,39 @@
 .peolwane-launcher--compact .peolwane-launcher__label, .peolwane-launcher--compact .peolwane-launcher__hint { max-width: 0; opacity: 0; transform: translateX(.3rem); }
 .peolwane-launcher--compact .peolwane-launcher__hint { border-color: transparent; padding-left: 0; }
 .peolwane-launcher[aria-hidden='true'] { opacity: 0; transform: translateY(.2rem) scale(.88); pointer-events: none; }
-.peolwane-launcher--applicant { bottom: calc(6.25rem + env(safe-area-inset-bottom)); }
+
+/* Staff: Peolwane AI is an item in the sidebar under the navigation (team, 23 Nov), in the launcher's sunrise colours. */
+.peolwane-sidebar-launcher {
+  display: flex;
+  width: 100%;
+  min-height: 3.5rem;
+  align-items: center;
+  gap: .7rem;
+  border: 1px solid color-mix(in srgb, var(--surface-card) 58%, transparent);
+  border-radius: var(--radius-md);
+  padding: .45rem .75rem .45rem .5rem;
+  color: var(--brand-on-primary);
+  background: linear-gradient(125deg, var(--ceda-amber), var(--ceda-orange) 55%, var(--brand-primary-hover));
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--ceda-night) 14%, transparent), inset 0 1px color-mix(in srgb, var(--surface-card) 48%, transparent);
+  font: inherit;
+  cursor: pointer;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.peolwane-sidebar-launcher:hover { transform: translateY(-1px); box-shadow: 0 10px 22px color-mix(in srgb, var(--ceda-night) 20%, transparent), inset 0 1px color-mix(in srgb, var(--surface-card) 52%, transparent); }
+.peolwane-sidebar-launcher:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 3px; }
+.peolwane-sidebar-launcher__icon {
+  display: grid;
+  width: 2.4rem;
+  height: 2.4rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--surface-card) 48%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--surface-card) 28%, transparent);
+}
+.peolwane-sidebar-launcher__label { font-size: 1rem; font-weight: 650; letter-spacing: -.02em; white-space: nowrap; }
+.peolwane-sidebar-launcher__label strong { font-weight: 850; }
+.peolwane-sidebar-launcher__hint { font-size: .875rem; font-weight: 550; white-space: nowrap; opacity: .88; }
 
 .peolwane-panel {
   position: fixed;
@@ -61,6 +95,10 @@
   will-change: opacity, transform;
 }
 .peolwane-panel--closing { animation: peolwane-close .3s cubic-bezier(.4,0,.8,.4) both; pointer-events: none; }
+/* Opened from the staff sidebar: from 1024 px the panel rises beside the sidebar (16rem wide), not at the far right. */
+@media (min-width: 1024px) {
+  .peolwane-panel--beside-sidebar { right: auto; left: calc(16rem + 1.25rem); transform-origin: bottom left; }
+}
 .peolwane-panel__header {
   position: relative;
   display: flex;
@@ -127,17 +165,26 @@
 @keyframes peolwane-dot { 0%, 60%, 100% { transform: translateY(0); opacity: .45; } 30% { transform: translateY(-3px); opacity: 1; } }
 @keyframes peolwane-pulse { 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--feedback-error) 14%, transparent); } }
 
+/*
+ * Applicants have a navigation bar at the foot of the window below 768 px (--peolwane-applicant-bar, its height). There
+ * the launcher keeps the same gap above that bar as it keeps above the window's edge on every other screen; from
+ * 768 px there is no bar, and it sits exactly where it does on the public and staff pages.
+ */
+@media (max-width: 767.98px) {
+  .peolwane-launcher--applicant { bottom: calc(var(--peolwane-applicant-bar) + 1.5rem + env(safe-area-inset-bottom)); }
+}
 @media (max-width: 640px) {
   .peolwane-launcher { right: 1rem; bottom: calc(1rem + env(safe-area-inset-bottom)); width: 12.5rem; min-height: 3.4rem; padding-right: .85rem; }
   .peolwane-launcher__hint { max-width: 0; border-left-color: transparent; padding-left: 0; opacity: 0; }
   .peolwane-launcher--compact { width: 3.5rem; }
-  .peolwane-launcher--applicant { bottom: calc(6.25rem + env(safe-area-inset-bottom)); }
+  .peolwane-launcher--applicant { bottom: calc(var(--peolwane-applicant-bar) + 1rem + env(safe-area-inset-bottom)); }
   .peolwane-panel { right: .55rem; bottom: calc(.55rem + env(safe-area-inset-bottom)); left: .55rem; width: auto; max-height: calc(100dvh - 1.1rem - env(safe-area-inset-bottom)); border-radius: 1.35rem; }
   .peolwane-panel__header { min-height: 6.1rem; gap: .65rem; padding-right: .7rem; padding-left: .9rem; }
   .peolwane-panel__online { font-size: .875rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .peolwane-launcher, .peolwane-mode-button, .peolwane-input-row { transition: none; }
+  .peolwane-launcher, .peolwane-sidebar-launcher, .peolwane-mode-button, .peolwane-input-row { transition: none; }
+  .peolwane-sidebar-launcher:hover { transform: none; }
   .peolwane-panel, .peolwane-panel--closing { animation: none; }
   .peolwane-typing i, .peolwane-voice-control .peolwane-voice-control--listening { animation: none; }
 }

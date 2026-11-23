@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ask, AssistantError, pickRecordingType, readAssistantConfig, transcribe } from './leseding'
-import { PeolwaneAssistant } from './PeolwaneAssistant'
+import { PeolwaneAssistant, PeolwaneSidebarLauncher } from './PeolwaneAssistant'
 import { getState, resetAssistant, sendQuestion, setMode, setOpen } from './store'
 
 const CFG = { base: 'https://engine.example', key: 'lsk_test_key' }
@@ -20,9 +20,10 @@ function streamed(chunks: string[], status = 200) {
   return new Response(body, { status, headers: { 'Content-Type': 'text/plain' } })
 }
 
-function renderAssistant(config: typeof CFG | null = CFG, placement: 'default' | 'applicant' = 'default') {
+function renderAssistant(config: typeof CFG | null = CFG, placement: 'default' | 'applicant' | 'sidebar' = 'default') {
   render(
     <MemoryRouter>
+      {placement === 'sidebar' ? <PeolwaneSidebarLauncher config={config} /> : null}
       <PeolwaneAssistant config={config} placement={placement} />
     </MemoryRouter>,
   )
@@ -155,6 +156,24 @@ describe('Peolwane AI panel', () => {
   it('uses the applicant placement while keeping one assistant launcher', () => {
     renderAssistant(CFG, 'applicant')
     expect(screen.getByRole('button', { name: 'Peolwane AI' }).className).toContain('peolwane-launcher--applicant')
+  })
+
+  it('staff: opens from the sidebar launcher beside the sidebar, with no floating launcher, and Esc returns focus to it', async () => {
+    const user = renderAssistant(CFG, 'sidebar')
+    const launcher = screen.getByRole('button', { name: 'Peolwane AI' })
+    expect(launcher.className).toContain('peolwane-sidebar-launcher')
+    expect(document.querySelector('.peolwane-launcher')).not.toBeInTheDocument()
+    await user.click(launcher)
+    expect(launcher).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('dialog', { name: 'Peolwane AI' })).toHaveClass('peolwane-panel--beside-sidebar')
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(launcher).toHaveFocus()
+  })
+
+  it('staff: shows no sidebar launcher when the assistant is not configured', () => {
+    renderAssistant(null, 'sidebar')
+    expect(screen.queryByRole('button', { name: 'Peolwane AI' })).not.toBeInTheDocument()
   })
 
   it('switches to text, sends a typed question and shows the streamed answer (not spoken)', async () => {

@@ -8,8 +8,15 @@ import type { Role } from '@/lib/api/types'
 import { routes } from '@/routes/router'
 
 vi.mock('@/features/assistant/PeolwaneAssistant', () => ({
-  PeolwaneAssistant: ({ placement = 'default' }: { placement?: string }) => (
-    <button type="button" aria-label="Peolwane AI" data-placement={placement}>
+  // The floating launcher; the staff shell's `sidebar` placement floats nothing (the sidebar has its own launcher).
+  PeolwaneAssistant: ({ placement = 'default' }: { placement?: string }) =>
+    placement === 'sidebar' ? null : (
+      <button type="button" aria-label="Peolwane AI" data-placement={placement}>
+        Peolwane AI
+      </button>
+    ),
+  PeolwaneSidebarLauncher: () => (
+    <button type="button" aria-label="Peolwane AI" data-placement="sidebar">
       Peolwane AI
     </button>
   ),
@@ -124,6 +131,25 @@ describe('shared shell, laid out to Sandra\'s 21 Nov frames', () => {
     expect(screen.getAllByText('Screening officer portal').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Restricted staff area').length).toBeGreaterThan(0)
     expect(screen.queryByRole('link', { name: 'Chat with CEDA' })).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Account: Demo Screening Officer' })).toBeInTheDocument()
+  })
+
+  it('staff: Peolwane AI under the navigation and Sign out at the foot of the sidebar; the header only says who is signed in', async () => {
+    await as('admin')
+    renderAt('/staff')
+    await screen.findByRole('heading', { level: 1, name: /^Good (morning|afternoon|evening), Demo Administrator$/ }, LOAD)
+    const sidebar = within(screen.getByRole('navigation', { name: 'Staff' }))
+    // One way in to Peolwane AI, in the sidebar after Settings (no floating launcher).
+    const peolwane = screen.getAllByRole('button', { name: 'Peolwane AI' })
+    expect(peolwane).toHaveLength(1)
+    expect(peolwane[0]).toHaveAttribute('data-placement', 'sidebar')
+    const settings = sidebar.getByRole('link', { name: 'Settings' })
+    expect(settings.compareDocumentPosition(peolwane[0]!) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    // Sign out sits in the sidebar, before "Restricted staff area"; the avatar is a label, not a menu.
+    const signOut = sidebar.getByRole('button', { name: 'Sign out' })
+    expect(peolwane[0]!.compareDocumentPosition(signOut) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(signOut.compareDocumentPosition(sidebar.getByText('Restricted staff area')) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    const header = within(screen.getByRole('banner'))
+    expect(header.queryByRole('button', { name: /^Account:/ })).not.toBeInTheDocument()
+    expect(header.getByText('Signed in as Demo Administrator, Administrator')).toBeInTheDocument()
   })
 })

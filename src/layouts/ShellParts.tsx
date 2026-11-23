@@ -302,14 +302,17 @@ export function MockRoleSwitcher({ compact = false }: { compact?: boolean }) {
   )
 }
 
-/** The right end of a signed-in header: the bell and the account menu. `badge` keeps the DEMO pill here (public shell). */
-export function TopBarEnd({ badge = false }: { badge?: boolean }) {
+/**
+ * The right end of a signed-in header: the bell and the account menu. `badge` keeps the DEMO pill here (public shell).
+ * `accountMenu={false}` (staff, whose Sign out is at the foot of the sidebar) shows who is signed in without a menu.
+ */
+export function TopBarEnd({ badge = false, accountMenu = true }: { badge?: boolean; accountMenu?: boolean }) {
   const { data: user } = useSession()
   return (
     <div className="flex shrink-0 items-center gap-2 md:gap-3">
       {badge ? <DemoBadge /> : null}
       {user ? <NotificationsLink /> : null}
-      {user ? <AccountMenu /> : null}
+      {user ? accountMenu ? <AccountMenu /> : <AccountChip /> : null}
     </div>
   )
 }
@@ -321,6 +324,30 @@ const initials = (name: string) =>
     .slice(0, 2)
     .map((w) => w[0]!.toUpperCase())
     .join('') || '?'
+
+const accountSubtitle = (roles: readonly Role[]) => (roles.length ? roleLabel(roles.find((r) => r !== 'auditor') ?? roles[0]!) : '')
+
+/** The avatar with the person's initials, name and role, as a label only (staff: Sign out is in the sidebar). */
+function AccountChip() {
+  const { data: user } = useSession()
+  if (!user) return null
+  const subtitle = accountSubtitle(user.roles)
+  return (
+    <p className="flex min-h-touch items-center gap-2 pr-1 text-ink md:pr-3">
+      <span className="sr-only">
+        Signed in as {user.displayName}
+        {subtitle ? `, ${subtitle}` : ''}
+      </span>
+      <span aria-hidden className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-semibold text-surface-card">
+        {initials(user.displayName)}
+      </span>
+      <span aria-hidden className="hidden max-w-[11rem] flex-col leading-tight lg:flex">
+        <span className="truncate text-sm font-semibold">{user.displayName}</span>
+        <span className="truncate text-xs text-ink-muted">{subtitle}</span>
+      </span>
+    </p>
+  )
+}
 
 /**
  * The avatar with the person's initials, name and role (Sandra's 21 Nov frames). It opens a small menu with
@@ -351,7 +378,7 @@ function AccountMenu() {
     }
   }, [open])
   if (!user) return null
-  const subtitle = user.roles.length ? roleLabel(user.roles.find((r) => r !== 'auditor') ?? user.roles[0]!) : ''
+  const subtitle = accountSubtitle(user.roles)
   return (
     <div ref={box} className="relative" data-print="hide">
       <button
@@ -382,8 +409,11 @@ function AccountMenu() {
   )
 }
 
-/** Ends the session and makes this device forget the person's drafts, pending keys and cached data. */
-function SignOutButton() {
+/**
+ * Ends the session and makes this device forget the person's drafts, pending keys and cached data. In the account
+ * menu by default; `className` restyles it for the foot of the staff sidebar.
+ */
+export function SignOutButton({ className, onSignOut }: { className?: string; onSignOut?: () => void }) {
   const signOut = useSignOut()
   const navigate = useNavigate()
   return (
@@ -392,13 +422,14 @@ function SignOutButton() {
       data-print="hide"
       disabled={signOut.isPending}
       onClick={() => {
+        onSignOut?.()
         // Leave the signed-in page first, so its guard does not bounce to sign-in when the session ends.
         navigate('/')
         signOut.mutate()
       }}
-      className="flex min-h-touch w-full items-center gap-2 rounded-md px-2 text-ink hover:bg-surface-sunken"
+      className={className ?? 'flex min-h-touch w-full items-center gap-2 rounded-md px-2 text-ink hover:bg-surface-sunken'}
     >
-      <LogOut aria-hidden className="h-5 w-5" />
+      <LogOut aria-hidden className="h-5 w-5 shrink-0" />
       Sign out
     </button>
   )

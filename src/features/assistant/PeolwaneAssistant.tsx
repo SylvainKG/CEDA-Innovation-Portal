@@ -19,8 +19,25 @@ import './assistant.css'
 const PROMPTS = ['How do I submit an idea?', 'Where can I find open challenges?', 'What happens after I apply?']
 const PANEL_EXIT_MS = 340
 
+/**
+ * Where the way in to Peolwane AI sits: `default` and `applicant` float a launcher at the bottom right (the applicant
+ * one clears the phone navigation bar); `sidebar` floats nothing, because the staff sidebar carries
+ * <PeolwaneSidebarLauncher />, and opens the panel beside the sidebar.
+ */
+export type AssistantPlacement = 'default' | 'applicant' | 'sidebar'
+
+/** Return focus to the visible staff launcher, or to the menu button when its mobile drawer has closed. */
+function sidebarAssistantFocusTarget(): HTMLElement | undefined {
+  const all = Array.from(document.querySelectorAll<HTMLElement>('[data-peolwane-launcher]'))
+  return (
+    all.find((el) => el.getClientRects().length > 0) ??
+    document.querySelector<HTMLElement>('button[aria-controls="staff-drawer"]') ??
+    all[0]
+  )
+}
+
 /** A tab-persistent portal guide with a compact launcher that gets out of the way while the page scrolls. */
-export function PeolwaneAssistant({ placement = 'default', config = assistantConfig }: { placement?: 'default' | 'applicant'; config?: AssistantConfig | null }) {
+export function PeolwaneAssistant({ placement = 'default', config = assistantConfig }: { placement?: AssistantPlacement; config?: AssistantConfig | null }) {
   const { open } = useAssistant()
   const [compact, setCompact] = useState(() => typeof window !== 'undefined' && window.scrollY > 12)
   const [panelMounted, setPanelMounted] = useState(open)
@@ -72,7 +89,7 @@ export function PeolwaneAssistant({ placement = 'default', config = assistantCon
 
   useEffect(() => {
     if (wasOpen.current && !open) {
-      if (!scrollClosedRef.current) launcherRef.current?.focus()
+      if (!scrollClosedRef.current) (launcherRef.current ?? sidebarAssistantFocusTarget())?.focus()
       scrollClosedRef.current = false
     }
     wasOpen.current = open
@@ -81,7 +98,7 @@ export function PeolwaneAssistant({ placement = 'default', config = assistantCon
   if (!config) return null
   return (
     <>
-      <button
+      {placement === 'sidebar' ? null : <button
         ref={launcherRef}
         type="button"
         data-print="hide"
@@ -97,9 +114,39 @@ export function PeolwaneAssistant({ placement = 'default', config = assistantCon
         <span className="peolwane-launcher__icon"><Sparkles aria-hidden className="h-5 w-5" /></span>
         <span className="peolwane-launcher__label">Peolwane <strong>AI</strong></span>
         <span className="peolwane-launcher__hint">Ask a question</span>
-      </button>
-      {panelMounted && <Panel config={config} closing={!open} />}
+      </button>}
+      {panelMounted && <Panel config={config} closing={!open} beside={placement === 'sidebar'} />}
     </>
+  )
+}
+
+/**
+ * The staff sidebar's way in to Peolwane AI (team, 23 Nov): an item under the navigation in the launcher's sunrise
+ * colours, instead of the floating button applicants and visitors see. `onOpen` lets the phone drawer close first.
+ */
+export function PeolwaneSidebarLauncher({ onOpen, config = assistantConfig }: { onOpen?: () => void; config?: AssistantConfig | null }) {
+  const { open } = useAssistant()
+  if (!config) return null
+  return (
+    <button
+      type="button"
+      data-peolwane-launcher
+      data-print="hide"
+      aria-haspopup="dialog"
+      aria-expanded={open}
+      aria-label={ASSISTANT_NAME}
+      onClick={() => {
+        onOpen?.()
+        setOpen(true)
+      }}
+      className="peolwane-sidebar-launcher"
+    >
+      <span className="peolwane-sidebar-launcher__icon"><Sparkles aria-hidden className="h-5 w-5" /></span>
+      <span className="flex min-w-0 flex-col text-left leading-tight">
+        <span className="peolwane-sidebar-launcher__label">Peolwane <strong>AI</strong></span>
+        <span className="peolwane-sidebar-launcher__hint">Ask a question</span>
+      </span>
+    </button>
   )
 }
 
@@ -111,7 +158,7 @@ const STATUS_TEXT: Record<AssistantStatus, string> = {
   speaking: 'Speaking the answer…',
 }
 
-function Panel({ config, closing }: { config: AssistantConfig; closing: boolean }) {
+function Panel({ config, closing, beside = false }: { config: AssistantConfig; closing: boolean; beside?: boolean }) {
   const { mode, status, messages, error, voiceUnavailable } = useAssistant()
   const titleId = useId()
   const logRef = useRef<HTMLOListElement>(null)
@@ -175,7 +222,7 @@ function Panel({ config, closing }: { config: AssistantConfig; closing: boolean 
       aria-hidden={closing || undefined}
       ref={panelRef}
       data-print="hide"
-      className={cn('peolwane-panel', closing && 'peolwane-panel--closing')}
+      className={cn('peolwane-panel', beside && 'peolwane-panel--beside-sidebar', closing && 'peolwane-panel--closing')}
     >
       <header className="peolwane-panel__header">
         <div className="peolwane-panel__brandmark" aria-hidden><Sparkles className="h-6 w-6" /></div>
