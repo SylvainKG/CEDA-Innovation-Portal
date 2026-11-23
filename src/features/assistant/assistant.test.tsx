@@ -1,10 +1,10 @@
-import { act, render, screen } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ask, AssistantError, pickRecordingType, readAssistantConfig, transcribe } from './leseding'
 import { PeolwaneAssistant } from './PeolwaneAssistant'
-import { getState, resetAssistant, sendQuestion, setOpen } from './store'
+import { getState, resetAssistant, sendQuestion, setMode, setOpen } from './store'
 
 const CFG = { base: 'https://engine.example', key: 'lsk_test_key' }
 
@@ -100,11 +100,35 @@ describe('client (Leseding AI Engine API)', () => {
   })
 })
 
+describe('conversation persistence', () => {
+  it('restores the completed conversation, mode and engine turn after a reload', async () => {
+    fetchMock.mockResolvedValue(streamed(['Open Challenges to read the brief.']))
+    setMode('text')
+    await sendQuestion(CFG, 'Where is the brief?', 'text')
+    window.dispatchEvent(new Event('pagehide'))
+
+    const saved = JSON.parse(window.sessionStorage.getItem('ceda.peolwane.session.v1')!)
+    expect(saved).toMatchObject({ mode: 'text', turnIndex: 1 })
+    expect(saved.messages.slice(-2)).toEqual([
+      { id: 1, role: 'user', content: 'Where is the brief?' },
+      { id: 2, role: 'assistant', content: 'Open Challenges to read the brief.' },
+    ])
+
+    vi.resetModules()
+    const reloadedStore = await import('./store')
+    expect(reloadedStore.getState().mode).toBe('text')
+    expect(reloadedStore.getState().messages.slice(-2).map(({ role, content }) => ({ role, content }))).toEqual([
+      { role: 'user', content: 'Where is the brief?' },
+      { role: 'assistant', content: 'Open Challenges to read the brief.' },
+    ])
+  })
+})
+
 describe('Peolwane AI panel', () => {
   it('opens from the bottom-right button in voice mode, and Esc closes it and returns focus', async () => {
     const user = renderAssistant()
     const launcher = screen.getByRole('button', { name: 'Peolwane AI' })
-    expect(launcher.className).toContain('right-4')
+    expect(launcher.className).toContain('peolwane-launcher')
     await user.click(launcher)
     const dialog = screen.getByRole('dialog', { name: 'Peolwane AI' })
     expect(dialog).toBeInTheDocument()
@@ -116,9 +140,21 @@ describe('Peolwane AI panel', () => {
     expect(screen.getByRole('button', { name: 'Peolwane AI' })).toHaveFocus()
   })
 
-  it('on applicant pages sits above the "Chat with CEDA" button', () => {
+  it('folds the launcher and closes the panel when the page scrolls', async () => {
+    const user = renderAssistant()
+    await user.click(screen.getByRole('button', { name: 'Peolwane AI' }))
+    Object.defineProperty(window, 'scrollY', { configurable: true, value: 40 })
+    act(() => window.dispatchEvent(new Event('scroll')))
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(document.querySelector('.peolwane-panel')).toHaveClass('peolwane-panel--closing')
+    expect(screen.getByRole('button', { name: 'Peolwane AI' }).className).toContain('peolwane-launcher--compact')
+    await waitFor(() => expect(document.querySelector('.peolwane-panel')).not.toBeInTheDocument())
+    Object.defineProperty(window, 'scrollY', { configurable: true, value: 0 })
+  })
+
+  it('uses the applicant placement while keeping one assistant launcher', () => {
     renderAssistant(CFG, 'applicant')
-    expect(screen.getByRole('button', { name: 'Peolwane AI' }).className).toContain('bottom-40')
+    expect(screen.getByRole('button', { name: 'Peolwane AI' }).className).toContain('peolwane-launcher--applicant')
   })
 
   it('switches to text, sends a typed question and shows the streamed answer (not spoken)', async () => {

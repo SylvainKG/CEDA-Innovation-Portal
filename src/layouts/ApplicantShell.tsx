@@ -1,15 +1,16 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { APPLICANT_NAV } from '@/navigation/nav-config'
 import { cn } from '@/lib/cn'
-import { Brand, ChatLauncher, Footer, MockRoleSwitcher, SkipLink, TopBarEnd } from './ShellParts'
+import { Brand, Footer, MockRoleSwitcher, SkipLink, TopBarEnd } from './ShellParts'
 import { PeolwaneAssistant } from '@/features/assistant/PeolwaneAssistant'
 import { PageTransition } from './PageTransition'
 
 /**
  * Applicant shell (spec §4), laid out to Sandra's 21 Nov frames, tidied after the freeze (ABM, 22 Nov): the logo
  * (back to My ideas), text links with the public site's orange underline on the current one, the bell and the
- * account menu, in a bar that stays at the top as the page scrolls; the floating "Chat with CEDA" button; bottom
- * navigation on phones. Challenges, challenge briefs and help open inside this shell too (see SiteShell), so an
+ * account menu, in a bar that stays at the top as the page scrolls; the Peolwane AI launcher; bottom
+ * navigation on phones. Human support remains linked from the applicant help panel. Challenges, challenge briefs
+ * and help open inside this shell too (see SiteShell), so an
  * applicant never drops back to the public navigation. The page fills at least the window, so the slim workspace
  * footer starts below the fold.
  */
@@ -43,7 +44,6 @@ export function ApplicantShell() {
         <MockRoleSwitcher />
       </div>
       <Footer variant="app" chatSpace />
-      <ChatLauncher />
       <PeolwaneAssistant placement="applicant" />
       <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-line bg-surface-card md:hidden">
         {APPLICANT_NAV.map((item) => (
