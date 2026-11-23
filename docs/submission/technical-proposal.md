@@ -1,7 +1,7 @@
 # Peolwane · CEDA Innovation Portal: technical proposal
 
 **Team:** Sandra (UI/UX, until 21 Nov), Obvious (frontend), Stacey (backend and database), Sylvain (integration, testing and documentation), ABM (frontend; acting UI/UX from 21 Nov) · **Version:** draft 1, 20 Nov 2026 · **Answers:** backlog DOC-01
-**Status:** Draft for team review. It becomes final at the release (22 Nov 2026), when every **[confirm at release]** mark is resolved against the judging build. The proposal makes no claim that `docs/testing/claim-register.md` does not show as Passed.
+**Status:** Final, 23 Nov 2026, for release `v1.0.1-judging` on https://main.d270qrk6a7zs47.amplifyapp.com. The proposal makes no claim that `docs/testing/claim-register.md` does not show as Passed.
 
 > **Peolwane is the portal's name; it is built for CEDA's Innovation Fund.** On screen it appears as "Peolwane · CEDA Innovation Portal".
 >
@@ -41,7 +41,7 @@ The full dated log is `docs/submission/research-log.md`. The main findings and w
 
 ## 4. Design
 
-**Users.** Nine roles, each with navigation that leads straight to its own work: applicant, screening officer, reviewer, adjudicator, administrator, support consultant, support lead, external committee member (reference and stage only, D-08) and auditor.
+**Users.** Each role has navigation that leads straight to its own work: applicant, screening officer, reviewer, administrator and auditor. The administrator also records and publishes decisions, records awards, handles support chat and has programme oversight; earlier builds split these across adjudicator, support and committee roles (migration 017, #162).
 
 **Experience.**
 
@@ -51,7 +51,7 @@ The full dated log is `docs/submission/research-log.md`. The main findings and w
 - **Accessibility:** one main heading per page, a skip link, visible focus, labels on every field, 44 × 44 px touch targets, and contrast of at least 4.5:1. Each page is checked at 360 px and 1280 px.
 - **Brand:** CEDA's colours, fonts and logo from the team's Make file (D-04), with the orange used where it meets contrast rules.
 
-**Process.** Where a design frame existed, screens follow it; elsewhere they were built from the written specification and reviewed by the designer on staging (BCR-003). By 20 November every planned screen was built: the main journey, notifications, reports, the audit log and live chat, plus the staff home page, the administration screens (users and roles, challenges, forms and rubrics, content, chat hours), staff two-step enrolment, the committee view and side-by-side version compare. Screens without a design frame are marked Provisional until the designer has reviewed them. Design review status: **[confirm at release]**.
+**Process.** Where a design frame existed, screens follow it; elsewhere they were built from the written specification and reviewed by the designer on staging (BCR-003). By 20 November every planned screen was built: the main journey, notifications, reports, the audit log and live chat, plus the staff home page, the administration screens (users and roles, challenges, forms and rubrics, content, chat hours), staff two-step enrolment and side-by-side version compare. Screens without a design frame are marked Provisional until the designer has reviewed them. Design review status: the screens were laid out to the designer's 21 Nov frames (#118, #119); remaining differences are logged in `docs/design/figma-handoff/handoff-notes.md`.
 
 <p><img src="img/proposal-form.png" alt="Proposal form with sections, autosave and progress" width="49%"> <img src="img/applicant-case.png" alt="Applicant case view with the stage timeline" width="49%"></p>
 <p><img src="img/reviewer-scorecard.png" alt="Reviewer scorecard with anchored 1-5 scores and hidden peer scores" width="49%"> <img src="img/reports.png" alt="Reports dashboard with CSV export" width="49%"></p>
@@ -98,7 +98,7 @@ The full dated log is `docs/submission/research-log.md`. The main findings and w
 | Brief function | How we meet it | Evidence (claim register) |
 |---|---|---|
 | **Secure submission** | Private file storage; paths never contain the user's file name; type and size checked by the server; 60-second download links after an access check. Submit is one transaction (case, locked V1, reference `CEDA-2026-NNNN`, audit, notification) and is idempotent: retrying can never create a second case | C-02 Passed on hosted (link refused after 62 s); C-11 Passed (same key → same receipt; two simultaneous submits → one case) |
-| **Team evaluation and adjudication** | Screening; at least two reviewers; a declaration before the proposal opens (a conflict removes the assignment); 1–5 anchored scores with a required reason; peer scores hidden until a reviewer submits; a panel with individual and weighted scores and spread; a decision recorded as a draft, then published; an award only after approval | C-03, C-10, C-12, C-05 Passed (database); C-15 partly passed (API level on the hosted project; the screens pass the same journey in a browser against the demo build; the hosted browser run is **[confirm at release]**) |
+| **Team evaluation and adjudication** | Screening; at least two reviewers; a declaration before the proposal opens (a conflict removes the assignment); 1–5 anchored scores with a required reason; peer scores hidden until a reviewer submits; a panel with individual and weighted scores and spread; a decision recorded as a draft, then published; an award only after approval | C-03, C-10, C-12, C-05 Passed (database); C-15 partly passed (API level on the hosted project; the screens pass the same journey in a browser against the demo build; and the full journey passed in a browser against the hosted project, run 44909107002) |
 | **Stage tracking** | Five public stages on a timeline; "Action required" with a deadline; every change in an immutable case history | C-13, C-14 |
 | **Role-based access** | Nine roles as data; RLS on every table, deny by default; no browser writes; nobody can grant themselves a role (refused and audited) | C-01, C-07, C-08 Passed; 11 negative tests (N1–N11) |
 | **Real-time updates** | Supabase Realtime on notifications and case history, filtered by the same access rules | C-16 Passed on hosted: another applicant received 0 events |
@@ -106,7 +106,7 @@ The full dated log is `docs/submission/research-log.md`. The main findings and w
 | **Reporting dashboards** | Participation, outcomes and time in stage, from the case history, with CSV export | Built and tested, screens included; the CSV export guards against spreadsheet formulas in applicant text |
 | **Scalability and flexibility** | New roles, permissions and rubric criteria are data, not code; challenges carry their own form and rubric versions; stateless frontend on a CDN; key lookups indexed, with the remaining hot foreign-key indexes listed for real volumes | Scaling note (section 10) |
 | **Data integrity** | Versions, audit entries and history are append-only: triggers refuse change or deletion by any portal user, including administrators. Every transition is checked against the case's current state | C-06 Passed (database layer) |
-| **Ease of use for every user type** | Role-specific navigation, plain language, autosave and device copy, honest "not confirmed" states, 360 px layouts | Browser checks at 360 and 1280 px; **[confirm at release]** keyboard and timed-task log |
+| **Ease of use for every user type** | Role-specific navigation, plain language, autosave and device copy, honest "not confirmed" states, 360 px layouts | Browser checks at 360 and 1280 px; keyboard and timed-task log in `artifacts/phase-07/browser-keyboard-log.md` |
 
 ## 8. Innovation: the Constructive Feedback Roadmap
 
@@ -117,7 +117,7 @@ A typical challenge portal ends a weak application with a decision and a paragra
 3. Each assigned reviewer **verifies** each task on the V2 scorecard (Verified or Not verified, with a note). Version 1's scores stay with version 1, so progress is visible and fair.
 4. Reports can then show something most portals can't: how many ideas improved after feedback and reached a later stage.
 
-It is backed by a side-by-side comparison of V1 and V2 (INN-01) and a rule-based completeness helper on the form (INN-03). **No proposal or case data goes to any external AI service (D-25, narrowed by BCR-004).** The one AI feature is **Peolwane AI**, an optional voice-first site-help assistant (Leseding AI Engine, Google Gemini) that receives only what a person types or says in its panel, never page, form or account data; it is shown only when its key is configured. Whether it is live on the judging build is **[confirm at release]**. All four steps are built in the screens, and the database enforces them (C-13).
+It is backed by a side-by-side comparison of V1 and V2 (INN-01) and a rule-based completeness helper on the form (INN-03). **No proposal or case data goes to any external AI service (D-25, narrowed by BCR-004).** The one AI feature is **Peolwane AI**, an optional voice-first site-help assistant (Leseding AI Engine, Google Gemini) that receives only what a person types or says in its panel, never page, form or account data; it is shown only when its key is configured. It is live on the judging build (checked 23 Nov: it answers questions and does not ask for personal details). All four steps are built in the screens, and the database enforces them (C-13).
 
 ## 9. Security and privacy
 
@@ -132,7 +132,7 @@ It is backed by a side-by-side comparison of V1 and V2 (INN-01) and a rule-based
 
 **Testing.**
 
-- **502 pgTAP assertions** in 13 suites, run in CI on the Supabase local stack on every database change. The latest run against the hosted project passed 493 of 493 (21 Nov, before the report reconciliation suite was added); the release run is **[confirm at release]**. **Mutation checks** confirm the tests fail when a rule is broken.
+- **502 pgTAP assertions** in 13 suites, run in CI on the Supabase local stack on every database change. The latest run against the hosted project passed 493 of 493 (21 Nov, before the report reconciliation suite was added); the final pre-freeze run (22 Nov, `1b89b25`) ran 513 assertions; the 5 that failed came from data added through the live site after the reset, and the same suites pass 513/513 on a clean database. **Mutation checks** confirm the tests fail when a rule is broken.
 - A **two-connection concurrency test** for double submits.
 - **Vitest** for the frontend logic.
 - **Playwright** browser checks at 360 and 1280 px, and a security-header check against the deployed site.
@@ -143,9 +143,9 @@ Every claim is in `docs/testing/claim-register.md`, with its evidence and what i
 **Hosting and availability (24/7).**
 
 - The frontend is on AWS Amplify (CDN). The backend is on Supabase EU Central.
-- A scheduled keep-alive workflow and an uptime monitor alert a named person (OPS-03). **[confirm at release]** that both are running.
+- A scheduled keep-alive workflow (every second day) keeps the Free-plan project from pausing (OPS-03); the named contact checks the judging site daily during judging.
 - After the deadline nothing is deployed without organiser approval, and any approved change is logged.
-- **[confirm at release]** whether judging runs on the Supabase Free or Pro plan.
+- Judging runs on the Supabase Free plan.
 
 **Backup and recovery.** A restore drill took a backup of the hosted data, rebuilt a database from the migrations, loaded the data and compared every table row by row. Recovery time was 5.2 s for the demo data (C-20; the target was a PGlite stand-in). File storage is outside that drill and is listed as a gap.
 
@@ -178,5 +178,5 @@ Every claim is in `docs/testing/claim-register.md`, with its evidence and what i
 | Restore into a full Supabase project, and file storage backup | **Not run** |
 | Settings screens for the review quorum and the demo two-step exemption | **Not built:** stored settings changed by the backend team |
 | Hosted browser journey | **Passed** on staging: full journey [run 44909107002](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44909107002); read-only on the deployed site [run 44953549649](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44953549649) |
-| Peolwane AI live on the judging build (Leseding key and allowlist) | **[confirm at release]** |
-| Design review, plan and contact details | **[confirm at release]** |
+| Peolwane AI live on the judging build (Leseding key and allowlist) | **Live**, checked on the judging site on 23 Nov |
+| Design review, plan and contact details | Frames from 21 Nov; Supabase Free plan; contact: Sylvain |
