@@ -458,6 +458,17 @@
       transform: none;
     }
   }
+  /* The home hero's sunrise fades into the panel's brown: at its foot below 1024 px, at its left edge from there. */
+  .dawn-photo {
+    -webkit-mask-image: linear-gradient(180deg, #000 68%, transparent);
+    mask-image: linear-gradient(180deg, #000 68%, transparent);
+  }
+  @media (min-width: 1024px) {
+    .dawn-photo {
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 42%);
+      mask-image: linear-gradient(90deg, transparent, #000 42%);
+    }
+  }
   .flight-bob {
     animation: flight-bob 4.5s ease-in-out infinite;
   }

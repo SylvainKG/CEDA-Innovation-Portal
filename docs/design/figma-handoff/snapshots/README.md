@@ -2,7 +2,7 @@
 
 Approved and provisional screen exports. They are the visual reference developers build from when Figma is unavailable (blueprint §8.6, §9).
 
-- **Name:** `<template>-<screen>__<variant-or-role>__<mobile|desktop>__<YYYY-MM-DD>.png`. Example: `T04-proposal-form__applicant-review__mobile__2026-11-15.png`.
+- **Name:** `<template>-<screen>__<variant-or-role>__<mobile|desktop>__<YYYY-MM-DD>.(png|webp)`. Example: `T04-proposal-form__applicant-review__mobile__2026-11-15.png`.
 - **Format:** PNG or WebP, exported from Figma at 1x (2x only if text is unreadable), **≤ 300 KB each**. The folder total is **≤ 25 MB** (proposed).
 - **Content:** fictional data only. No real names, emails or proposals; no credentials or personal account details visible.
 - **Versions:**
@@ -76,9 +76,13 @@ Approved and provisional screen exports. They are the visual reference developer
 | 22 Nov 2026 | `T06-staff-home__admin__desktop__2026-11-22.png` | Staff home: administrator | Build capture, polished set | Next to its 21 Nov frame |
 | 22 Nov 2026 | `T07-all-cases__admin__desktop__2026-11-22.png` | All cases, admin | Build capture, polished set | Next to its 21 Nov frame |
 | 22 Nov 2026 | `T12-users-roles__admin__desktop__2026-11-22.png` | Users and roles | Build capture, polished set | Next to its 21 Nov frame |
+| 23 Nov 2026 | `T01-home__public__desktop__2026-11-23.webp` | Home, integrated dawn hero | Build capture: `/`, signed out | Mock mode, demo data, 1280 × 900; provisional pending Sandra's review |
+| 23 Nov 2026 | `T01-home__public__mobile__2026-11-23.webp` | Home, integrated dawn hero | Build capture: `/`, signed out | Mock mode, demo data, 360 × 1400; provisional pending Sandra's review |
 
 All seven were rendered from the PDFs at 100 dpi, cropped to the page content and saved as 128-colour PNGs (19–49 KB each). Added by Sylvain on Sandra's behalf (assisted). On 21 Nov ABM re-exported the two frames that held personal data, with demo data, and exported five more (staff screens and the V2 receipt); the team lead approved all of them, for Sandra to confirm.
 
 **Final set, 22 Nov (P7-04, ABM for Sandra).** The 16 frames in `Figma pdf/` that had no snapshot were rendered the same way (100 dpi, cropped below the page content, 128 colours; 21–69 KB each). Their date is the frame's, 21 Nov. The 19 **build captures** cover approved screens that have no frame: the app on `main` `cbb1df3` in mock mode, 1280 px wide, full page, the development role switcher hidden, 128 colours (34–118 KB each). They carry the capture date, 22 Nov. All 35 show demo data only. The folder holds 47 snapshots, 2.1 MB. Each screen's current snapshot and result: [`design-reconciliation.md`](../design-reconciliation.md).
 
-**Polished set, 22 Nov (ABM, after Sylvain's visual-polish request).** The screens on the judges' tour were captured again from the polished build: `main` `87f2097` with #142 (admin navigation), #144 (public header) and #145 (scorecard colours) merged in a local preview, in mock mode at 1280 px, demo data only. The 15 files above sit next to their 21 Nov frames, so each frame and its build can be compared side by side. Ten earlier build captures (T01 home, T02 forgot password, T03 brief and FAQs, T08 admin staff case, T12 challenges, roles, content and chat settings, T14 audit log) were taken again the same way, because the public header and the admin navigation changed. The folder now holds 62 snapshots, 3.0 MB, none over 200 KB. If #142, #144 or #145 change before they merge, the affected files are captured again.
+**Polished set, 22 Nov (ABM, after Sylvain's visual-polish request).** The screens on the judges' tour were captured again from the polished build: `main` `87f2097` with #142 (admin navigation), #144 (public header) and #145 (scorecard colours) merged in a local preview, in mock mode at 1280 px, demo data only. The 15 files above sit next to their 21 Nov frames, so each frame and its build can be compared side by side. Ten earlier build captures (T01 home, T02 forgot password, T03 brief and FAQs, T08 admin staff case, T12 challenges, roles, content and chat settings, T14 audit log) were taken again the same way, because the public header and the admin navigation changed. The folder now holds 64 snapshots, about 3.2 MB, none over 200 KB. If #142, #144 or #145 change before they merge, the affected files are captured again.
+
+**Home hero, 23 Nov (ABM).** Captured the team's new integrated dawn composition in mock mode at desktop 1280 × 900 and mobile 360 × 1400. This treatment has no dedicated Figma frame and is provisional pending Sandra's review.

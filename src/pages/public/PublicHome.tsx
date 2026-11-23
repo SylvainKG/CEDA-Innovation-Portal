@@ -5,7 +5,6 @@ import { brand } from '@/brand'
 import { DawnFlight } from '@/brand/Horizon'
 import { PHOTOS, type Photo } from '@/brand/photos'
 import { ButtonLink } from '@/components'
-import { buttonClassName } from '@/components/button-styles'
 import { useChallenges } from '@/features/submission/queries'
 import { cn } from '@/lib/cn'
 import { formatDateTimeCAT, relativeDays } from '@/lib/format'
@@ -19,6 +18,13 @@ const PROMISES: { icon: LucideIcon; title: string; text: string }[] = [
   { icon: Route, title: 'Follow every stage', text: 'See where your idea is, from submission to award, and answer CEDA’s questions in the portal.' },
   { icon: Lock, title: 'Your idea stays private', text: 'Only you and the CEDA staff assigned to your case can see it.' },
   { icon: FileClock, title: 'Every step recorded', text: 'Each action on a case is written to an audit log that can’t be edited.' },
+]
+
+/** The hero's three proofs, each true of the system as built (see PROMISES). */
+const PROOFS: { icon: LucideIcon; text: string }[] = [
+  { icon: ShieldCheck, text: 'Two independent reviewers' },
+  { icon: PenLine, text: 'A reason for every score' },
+  { icon: Route, text: 'Follow every stage' },
 ]
 
 /** The five stages, as on the How it works page, in a line across the dark band. */
@@ -67,39 +73,78 @@ export function PublicHome() {
   )
 }
 
+/**
+ * The hero as one composition (ABM, 23 Nov; the team found the earlier split cold, the photo a separate card). One
+ * panel in CEDA's night brown, like the About and How it works heroes: the words on the left; the Okavango sunrise
+ * filling the right and fading into the brown, so there is no edge between them; the swallow's dotted flight rising
+ * out of the dark into the sun; and the challenge open now as a glass card on the photo, inside the same panel. When
+ * the swallow lands, a line of light runs along the card and its "Open now" dot pulses. On phones the photo sits at
+ * the top of the panel (below 1024 px) and fades into the words below it. "new dawn" is in the sunrise (gold into orange, above 5:1 on
+ * the brown).
+ */
 function Hero() {
+  const [landed, setLanded] = useState(false)
   return (
-    <div className="relative overflow-hidden bg-surface-card">
-      {/* A soft glow of the sun behind the hero (decorative). */}
-      <div aria-hidden className="pointer-events-none absolute -right-40 -top-40 h-[34rem] w-[34rem] rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--ceda-gold)_22%,transparent),transparent_65%)]" />
-      <section aria-labelledby="intro" className="relative mx-auto grid w-full max-w-content grid-cols-1 items-center gap-12 px-4 pb-16 pt-10 md:grid-cols-2 md:pb-20 md:pt-16">
-        <div className="flex flex-col gap-5">
-          <Eyebrow>A new season for innovation</Eyebrow>
-          <h1 id="intro" className="text-[2.5rem] font-normal leading-tight md:text-[3.25rem]">
-            A new dawn for innovation in Botswana
+    <div className="relative bg-[linear-gradient(180deg,var(--surface-card),var(--ceda-surface-warm))] px-4 pb-12 pt-6 md:pb-16 md:pt-10">
+      {/* The sun's glow behind the panel (decorative). */}
+      <div aria-hidden className="pointer-events-none absolute -right-40 -top-40 h-[36rem] w-[36rem] rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--ceda-gold)_30%,transparent),transparent_65%)]" />
+      <section
+        aria-labelledby="intro"
+        className={cn(
+          'dawn-frame relative isolate mx-auto grid w-full max-w-content overflow-hidden rounded-[2rem] bg-[var(--ceda-night)] text-white shadow-2 lg:min-h-[34rem] lg:grid-cols-2 xl:min-h-[36rem]',
+          landed && 'is-landed',
+        )}
+      >
+        <div className="relative z-10 flex flex-col gap-5 px-6 pb-8 md:px-10 lg:justify-center lg:py-12 lg:pl-10 lg:pr-2 xl:py-16 xl:pl-12 xl:pr-4">
+          <Eyebrow onDark>A new season for innovation</Eyebrow>
+          <h1 id="intro" className="text-[2.5rem] font-semibold leading-[1.1] tracking-tight md:text-[3.5rem] lg:text-[2.75rem] xl:text-[3.5rem]">
+            A{' '}
+            <span className="bg-[linear-gradient(100deg,var(--ceda-gold),var(--ceda-orange))] bg-clip-text text-transparent forced-colors:text-[CanvasText]">
+              new dawn
+            </span>{' '}
+            for innovation in Botswana
           </h1>
-          <p className="max-w-form text-[1.0625rem] text-ink-muted md:text-[1.125rem]">
+          <p className="max-w-form text-[1.0625rem] leading-relaxed text-white/85 md:text-[1.1875rem] lg:text-[1.0625rem] xl:text-[1.1875rem]">
             Like the swallow that brings the rains, {brand.header.title} opens a new season for ideas. Answer a CEDA challenge, get constructive feedback, and
             watch your idea take flight.
           </p>
           <div className="flex flex-wrap gap-3">
-            <ButtonLink to="/challenges" className="!rounded-full">
+            <Link
+              to="/challenges"
+              className="inline-flex min-h-touch items-center gap-2 rounded-full bg-[var(--ceda-gold)] px-5 font-semibold text-ink no-underline hover:bg-[var(--ceda-amber)]"
+            >
               Browse challenges <ArrowRight aria-hidden className="h-4 w-4" />
-            </ButtonLink>
-            <Link to="/how-it-works" className={buttonClassName('secondary', 'md', '!rounded-full')}>
+            </Link>
+            <Link
+              to="/how-it-works"
+              className="inline-flex min-h-touch items-center gap-2 rounded-full border border-white/40 px-5 font-semibold text-white no-underline hover:bg-white/10"
+            >
               How it works
             </Link>
           </div>
-          <ul className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-ink-muted">
-            {['Two independent reviewers', 'A reason for every score', 'Follow every stage'].map((t) => (
-              <li key={t} className="flex items-center gap-2">
-                <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-[var(--ceda-orange)]" />
-                {t}
+          <ul className="flex flex-col gap-2.5">
+            {PROOFS.map(({ icon: Icon, text }) => (
+              <li key={text} className="flex items-center gap-3 font-semibold text-white/90">
+                <span aria-hidden className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/10 text-[var(--ceda-gold)] ring-1 ring-white/20">
+                  <Icon className="h-4 w-4" />
+                </span>
+                {text}
               </li>
             ))}
           </ul>
         </div>
-        <DawnFrame />
+        {/* The sunrise and the swallow's flight. From 1024 px it fills the right of the panel and fades into the brown at
+            its left edge; below that it heads the panel and fades at its foot. DawnFlight crops from the photo's left, so
+            the tree, the sun and the swallow's landing stay to the right of the words at every width. */}
+        <figure className="dawn-photo relative order-first aspect-[4/3] md:aspect-[16/9] lg:absolute lg:inset-y-0 lg:right-0 lg:order-none lg:aspect-auto lg:w-[74%]">
+          <DawnFlight photo={PHOTOS.sunrise} onArrive={() => setLanded(true)} className="absolute inset-0 block h-full w-full" />
+          <figcaption className="absolute left-4 top-4 rounded-full bg-black/45 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm lg:left-auto lg:right-4">
+            {PHOTOS.sunrise.caption}
+          </figcaption>
+        </figure>
+        <div className="relative z-10 px-4 pb-4 md:px-6 md:pb-6 lg:col-start-2 lg:self-end lg:pl-0">
+          <ChallengeStrip />
+        </div>
       </section>
     </div>
   )
@@ -221,21 +266,6 @@ function CedaVoice() {
  * base like the ground under the sky, never over the photo. When the swallow lands, a line of light runs along the
  * top of the strip and the "Open now" dot starts to pulse: the flight ends at the challenge.
  */
-function DawnFrame() {
-  const [landed, setLanded] = useState(false)
-  return (
-    <figure className={cn('dawn-frame relative mx-auto w-full max-w-xl overflow-hidden rounded-[2rem] bg-[var(--ceda-night)] shadow-2', landed && 'is-landed')}>
-      <div className="relative aspect-[4/3] md:aspect-[600/430]">
-        <DawnFlight photo={PHOTOS.sunrise} onArrive={() => setLanded(true)} className="absolute inset-0 block h-full w-full" />
-        <figcaption className="absolute left-4 top-4 rounded-full bg-black/45 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm">
-          {PHOTOS.sunrise.caption}
-        </figcaption>
-      </div>
-      <ChallengeStrip />
-    </figure>
-  )
-}
-
 /** The challenge open now (the one closing soonest), live from the challenge list; a way to all challenges if none is open. */
 function ChallengeStrip() {
   const challenges = useChallenges()
@@ -246,7 +276,7 @@ function ChallengeStrip() {
     })
     .sort((a, b) => a.closes_at.localeCompare(b.closes_at))[0]
   return (
-    <div className="dawn-strip relative flex flex-col gap-3 px-5 py-4 text-white sm:flex-row sm:items-center sm:justify-between sm:gap-5 sm:px-6">
+    <div className="dawn-strip relative flex flex-col gap-3 overflow-hidden rounded-[1.25rem] border border-white/15 bg-[color-mix(in_srgb,var(--ceda-night)_74%,transparent)] px-5 py-4 text-white shadow-2 backdrop-blur-md md:flex-row md:items-center md:justify-between md:gap-5 md:px-6 lg:ml-auto lg:max-w-lg">
       {open ? (
         <>
           <div className="flex min-w-0 flex-col gap-0.5">
@@ -261,7 +291,7 @@ function ChallengeStrip() {
           </div>
           <Link
             to={`/challenges/${open.slug}`}
-            className="inline-flex min-h-touch shrink-0 items-center gap-2 self-start rounded-full bg-[var(--ceda-gold)] px-5 font-semibold text-ink no-underline hover:bg-[var(--ceda-amber)] sm:self-center"
+            className="inline-flex min-h-touch shrink-0 items-center gap-2 self-start rounded-full bg-[var(--ceda-gold)] px-5 font-semibold text-ink no-underline hover:bg-[var(--ceda-amber)] md:self-center"
           >
             Read the brief<span className="sr-only">: {open.title}</span> <ArrowRight aria-hidden className="h-4 w-4" />
           </Link>
