@@ -18,7 +18,14 @@ export function readSupabaseConfig(env: Record<string, unknown>): SupabaseConfig
   if (!url || !anonKey) {
     throw new Error('VITE_API_MODE=supabase needs VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to be set.')
   }
-  if (!/^https:\/\/|^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?/.test(url)) {
+  let parsedUrl: URL
+  try {
+    parsedUrl = new URL(url)
+  } catch {
+    throw new Error('VITE_SUPABASE_URL must be an https URL (http is allowed for a local stack only).')
+  }
+  const localHttp = parsedUrl.protocol === 'http:' && ['localhost', '127.0.0.1'].includes(parsedUrl.hostname)
+  if ((parsedUrl.protocol !== 'https:' && !localHttp) || parsedUrl.username || parsedUrl.password) {
     throw new Error('VITE_SUPABASE_URL must be an https URL (http is allowed for a local stack only).')
   }
   return { url, anonKey }

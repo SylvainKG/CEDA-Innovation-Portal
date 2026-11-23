@@ -95,6 +95,10 @@ describe('Supabase configuration', () => {
   it('needs both values and an https URL (http only for a local stack)', () => {
     expect(() => readSupabaseConfig({})).toThrow(/VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY/)
     expect(() => readSupabaseConfig({ VITE_SUPABASE_URL: 'http://evil.example', VITE_SUPABASE_ANON_KEY: 'k' })).toThrow(/https/)
+    expect(() => readSupabaseConfig({ VITE_SUPABASE_URL: 'http://localhost.attacker.example', VITE_SUPABASE_ANON_KEY: 'k' })).toThrow(/https/)
+    expect(() => readSupabaseConfig({ VITE_SUPABASE_URL: 'http://127.0.0.1.attacker.example', VITE_SUPABASE_ANON_KEY: 'k' })).toThrow(/https/)
+    expect(() => readSupabaseConfig({ VITE_SUPABASE_URL: 'https://user:pass@project.supabase.co', VITE_SUPABASE_ANON_KEY: 'k' })).toThrow(/https/)
+    expect(readSupabaseConfig({ VITE_SUPABASE_URL: 'http://localhost:54321', VITE_SUPABASE_ANON_KEY: 'k' }).url).toBe('http://localhost:54321')
     expect(readSupabaseConfig({ VITE_SUPABASE_URL: 'http://127.0.0.1:54321', VITE_SUPABASE_ANON_KEY: 'k' }).url).toBe('http://127.0.0.1:54321')
   })
 })
