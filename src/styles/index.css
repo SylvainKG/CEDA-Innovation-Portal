@@ -657,3 +657,49 @@
     transition: none !important;
   }
 }
+
+
+/*
+ * Accessibility settings (footer, src/features/preferences): classes on <html>, applied before the first paint.
+ * Text size uses zoom on the body, since the type scale is in pixels (tailwind.config.ts); layout reflows to fit.
+ */
+html.a11y-text-large body {
+  zoom: 1.125;
+}
+html.a11y-text-larger body {
+  zoom: 1.25;
+}
+/* High contrast: darker text, borders and orange text; a pure white page; a thicker focus ring. */
+html.a11y-contrast {
+  --text-primary: #000000;
+  --text-secondary: #333333;
+  --border-default: #5c5752;
+  --border-input: #333333;
+  --brand-primary-text: #8a4207;
+  --surface-page: #ffffff;
+  --ceda-footer-text: #ffffff;
+}
+html.a11y-contrast :focus-visible {
+  outline-width: 3px;
+  outline-offset: 3px;
+}
+/* Reduce motion: animations finish at once (end events still fire, so dialogs still close) and nothing glides. */
+html.a11y-reduce-motion *,
+html.a11y-reduce-motion *::before,
+html.a11y-reduce-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  animation-delay: 0ms !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+html.a11y-reduce-motion::view-transition-group(*),
+html.a11y-reduce-motion::view-transition-old(*),
+html.a11y-reduce-motion::view-transition-new(*) {
+  animation: none !important;
+}
+/* Underline all links, including the ones styled without an underline. */
+html.a11y-underline a {
+  text-decoration-line: underline !important;
+  text-underline-offset: 2px;
+}

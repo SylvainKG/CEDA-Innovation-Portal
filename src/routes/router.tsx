@@ -9,7 +9,7 @@ import { STAFF_ROLES, type Role } from '@/lib/api/types'
 import { SignInPage } from '@/pages/auth/SignInPage'
 import { MfaPage } from '@/pages/auth/MfaPage'
 import { RegisterPage } from '@/pages/auth/RegisterPage'
-import { ContactsPage, FaqPage, PrivacyPage, SupportPage } from '@/pages/help/HelpPages'
+import { ContactsPage, FaqPage, PrivacyPage, SupportPage, TermsPage } from '@/pages/help/HelpPages'
 import { DecisionQueuePage } from '@/pages/review/DecisionQueuePage'
 import { MyReviewsPage } from '@/pages/review/MyReviewsPage'
 import { PanelPage } from '@/pages/review/PanelPage'
@@ -82,6 +82,7 @@ export const routes: RouteObject[] = [
       { path: '/help/contacts', element: <ContactsPage /> },
       { path: '/help/support', element: <SupportPage /> },
       { path: '/privacy', element: <PrivacyPage /> },
+      { path: '/terms', element: <TermsPage /> },
     ],
   },
   {
