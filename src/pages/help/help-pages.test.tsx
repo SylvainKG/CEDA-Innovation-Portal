@@ -88,6 +88,7 @@ describe('T03 contacts, support and privacy', () => {
     renderAt('/privacy')
     expect(await screen.findByRole('heading', { level: 1, name: 'Privacy notice' })).toBeInTheDocument()
     expect(screen.getByText('Version sample-2026-11-v1')).toBeInTheDocument()
-    expect(screen.getByText(/Data Protection Act, 2024/)).toBeInTheDocument()
+    // The notice and the rights section below it both name the Act.
+    expect(screen.getAllByText(/Data Protection Act, 2024/).length).toBeGreaterThan(0)
   })
 })

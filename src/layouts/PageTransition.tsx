@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, type ReactNode } from 'react'
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom'
+import { prefersReducedMotion } from '@/features/preferences/settings'
 
 const ENTER: Keyframe[] = [
   { opacity: 0, transform: 'translateY(12px) scale(.99)', filter: 'blur(2px)' },
@@ -43,6 +44,12 @@ export function PageTransition({ children }: { children: ReactNode }) {
 
       event.preventDefault()
       const to = `${destination.pathname}${destination.search}${destination.hash}`
+      // Reduced motion (system or Accessibility settings): navigate straight away, with no exit or view transition.
+      if (prefersReducedMotion()) {
+        exitAnimation.current?.cancel()
+        navigate(to)
+        return
+      }
       if (typeof document.startViewTransition === 'function') {
         nativeTransitionPending.current = true
         const result = navigate(to, { viewTransition: true })
@@ -89,8 +96,7 @@ export function PageTransition({ children }: { children: ReactNode }) {
 
   useLayoutEffect(() => {
     if (navigationRef.current === 'REPLACE') return
-    const reduce = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (!nativeTransitionPending.current && !reduce) {
+    if (!nativeTransitionPending.current && !prefersReducedMotion()) {
       page.current?.animate?.(ENTER, { duration: ENTER_MS, easing: 'cubic-bezier(.16, 1, .3, 1)' })
     }
     nativeTransitionPending.current = false
@@ -102,8 +108,7 @@ export function PageTransition({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!hash) return
     const target = document.getElementById(decodeURIComponent(hash.slice(1)))
-    const reduce = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    target?.scrollIntoView?.({ behavior: reduce ? 'auto' : 'smooth', block: 'start' })
+    target?.scrollIntoView?.({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' })
   }, [pathname, hash])
 
   return <div ref={page} className="page-transition">{children}</div>

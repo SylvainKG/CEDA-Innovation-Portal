@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowUp, Bell, ExternalLink, LogOut, Mail, MapPin, Phone } from 'lucide-react'
+import { ArrowUp, ExternalLink, LogOut, Mail, MapPin, Phone } from 'lucide-react'
+import { NotificationsPanel } from './NotificationsPanel'
 import { Link, useNavigate } from 'react-router-dom'
 import { BRANDS, brand } from '@/brand'
 import { HorizonEdge } from '@/brand/Horizon'
 import { CEDA, telHref } from '@/brand/ceda-info'
+import { SocialIcon } from '@/brand/SocialIcon'
 import { DemoBadge } from '@/components/DemoBadge'
-import { useNotifications } from '@/features/oversight/queries'
+import { AccessibilitySettingsButton, CookiePreferencesButton } from '@/features/preferences/PreferenceDialogs'
+import { prefersReducedMotion } from '@/features/preferences/settings'
 import { apiMode } from '@/lib/api'
 import { MOCK_ROLE_OPTIONS, mockRoleOf } from '@/lib/api/mock/session'
 import type { Role } from '@/lib/api/types'
@@ -50,14 +53,55 @@ const FOOTER_LINKS = [
   { to: '/help/faqs', label: 'FAQs' },
   { to: '/help/support', label: 'Fault support' },
   { to: '/privacy', label: 'Privacy' },
+  { to: '/terms', label: 'Terms of use' },
 ]
 
 const footerLink = 'inline-flex min-h-touch items-center gap-2 text-white no-underline hover:text-[var(--ceda-gold)] hover:underline'
 const footerHeading = 'text-sm font-bold uppercase tracking-wider text-[var(--ceda-gold)]'
 
 function toTop() {
-  const reduce = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' })
+  window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? 'auto' : 'smooth' })
+}
+
+/**
+ * "Follow us": CEDA's own social accounts (`CEDA.social`, only those linked from www.ceda.co.bw). `compact` is the
+ * one-line version for the slim workspace footer.
+ */
+function FollowUs({ compact = false }: { compact?: boolean }) {
+  const links = (
+    <ul className="flex items-center gap-2">
+      {CEDA.social.map((s) => (
+        <li key={s.platform}>
+          <a
+            href={s.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${CEDA.shortName} on ${s.label} (opens in a new tab)`}
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-[var(--ceda-gold)] transition-colors hover:bg-[var(--ceda-gold)] hover:text-ink"
+          >
+            <SocialIcon platform={s.platform} className="h-5 w-5" />
+          </a>
+        </li>
+      ))}
+    </ul>
+  )
+  if (compact)
+    return (
+      <div role="group" aria-labelledby="footer-follow" className="flex items-center gap-2">
+        <span id="footer-follow" className="text-white">
+          Follow us
+        </span>
+        {links}
+      </div>
+    )
+  return (
+    <section aria-labelledby="footer-follow" className="flex flex-col gap-2">
+      <h2 id="footer-follow" className={footerHeading}>
+        Follow us
+      </h2>
+      {links}
+    </section>
+  )
 }
 
 function CedaTile({ className }: { className: string }) {
@@ -150,6 +194,7 @@ export function Footer({ chatSpace = false, variant = 'site' }: { chatSpace?: bo
               <ExternalLink aria-hidden className="h-4 w-4 shrink-0" />
               Visit {CEDA.shortName}&apos;s main website<span className="sr-only"> (www.ceda.co.bw, opens in a new tab)</span>
             </a>
+            <FollowUs />
           </section>
           <section aria-labelledby="footer-office" className="flex flex-col gap-4">
             <FooterHeading id="footer-office">Head office</FooterHeading>
@@ -188,6 +233,8 @@ export function Footer({ chatSpace = false, variant = 'site' }: { chatSpace?: bo
                   {l.label}
                 </Link>
               ))}
+              <AccessibilitySettingsButton className={`${footerLink} text-left font-semibold`} />
+              <CookiePreferencesButton className={`${footerLink} text-left font-semibold`} />
             </nav>
           </section>
         </div>
@@ -242,35 +289,13 @@ function AppFooter({ chatSpace }: { chatSpace: boolean }) {
               <ExternalLink aria-hidden className="h-4 w-4 shrink-0 text-[var(--ceda-gold)]" />
               Visit {CEDA.shortName}&apos;s main website<span className="sr-only"> (www.ceda.co.bw, opens in a new tab)</span>
             </a>
+            <AccessibilitySettingsButton className={footerLink} />
+            <CookiePreferencesButton className={footerLink} />
+            <FollowUs compact />
           </nav>
         </div>
       </div>
     </footer>
-  )
-}
-
-/**
- * The bell (spec T11, NTF-01): the unread count as a badge, refreshed every 30 seconds and on returning to the tab.
- * The accessible name says the count ("Notifications, 3 unread"); the badge is only a visual repeat of it.
- */
-export function NotificationsLink() {
-  const list = useNotifications()
-  const unread = (list.data ?? []).filter((n) => !n.read_at).length
-  const name = unread ? `Notifications, ${unread} unread` : 'Notifications'
-  return (
-    // A round bell button (Sandra's 21 Nov frames); the touch target stays 44 × 44 px.
-    <Link
-      to="/notifications"
-      aria-label={name}
-      className="relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-line text-ink no-underline hover:bg-surface-sunken"
-    >
-      <Bell aria-hidden className="h-5 w-5" />
-      {unread ? (
-        <span aria-hidden className="absolute -right-1 -top-1 min-w-[1.25rem] rounded-full bg-brand px-1 text-center text-xs font-semibold leading-5 text-brand-on">
-          {unread > 9 ? '9+' : unread}
-        </span>
-      ) : null}
-    </Link>
   )
 }
 
@@ -311,8 +336,8 @@ export function TopBarEnd({ badge = false, accountMenu = true }: { badge?: boole
   return (
     <div className="flex shrink-0 items-center gap-2 md:gap-3">
       {badge ? <DemoBadge /> : null}
-      {user ? <NotificationsLink /> : null}
-      {user ? accountMenu ? <AccountMenu /> : <AccountChip /> : null}
+      {user ? <NotificationsPanel /> : null}
+      {user ? (accountMenu ? <AccountMenu /> : <AccountChip />) : null}
     </div>
   )
 }

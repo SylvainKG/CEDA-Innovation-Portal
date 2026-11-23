@@ -18,6 +18,7 @@ import {
   PhoneCall,
   Rocket,
   Ruler,
+  ScrollText,
   ShieldCheck,
   Wrench,
   type LucideIcon,
@@ -51,6 +52,7 @@ const HELP_TOPICS: { to: string; label: string; icon: LucideIcon }[] = [
   { to: '/help/support', label: 'Report a fault', icon: Wrench },
   { to: '/help/contacts', label: 'Contact CEDA and branches', icon: Phone },
   { to: '/privacy', label: 'Privacy notice', icon: ShieldCheck },
+  { to: '/terms', label: 'Terms of use', icon: ScrollText },
 ]
 
 /**
@@ -449,6 +451,162 @@ export function PrivacyPage() {
           </p>
         </section>
       ) : null}
+      <DataProtectionRights />
+    </PageFrame>
+  )
+}
+
+/** The law the privacy notice and the terms of use cite (Botswana; replaced the Data Protection Act of 2018). */
+const DPA = 'Data Protection Act, 2024 (Act No. 18 of 2024)'
+const LEGAL_DRAFT = 'Draft: awaiting CEDA legal review'
+
+/**
+ * Static summary of a person's rights under Botswana's Data Protection Act, 2024, shown under the privacy notice.
+ * The notice itself is versioned content in the database (registration consent records its version), so it is not
+ * edited here. General wording only, without section numbers, until CEDA's legal team confirms it.
+ */
+function DataProtectionRights() {
+  return (
+    <section aria-labelledby="privacy-dpa-heading" className="flex flex-col gap-3 rounded-md border border-line bg-surface-card p-5 shadow-1 md:p-8">
+      <h2 id="privacy-dpa-heading" className="text-h2 font-semibold">
+        Your rights under the Data Protection Act, 2024
+      </h2>
+      <p>
+        <SampleLabel text={LEGAL_DRAFT} />
+      </p>
+      <p>
+        The portal is designed with reference to Botswana&apos;s {DPA}, which replaced the Data Protection Act of 2018. It makes no claim of
+        compliance: it has not been assessed by a data protection officer or a lawyer. {CEDA.shortName} uses the personal data you give the portal only to
+        run the challenges and to assess and support your ideas. The portal&apos;s data is stored with its hosting provider in the European Union
+        (Frankfurt), outside Botswana.
+      </p>
+      <p>Under the Act you can:</p>
+      <ul className="flex list-disc flex-col gap-1 pl-6">
+        <li>be told what personal data is held about you and why;</li>
+        <li>get a copy of your personal data;</li>
+        <li>have inaccurate or incomplete data corrected;</li>
+        <li>ask for data to be deleted when it is no longer needed or was not handled lawfully;</li>
+        <li>object to, or ask to restrict, some uses of your data;</li>
+        <li>withdraw your consent at any time (this does not affect what was done before you withdrew it);</li>
+        <li>complain to the Information and Data Protection Commission, which oversees the Act in Botswana.</li>
+      </ul>
+      <p>
+        To use any of these rights, write to {CEDA.shortName} at <a href={`mailto:${CEDA.headOffice.email}`}>{CEDA.headOffice.email}</a> or call{' '}
+        <a href={telHref(CEDA.headOffice.tollFree)}>{CEDA.headOffice.tollFree}</a> (toll-free). What the portal keeps in your browser is set out under
+        Cookie preferences in the footer; it uses no advertising or analytics cookies.
+      </p>
+      <p className="text-sm text-ink-muted">This is a plain-language summary, not legal advice. Where it differs from the Act, the Act applies.</p>
+    </section>
+  )
+}
+
+const TERMS: { heading: string; body: ReactNode }[] = [
+  {
+    heading: 'About these terms',
+    body: (
+      <p>
+        These terms apply when you use Peolwane, the innovation portal of the {CEDA.name} ({CEDA.shortName}). By registering or using the portal you agree
+        to them. This site is currently a demonstration prototype with fictional data.
+      </p>
+    ),
+  },
+  {
+    heading: 'Your account',
+    body: (
+      <p>
+        Give accurate details, keep your password and sign-in codes to yourself, and tell {CEDA.shortName} straight away if you think someone else has used
+        your account. Staff accounts are created only by invitation from a {CEDA.shortName} administrator.
+      </p>
+    ),
+  },
+  {
+    heading: 'Your ideas',
+    body: (
+      <p>
+        You keep the rights to the ideas you submit. You allow {CEDA.shortName} and the people it appoints to assess them to read, store and copy what you
+        submit, for running the challenge and supporting your idea. Only submit material you have the right to share: no one else&apos;s confidential
+        information or intellectual property without their permission.
+      </p>
+    ),
+  },
+  {
+    heading: 'Acceptable use',
+    body: (
+      <p>
+        Don&apos;t submit anything unlawful, misleading or offensive; don&apos;t try to get into other people&apos;s accounts or data, get round the
+        portal&apos;s security, overload it or copy it with automated tools; and don&apos;t upload harmful files. {CEDA.shortName} may suspend accounts that
+        break these rules.
+      </p>
+    ),
+  },
+  {
+    heading: 'Decisions',
+    body: (
+      <p>
+        Submitting an idea does not guarantee funding or any other support. {CEDA.shortName} assesses ideas against each challenge&apos;s published
+        criteria and process, and its decisions are explained to you on the portal.
+      </p>
+    ),
+  },
+  {
+    heading: 'Peolwane AI',
+    body: (
+      <p>
+        The assistant gives general guidance and can be wrong. It is not financial, legal or professional advice, and it does not decide anything about
+        your idea. Don&apos;t share personal details or the content of an idea with it.
+      </p>
+    ),
+  },
+  {
+    heading: 'Your personal data',
+    body: (
+      <p>
+        {CEDA.shortName} handles your personal data as set out in the <Link to="/privacy">privacy notice</Link>, which is designed with reference to the{' '}
+        {DPA} and explains your rights under it, including to access, correct and delete your data.
+      </p>
+    ),
+  },
+  {
+    heading: 'Changes and availability',
+    body: (
+      <p>
+        {CEDA.shortName} may change the portal or these terms, and may pause the portal for maintenance. The date below shows when these terms last
+        changed; important changes will be announced on the portal.
+      </p>
+    ),
+  },
+  {
+    heading: 'Law and contact',
+    body: (
+      <p>
+        These terms are governed by the laws of Botswana. Questions: <a href={`mailto:${CEDA.headOffice.email}`}>{CEDA.headOffice.email}</a> or{' '}
+        <a href={telHref(CEDA.headOffice.tollFree)}>{CEDA.headOffice.tollFree}</a> (toll-free).
+      </p>
+    ),
+  },
+]
+
+/** Terms of use (static draft for CEDA's legal review), linked from every footer and the help topics. */
+export function TermsPage() {
+  return (
+    <PageFrame eyebrow="Using the portal" title="Terms of use" intro="The rules for using Peolwane, in plain language.">
+      <div className="flex flex-wrap items-center gap-2 text-sm text-ink-muted">
+        <span>Last updated 23 November 2026</span>
+        <SampleLabel text={LEGAL_DRAFT} />
+      </div>
+      <div className="relative flex flex-col gap-5 overflow-hidden rounded-md border border-line bg-surface-card p-5 shadow-1 md:p-8">
+        <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,var(--ceda-gold),var(--ceda-orange),var(--ceda-maroon))]" />
+        <ol className="flex flex-col gap-5">
+          {TERMS.map((t, i) => (
+            <li key={t.heading} className="flex flex-col gap-2">
+              <h2 className="text-h3 font-semibold">
+                {i + 1}. {t.heading}
+              </h2>
+              {t.body}
+            </li>
+          ))}
+        </ol>
+      </div>
     </PageFrame>
   )
 }

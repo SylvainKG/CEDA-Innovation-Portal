@@ -25,6 +25,15 @@ export const CEDA = {
     tollFree: '0800 600 253',
     email: 'feedback@ceda.co.bw',
   },
+  /**
+   * "Follow us" in the footer: only the accounts CEDA itself links from www.ceda.co.bw (checked 23 Nov 2026). CEDA's
+   * homepage has more social icons, but they point nowhere ("#"), so they are not guessed here. Government notices
+   * warn of pages impersonating CEDA: add an account only when CEDA's own site links it.
+   */
+  social: [
+    { platform: 'facebook', label: 'Facebook', url: 'https://www.facebook.com/pages/CEDA/178202608856661' },
+    { platform: 'linkedin', label: 'LinkedIn', url: 'https://www.linkedin.com/company/ceda-citizen-entrepreneural-development-agency' },
+  ],
 } as const
 
 /** "+267 317 0895" → "tel:+2673170895" */
