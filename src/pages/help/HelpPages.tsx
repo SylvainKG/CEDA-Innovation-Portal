@@ -444,8 +444,8 @@ export function PrivacyPage() {
           </p>
           <p>
             Peolwane AI is not given your proposals, your cases or anything else from your account: it only sees what you type or say to it.
-            Please don&apos;t tell it personal details or the content of an idea. The portal keeps the conversation only while the page is open. Using
-            it is optional; everything on the portal works without it.
+            Please don&apos;t tell it personal details or the content of an idea. Completed chat messages and your selected mode are kept in this browser tab&apos;s
+            session storage so the conversation can continue after navigation or a reload. They clear when the tab closes and are not attached to your account. Using it is optional; everything on the portal works without it.
           </p>
         </section>
       ) : null}

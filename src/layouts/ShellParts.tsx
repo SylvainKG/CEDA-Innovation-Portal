@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowUp, Bell, ExternalLink, LogOut, Mail, MapPin, MessageSquare, Phone } from 'lucide-react'
-import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { ArrowUp, Bell, ExternalLink, LogOut, Mail, MapPin, Phone } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
 import { BRANDS, brand } from '@/brand'
 import { HorizonEdge } from '@/brand/Horizon'
 import { CEDA, telHref } from '@/brand/ceda-info'
@@ -116,8 +116,8 @@ function ContactItem({ href, icon: Icon, label, value, className = '' }: { href:
  *   the details read at a glance without crowding.
  * - `app` (applicant and staff workspaces): one slim band with the same links, so a working screen ends quietly.
  *
- * `chatSpace` keeps the bottom row clear of the floating buttons ("Peolwane AI" on every page, "Chat with CEDA" on
- * applicant pages). CEDA's details come from `src/brand/ceda-info.ts`; Peolwane is a CEDA product (team, 21 Nov).
+ * `chatSpace` keeps the bottom row clear of the floating Peolwane AI assistant. CEDA's details come from
+ * `src/brand/ceda-info.ts`; Peolwane is a CEDA product (team, 21 Nov).
  */
 export function Footer({ chatSpace = false, variant = 'site' }: { chatSpace?: boolean; variant?: 'site' | 'app' }) {
   if (variant === 'app') return <AppFooter chatSpace={chatSpace} />
@@ -401,24 +401,5 @@ function SignOutButton() {
       <LogOut aria-hidden className="h-5 w-5" />
       Sign out
     </button>
-  )
-}
-
-/**
- * The floating "Chat with CEDA" button (Sandra's 21 Nov frames), for applicants. Hidden on the chat page itself.
- * On phones it sits above the bottom navigation.
- */
-export function ChatLauncher() {
-  const { pathname } = useLocation()
-  if (pathname.startsWith('/support/chat')) return null
-  return (
-    <Link
-      to="/support/chat"
-      data-print="hide"
-      className="fixed bottom-24 right-4 z-20 inline-flex min-h-touch items-center gap-2 rounded-full bg-[#333333] px-4 font-semibold text-white no-underline shadow-1 hover:bg-black md:bottom-6"
-    >
-      <MessageSquare aria-hidden className="h-5 w-5" />
-      Chat with CEDA
-    </Link>
   )
 }
