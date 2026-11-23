@@ -1,10 +1,11 @@
 import { ArrowUp, Keyboard, Loader2, Mic, Send, ShieldCheck, Sparkles, Square, VolumeX, X } from 'lucide-react'
-import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { cn } from '@/lib/cn'
 import { assistantConfig, type AssistantConfig } from './leseding'
 import {
   ASSISTANT_NAME,
+  orbState,
   sendQuestion,
   setMode,
   setOpen,
@@ -12,7 +13,9 @@ import {
   stopListening,
   stopSpeaking,
   useAssistant,
+  type AssistantMessage,
   type AssistantStatus,
+  type OrbState,
 } from './store'
 import './assistant.css'
 
@@ -112,7 +115,7 @@ const STATUS_TEXT: Record<AssistantStatus, string> = {
 }
 
 function Panel({ config, closing }: { config: AssistantConfig; closing: boolean }) {
-  const { mode, status, messages, error, voiceUnavailable } = useAssistant()
+  const { mode, status, messages, error, voiceUnavailable, playing } = useAssistant()
   const titleId = useId()
   const logRef = useRef<HTMLOListElement>(null)
   const micRef = useRef<HTMLButtonElement>(null)
@@ -190,11 +193,24 @@ function Panel({ config, closing }: { config: AssistantConfig; closing: boolean 
         </button>
       </header>
 
-      <div className="peolwane-panel__mode" role="group" aria-label="How to talk to Peolwane AI">
-        <ModeButton active={mode === 'text'} onClick={() => setMode('text')} icon={<Keyboard aria-hidden className="h-4 w-4" />} label="Text" />
-        <ModeButton active={mode === 'voice'} onClick={() => setMode('voice')} icon={<Mic aria-hidden className="h-4 w-4" />} label="Voice" />
+      <div className="peolwane-panel__mode">
+        <span className={cn('peolwane-mode-label', mode === 'text' && 'peolwane-mode-label--active')} aria-hidden><Keyboard className="h-4 w-4" />Text</span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={mode === 'voice'}
+          aria-label="Voice conversation"
+          onClick={() => setMode(mode === 'voice' ? 'text' : 'voice')}
+          className="peolwane-mode-switch"
+        >
+          <span className="peolwane-mode-switch__thumb" aria-hidden />
+        </button>
+        <span className={cn('peolwane-mode-label', mode === 'voice' && 'peolwane-mode-label--active')} aria-hidden><Mic className="h-4 w-4" />Voice</span>
       </div>
 
+      {mode === 'voice' ? (
+        <VoiceStage state={orbState(status, playing)} messages={messages} />
+      ) : (
       <div className="peolwane-panel__conversation">
         <div className="peolwane-panel__section-label"><span /> YOUR CONVERSATION</div>
         <ol ref={logRef} role="log" aria-label="Conversation with Peolwane AI" className="peolwane-panel__messages">
@@ -216,6 +232,7 @@ function Panel({ config, closing }: { config: AssistantConfig; closing: boolean 
           </div>
         )}
       </div>
+      )}
 
       <div className="peolwane-panel__composer">
         <p aria-live="polite" className="peolwane-panel__status">{STATUS_TEXT[status]}</p>
@@ -252,6 +269,29 @@ function Panel({ config, closing }: { config: AssistantConfig; closing: boolean 
   )
 }
 
-function ModeButton({ active, onClick, icon, label }: { active: boolean; onClick: () => void; icon: ReactNode; label: string }) {
-  return <button type="button" aria-pressed={active} onClick={onClick} className={cn('peolwane-mode-button', active && 'peolwane-mode-button--active')}>{icon}{label}</button>
+/**
+ * Voice mode: the Leseding orb in place of the conversation, with the last exchange as a caption underneath so a
+ * spoken answer is also readable. The full conversation stays available in Text mode.
+ */
+function VoiceStage({ state, messages }: { state: OrbState; messages: AssistantMessage[] }) {
+  const lastAnswer = [...messages].reverse().find((message) => message.role === 'assistant' && message.id !== 0 && !message.pending && message.content)
+  const lastQuestion = [...messages].reverse().find((message) => message.role === 'user')
+  return (
+    <div className="peolwane-voice-stage">
+      <div className="les-orb" data-state={state} data-testid="peolwane-orb" aria-hidden>
+        <span className="les-orb-ring" />
+        <span className="les-orb-core" />
+      </div>
+      <div className="peolwane-voice-stage__caption">
+        {lastAnswer ? (
+          <>
+            {lastQuestion && <p className="peolwane-voice-stage__you"><span className="sr-only">You said: </span>&ldquo;{lastQuestion.content}&rdquo;</p>}
+            <p aria-live="polite" className="peolwane-voice-stage__answer"><span className="sr-only">{ASSISTANT_NAME}: </span>{lastAnswer.content}</p>
+          </>
+        ) : (
+          <p className="peolwane-voice-stage__hint">Tap <strong>Start speaking</strong> and ask about the portal. Switch to Text to type instead.</p>
+        )}
+      </div>
+    </div>
+  )
 }
