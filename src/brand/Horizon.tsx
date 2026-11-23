@@ -133,7 +133,9 @@ export function DawnFlight({ photo, onArrive, className }: { photo: { src: strin
   const birdW = 200
   const birdH = (birdW * brand.mark.height) / brand.mark.width
   return (
-    <svg viewBox="0 0 1400 936" preserveAspectRatio="xMidYMid slice" className={className} role="img" aria-label={photo.alt}>
+    // Cropped from the left when the frame is narrower than the photo, so the tree, the sun and the swallow's landing
+    // (all right of centre) stay in view beside the home hero's words.
+    <svg viewBox="0 0 1400 936" preserveAspectRatio="xMaxYMid slice" className={className} role="img" aria-label={photo.alt}>
       <defs>
         <radialGradient id={glow}>
           <stop offset="0" stopColor="var(--ceda-gold)" stopOpacity="0.95" />

@@ -1,4 +1,4 @@
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { MemoryRouter } from 'react-router-dom'
@@ -134,7 +134,7 @@ describe('Peolwane AI panel', () => {
     await user.click(launcher)
     const dialog = screen.getByRole('dialog', { name: 'Peolwane AI' })
     expect(dialog).toBeInTheDocument()
-    expect(screen.getByRole('switch', { name: 'Voice conversation' })).toBeChecked()
+    expect(screen.getByRole('button', { name: 'Voice' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('button', { name: 'Start speaking' })).toHaveFocus()
     // Voice mode shows the Leseding orb (idle) in place of the conversation.
     expect(screen.getByTestId('peolwane-orb')).toHaveAttribute('data-state', 'idle')
@@ -202,8 +202,8 @@ describe('Peolwane AI panel', () => {
     fetchMock.mockResolvedValue(streamed(['Your receipt is on ', 'the idea page.']))
     const user = renderAssistant()
     await user.click(screen.getByRole('button', { name: 'Peolwane AI' }))
-    await user.click(screen.getByRole('switch', { name: 'Voice conversation' }))
-    expect(screen.getByRole('switch', { name: 'Voice conversation' })).not.toBeChecked()
+    await user.click(screen.getByRole('button', { name: 'Text' }))
+    expect(screen.getByRole('button', { name: 'Voice' })).toHaveAttribute('aria-pressed', 'false')
     expect(screen.queryByTestId('peolwane-orb')).not.toBeInTheDocument()
     expect(screen.getByText(/Hello, I'm Peolwane AI/)).toBeInTheDocument()
     const input = screen.getByRole('textbox', { name: 'Your question' })
@@ -216,11 +216,26 @@ describe('Peolwane AI panel', () => {
     expect(getState().status).toBe('idle')
   })
 
+  it('shows one suggested question at a time; Next steps through them, Pause stops them, and choosing one asks it', async () => {
+    fetchMock.mockResolvedValue(streamed(['Open Challenges to see them.']))
+    const user = renderAssistant()
+    await user.click(screen.getByRole('button', { name: 'Peolwane AI' }))
+    await user.click(screen.getByRole('button', { name: 'Text' }))
+    const carousel = screen.getByRole('group', { name: 'Suggested questions' })
+    expect(within(carousel).getByRole('button', { name: 'How do I submit an idea?' })).toBeInTheDocument()
+    expect(within(carousel).queryByRole('button', { name: 'Where can I find open challenges?' })).not.toBeInTheDocument()
+    await user.click(within(carousel).getByRole('button', { name: /^(Pause|Rotate) the suggested questions$/ }))
+    await user.click(within(carousel).getByRole('button', { name: 'Next suggested question' }))
+    await user.click(within(carousel).getByRole('button', { name: 'Where can I find open challenges?' }))
+    expect(await screen.findByText('Open Challenges to see them.')).toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'Suggested questions' })).not.toBeInTheDocument()
+  })
+
   it('shows a failed answer as an alert and keeps the question', async () => {
     fetchMock.mockResolvedValue(new Response('busy', { status: 429 }))
     const user = renderAssistant()
     await user.click(screen.getByRole('button', { name: 'Peolwane AI' }))
-    await user.click(screen.getByRole('switch', { name: 'Voice conversation' }))
+    await user.click(screen.getByRole('button', { name: 'Text' }))
     await user.type(screen.getByRole('textbox', { name: 'Your question' }), 'Hello{Enter}')
     expect(await screen.findByRole('alert')).toHaveTextContent('Peolwane AI is busy. Wait a moment and try again.')
     expect(screen.getByText('Hello')).toBeInTheDocument()
@@ -232,7 +247,7 @@ describe('Peolwane AI panel', () => {
     await user.click(screen.getByRole('button', { name: 'Peolwane AI' }))
     await user.click(screen.getByRole('button', { name: 'Start speaking' }))
     expect(await screen.findByRole('alert')).toHaveTextContent("Voice isn't available in this browser.")
-    expect(screen.getByRole('switch', { name: 'Voice conversation' })).not.toBeChecked()
+    expect(screen.getByRole('button', { name: 'Voice' })).toHaveAttribute('aria-pressed', 'false')
   })
 
   it('in voice mode, speaks the answer, drives the orb through its states, and is idle again when the audio ends', async () => {
