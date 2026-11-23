@@ -23,6 +23,7 @@ This portal is a **demonstration prototype that uses fictional data only**. It i
 | Email queue | `email_outbox` | Opt-in email alerts (NTF-02) | No browser access; only the relay function (service role). Emails carry the reference and a link, **never proposal content or outcomes** |
 | Chat messages | `chat_sessions`, `chat_messages` | Support (CHT-01) | The applicant and the consultant handling the conversation; statistics are counts only |
 | Copies on the applicant's device | Browser local storage: unsaved draft answers (`ceda.draft.local.*`) and pending submit keys (`ceda.submit.key.*`) | Typing is never lost when the connection drops; a lost submit reply can be checked without creating a duplicate (APP-01, APP-03) | Anyone using that browser profile. **Rule: the frontend clears both on sign-out**, and draft copies once the server confirms the save (**Proposed**: requested in the review of PR #18, not built yet) |
+| Peolwane AI conversation | Current tab's `sessionStorage` (`ceda.peolwane.session.v1`): completed text turns, conversation ID/turn count and mode | Restore the site-help conversation after navigation or reload | Anyone with access to that browser tab and same-origin page scripts. Clears when the tab closes; not linked to an account or sent to the portal backend. The typed/spoken question itself is sent to Leseding AI as described below |
 | Audit trail | `audit_events` | Accountability (SEC-01, SEC-03) | Administrator and auditor. Contains who, what, when and outcome; **no passwords, no proposal text, no note text** |
 
 **Data minimisation:** the form stores only fields the published challenge form defines (unknown fields are dropped); phone is optional; file names are kept as display names only, never in storage paths.
@@ -76,5 +77,5 @@ The named contact (backlog DEF-01/OPS-03) is alerted; affected access is revoked
 - Retention and data-subject requests are manual.
 - Demo staff MFA exemption (D-07) must be off for real use.
 - The web host's region is still to be recorded; the Mumbai latency comparison is not run.
-- Peolwane AI: the Leseding AI Engine's location and its retention of transcripts and questions are not yet confirmed (BCR-004). The portal keeps nothing; the privacy page says so.
+- Peolwane AI: the Leseding AI Engine's location and its retention of transcripts and questions are not yet confirmed (BCR-004). Completed chat text is also held in the current tab's session storage until the tab closes; see the privacy page.
 - Device copies (local storage) depend on the frontend clearing them on sign-out; on a shared computer, the applicant must sign out.

@@ -1,6 +1,6 @@
 # Peolwane AI
 
-**Owner:** Sylvain · **Decision:** BCR-004 (proposes D-46) · **Updated:** 21 Nov 2026
+**Owner:** Sylvain · **Decision:** BCR-004 (proposes D-46) · **Updated:** 23 Nov 2026
 
 Peolwane AI is a voice-first assistant, with text as an option, shown at the bottom right of every page. It helps people find their way around the portal. The Leseding AI Engine does the work: it turns speech into text, answers using Google Gemini and a knowledge base Leseding loads, and produces the spoken reply. We build our own UI on Leseding's HTTP API instead of using their drop-in widget (the reasons are in BCR-004).
 
@@ -14,7 +14,7 @@ Peolwane AI is a voice-first assistant, with text as an option, shown at the bot
 
 Every call sends `X-API-Key`. The code is in `src/features/assistant/`:
 - `leseding.ts`: the client and configuration;
-- `store.ts`: the conversation, which is shared by every page and lost on reload;
+- `store.ts`: the conversation shared across pages and restored from tab-scoped `sessionStorage` after a reload;
 - `PeolwaneAssistant.tsx`: the button and panel, mounted in the public, applicant and staff shells.
 
 **Fallbacks:**
@@ -37,14 +37,15 @@ With either variable missing, the assistant isn't rendered at all. Like every `V
 ## Privacy and accessibility
 
 - **What it receives:** only what the person types or says in the panel. It is never given page, form or account data, and it has no access to the portal's API. The panel tells people not to share personal or case details. The privacy page has a Peolwane AI section, shown when the assistant is configured.
-- **What is kept:** nothing in the browser. The conversation lasts until the page is closed or reloaded.
+- **What is kept:** completed text exchanges, the conversation ID/turn count, and the selected voice/text mode are kept in `sessionStorage` for the current tab. This lets the conversation continue across route changes and reloads. The tab's storage clears when that tab closes; it is not linked to an account, sent to the portal backend, or shared with another tab. Voice recordings are not stored after transcription. If browser storage is blocked or full, the assistant still works but may not restore the conversation after a reload.
 - **Accessibility:**
   - the panel is not modal, so the page stays usable;
   - Esc closes it and returns focus to the button;
   - focus goes to the microphone or the text box when the panel opens;
   - Voice and Text are toggle buttons (`aria-pressed`);
   - the conversation is a `log` region, and status changes are announced.
-- **Placement:** on applicant pages the button sits above "Chat with CEDA".
+- **Placement:** one Peolwane AI launcher appears on every shell. Scrolling folds it to a small sparkle button and closes the open panel without clearing the conversation.
+- **Human support:** the separate "Chat with CEDA" route is a consultant conversation, not another AI. It remains available from "Message CEDA support" under Need help? on My ideas.
 
 ## Tests
 
