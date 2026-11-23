@@ -175,30 +175,54 @@ export function HowItWorksPage() {
   )
 }
 
+/** Where the stars sit in the hero's sky (left %, top %, twinkle delay in s); decorative. */
+const STARS: [number, number, number][] = [
+  [6, 12, 0], [14, 34, 1.2], [22, 8, 2.1], [31, 22, 0.6], [38, 6, 1.8], [46, 16, 2.7], [53, 30, 0.9], [58, 9, 1.5],
+  [64, 20, 2.4], [71, 5, 0.3], [78, 14, 1.1], [86, 28, 2.0], [92, 9, 0.7], [97, 22, 1.6], [3, 52, 2.5], [49, 4, 1.3],
+]
+
+/**
+ * The hero (23 Nov, after the team asked for "a touch of magic"): one panel in CEDA's night brown, like the home and
+ * About heroes, under a sky of faint stars that twinkle, with the sun's glow at the top right and an ember glow at the
+ * bottom left. "innovation process" is in the sunrise; the swallow's journey sits in the same panel as a glass card.
+ * The stars, the pulsing dot and the journey's own motion stop for people who reduce motion.
+ */
 function Hero() {
   return (
-    <div className="relative isolate grid grid-cols-1 items-center gap-10 overflow-hidden rounded-[2rem] bg-[linear-gradient(135deg,var(--ceda-sky-start),var(--ceda-sky-end))] px-5 py-8 shadow-1 sm:px-8 md:px-12 md:py-12 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
-      <div aria-hidden className="absolute -bottom-40 -right-24 -z-10 h-[28rem] w-[28rem] rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--ceda-gold)_45%,transparent),transparent_65%)]" />
+    <div className="relative isolate grid grid-cols-1 items-center gap-10 overflow-hidden rounded-[2rem] bg-[var(--ceda-night)] px-5 py-8 text-white shadow-2 sm:px-8 md:px-12 md:py-14 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
+      <div aria-hidden className="absolute -right-24 -top-32 -z-10 h-[30rem] w-[30rem] rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--ceda-gold)_38%,transparent),transparent_65%)]" />
+      <div aria-hidden className="absolute -bottom-44 -left-28 -z-10 h-[28rem] w-[28rem] rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--ceda-maroon)_55%,transparent),transparent_68%)]" />
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
+        {STARS.map(([x, y, delay]) => (
+          <span key={`${x}-${y}`} className="hiw-star" style={{ left: `${x}%`, top: `${y}%`, animationDelay: `${delay}s` }} />
+        ))}
+      </div>
       <div className="flex max-w-2xl flex-col items-start gap-4">
-        <p className="inline-flex items-center gap-2 rounded-full border border-[var(--ceda-maroon)]/20 bg-white/80 px-3 py-1.5 text-sm font-semibold text-[var(--ceda-maroon)]">
-          <span aria-hidden className="h-2 w-2 rounded-full bg-[var(--ceda-orange)]" />
+        <p className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-sm font-semibold text-[var(--ceda-gold)]">
+          <span aria-hidden className="hiw-pulse h-2 w-2 rounded-full bg-[var(--ceda-gold)]" />
           A clear path for every idea
         </p>
-        <h1 className="text-[2.25rem] font-normal leading-tight md:text-[2.75rem]">How the CEDA innovation process works</h1>
-        <p className="text-[1.0625rem] leading-relaxed text-ink-muted md:text-[1.125rem]">
+        <h1 className="text-[2.25rem] font-semibold leading-tight tracking-tight md:text-[3rem]">
+          How the CEDA{' '}
+          <span className="bg-[linear-gradient(100deg,var(--ceda-gold),var(--ceda-orange))] bg-clip-text text-transparent forced-colors:text-[CanvasText]">
+            innovation process
+          </span>{' '}
+          works
+        </h1>
+        <p className="text-[1.0625rem] leading-relaxed text-white/85 md:text-[1.125rem]">
           {brand.header.title} gives you one place to find a challenge, submit an idea and follow CEDA’s review. Each challenge has its own eligibility rules
           and deadline, so begin with its brief.
         </p>
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-          <Link to="/challenges" className="inline-flex min-h-touch items-center justify-center gap-2 rounded-full bg-brand px-5 font-semibold text-brand-on no-underline hover:bg-brand-hover">
+          <Link to="/challenges" className="inline-flex min-h-touch items-center justify-center gap-2 rounded-full bg-[var(--ceda-gold)] px-5 font-semibold text-ink no-underline hover:bg-[var(--ceda-amber)]">
             Find a challenge <ArrowRight aria-hidden className="h-4 w-4" />
           </Link>
-          <a href="#process-steps" className="inline-flex min-h-touch items-center gap-2 font-semibold text-brand-text underline-offset-4 hover:underline">
+          <a href="#process-steps" className="inline-flex min-h-touch items-center gap-2 font-semibold text-white underline-offset-4 hover:underline">
             Follow the five steps <ArrowDown aria-hidden className="h-4 w-4" />
           </a>
         </div>
       </div>
-      <StepJourney steps={STEPS} />
+      <StepJourney steps={STEPS} glass />
     </div>
   )
 }

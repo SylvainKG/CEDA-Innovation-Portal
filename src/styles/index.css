@@ -607,6 +607,37 @@ html.ceda-screen-fade::view-transition-new(root) {
       transform: scale(1.35);
     }
   }
+  /* How it works hero: faint stars that twinkle, and the label's pulsing dot (still with reduced motion). */
+  .hiw-star {
+    position: absolute;
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.7);
+    opacity: 0.35;
+    animation: hiw-twinkle 3.8s ease-in-out infinite;
+  }
+  @keyframes hiw-twinkle {
+    0%,
+    100% {
+      opacity: 0.15;
+      transform: scale(0.8);
+    }
+    50% {
+      opacity: 0.9;
+      transform: scale(1.25);
+    }
+  }
+  .hiw-pulse {
+    animation: dawn-dot 2s ease-in-out infinite;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hiw-star,
+    .hiw-pulse {
+      animation: none;
+    }
+  }
   .journey-btn {
     display: inline-flex;
     min-height: 44px;

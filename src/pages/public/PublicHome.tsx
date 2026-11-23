@@ -407,27 +407,44 @@ function ProcessBand() {
   )
 }
 
+/**
+ * Why submit here (restyled 23 Nov: the team found the grey card grid flat). The introduction sits on the left and
+ * stays in view beside the promises from 1024 px, with the way to How it works; the six promises are white cards with
+ * a line of sunrise along the top, the icon on a sunrise tile and a quiet number, lifting a little on hover.
+ */
 function Promises() {
   return (
-    <section aria-labelledby="why-heading" className="bg-surface-card">
-      <div className="mx-auto flex w-full max-w-content flex-col gap-8 px-4 py-12 md:py-16">
-        <div className="flex max-w-2xl flex-col gap-2">
+    <section aria-labelledby="why-heading" className="relative overflow-hidden bg-surface-card">
+      {/* A low sun behind the introduction (decorative). */}
+      <div aria-hidden className="pointer-events-none absolute -left-48 top-0 h-[32rem] w-[32rem] rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--ceda-gold)_20%,transparent),transparent_68%)]" />
+      <div className="relative mx-auto grid w-full max-w-content grid-cols-1 gap-10 px-4 py-14 md:py-20 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.6fr)] lg:gap-14">
+        <div className="flex flex-col gap-3 lg:sticky lg:top-28 lg:self-start">
           <Eyebrow>Fair and transparent</Eyebrow>
-          <h2 id="why-heading" className="text-[2rem] font-normal leading-tight">
+          <h2 id="why-heading" className="text-[2rem] font-semibold leading-tight tracking-tight text-[var(--ceda-night)] md:text-[2.5rem]">
             Why submit through {brand.header.title}
           </h2>
-          <p className="text-ink-muted">Your idea is judged on its merits, by people who explain their scores, in a process you can follow.</p>
+          <p className="text-[1.0625rem] leading-relaxed text-[var(--ceda-brown)]">
+            Your idea is judged on its merits, by people who explain their scores, in a process you can follow.
+          </p>
+          <Link to="/how-it-works" className="mt-1 inline-flex min-h-touch items-center gap-2 self-start font-semibold text-brand-text underline-offset-4 hover:underline">
+            See how ideas are reviewed <ArrowRight aria-hidden className="h-4 w-4" />
+          </Link>
         </div>
-        <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {PROMISES.map(({ icon: Icon, title, text }) => (
-            <li key={title} className="flex gap-4 rounded-md border border-line bg-surface-page p-5 transition-shadow hover:shadow-1">
-              <span aria-hidden className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--ceda-gold)_25%,transparent)] text-[var(--ceda-maroon)]">
-                <Icon className="h-5 w-5" />
+        <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {PROMISES.map(({ icon: Icon, title, text }, i) => (
+            <li
+              key={title}
+              className="relative flex flex-col gap-3 overflow-hidden rounded-[1.25rem] border border-line bg-white p-6 shadow-1 hover:shadow-2 motion-safe:transition motion-safe:duration-300 motion-safe:hover:-translate-y-1"
+            >
+              <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,var(--ceda-gold),var(--ceda-orange),var(--ceda-maroon))]" />
+              <span aria-hidden className="absolute right-5 top-5 text-sm font-bold tracking-wider text-[color-mix(in_srgb,var(--ceda-orange)_55%,transparent)]">
+                {String(i + 1).padStart(2, '0')}
               </span>
-              <span className="flex flex-col gap-1">
-                <h3 className="font-semibold">{title}</h3>
-                <span className="text-sm text-ink-muted">{text}</span>
+              <span aria-hidden className="grid h-12 w-12 place-items-center rounded-[0.9rem] bg-[linear-gradient(135deg,var(--ceda-gold),var(--ceda-orange))] text-[var(--ceda-night)] shadow-1">
+                <Icon className="h-6 w-6" />
               </span>
+              <h3 className="text-lg font-semibold text-[var(--ceda-night)]">{title}</h3>
+              <p className="text-ink-muted">{text}</p>
             </li>
           ))}
         </ul>
