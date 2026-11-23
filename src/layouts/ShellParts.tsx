@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ArrowUp, ExternalLink, LogOut, Mail, MapPin, Phone } from 'lucide-react'
 import { NotificationsPanel } from './NotificationsPanel'
+import { fadeScreen } from './page-motion'
 import { Link, useNavigate } from 'react-router-dom'
 import { BRANDS, brand } from '@/brand'
 import { HorizonEdge } from '@/brand/Horizon'
@@ -48,7 +49,7 @@ export function Brand() {
   )
 }
 
-/** Help and legal links, in every footer. */
+/** Help and legal links, in the slim workspace footer (the public footer groups them in two columns). */
 const FOOTER_LINKS = [
   { to: '/help/faqs', label: 'FAQs' },
   { to: '/help/support', label: 'Fault support' },
@@ -152,51 +153,58 @@ function ContactItem({ href, icon: Icon, label, value, className = '' }: { href:
 }
 
 /**
- * Footer, on CEDA's sunrise (post-freeze, ABM 22 Nov; not the judged build). Two sizes:
+ * Footer, on CEDA's sunrise (post-freeze, ABM 22 Nov; regrouped 23 Nov; not the judged build). Two sizes:
  *
- * - `site` (public pages): a band of the hero's land, then four columns on CEDA's night brown from 1024 px (two on
- *   tablets, one on phones): Peolwane as a CEDA product, CEDA's head office, how to reach CEDA, and help. Each column
- *   has a gold heading over a short orange rule; contact lines have their icon in a round chip with a small label, so
- *   the details read at a glance without crowding.
+ * - `site` (public pages): a band of the hero's land, then CEDA's night brown in three tiers. First, who we are:
+ *   Peolwane as a CEDA product beside CEDA's website and social accounts. Then four even columns from 1024 px (two
+ *   on tablets, one on phones, where each list of links wraps into rows): head office, contact, help, and policies
+ *   and settings. Last, the legal line and Back to top.
  * - `app` (applicant and staff workspaces): one slim band with the same links, so a working screen ends quietly.
  *
- * `chatSpace` keeps the bottom row clear of the floating Peolwane AI assistant. CEDA's details come from
+ * `chatSpace` keeps the right of the last row clear of the floating Peolwane AI button, which is a small circle by the
+ * time the footer is in view. `phoneNav` (applicants) extends the footer behind the navigation bar fixed to the foot
+ * of a phone, so the page ends on the footer's colour, not a blank strip. CEDA's details come from
  * `src/brand/ceda-info.ts`; Peolwane is a CEDA product (team, 21 Nov).
  */
-export function Footer({ chatSpace = false, variant = 'site' }: { chatSpace?: boolean; variant?: 'site' | 'app' }) {
-  if (variant === 'app') return <AppFooter chatSpace={chatSpace} />
+export function Footer({ chatSpace = false, phoneNav = false, variant = 'site' }: { chatSpace?: boolean; phoneNav?: boolean; variant?: 'site' | 'app' }) {
+  if (variant === 'app') return <AppFooter chatSpace={chatSpace} phoneNav={phoneNav} />
+  const columnLink = `${footerLink} font-semibold`
   return (
     <footer className="mt-16 text-sm" data-print="hide">
       <HorizonEdge className="block h-10 w-full md:h-16" />
       {/* Always dark (CEDA's night brown); white on it is above 15:1, the muted text above 9:1. */}
       <div className="bg-[var(--ceda-night)] text-[var(--ceda-footer-text)]">
-        <div className="mx-auto grid max-w-content grid-cols-1 gap-x-12 gap-y-7 px-4 pb-8 pt-6 md:grid-cols-2 md:gap-y-9 md:pb-10 md:pt-8 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,0.7fr)]">
-          <section aria-labelledby="footer-about" className="flex flex-col gap-4 md:col-span-2 lg:col-span-1">
-            <div className="flex items-center gap-3">
-              <CedaTile className="h-10 w-auto" />
-              <div className="flex flex-col">
-                <h2 id="footer-about" className="text-base font-semibold text-white">
+        <div className="mx-auto max-w-content px-4">
+          <div className="flex flex-col gap-6 border-b border-white/10 pb-8 pt-6 md:pt-8 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
+            <section aria-labelledby="footer-about" className="flex max-w-2xl items-start gap-4">
+              <CedaTile className="h-12 w-auto" />
+              <div className="flex flex-col gap-1.5">
+                <h2 id="footer-about" className="text-lg font-semibold text-white">
                   {brand.header.title} · a {CEDA.shortName} product
                 </h2>
-                <span>{brand.tagline}</span>
+                <p className="font-semibold text-[var(--ceda-gold)]">{brand.tagline}</p>
+                <p className="leading-relaxed">
+                  The innovation portal of the {CEDA.name} ({CEDA.shortName}), Botswana: answer CEDA&apos;s challenges with your ideas and follow them
+                  from submission to award.
+                </p>
               </div>
+            </section>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-4 lg:shrink-0 lg:justify-end">
+              <a
+                href={CEDA.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-touch items-center gap-2 rounded-full border border-white/25 px-4 font-semibold text-white no-underline hover:border-[var(--ceda-gold)] hover:text-[var(--ceda-gold)]"
+              >
+                <ExternalLink aria-hidden className="h-4 w-4 shrink-0" />
+                Visit {CEDA.shortName}&apos;s main website<span className="sr-only"> (www.ceda.co.bw, opens in a new tab)</span>
+              </a>
+              <FollowUs compact />
             </div>
-            <p className="max-w-sm leading-relaxed">
-              The innovation portal of the {CEDA.name} ({CEDA.shortName}), Botswana: answer CEDA&apos;s challenges with your ideas and follow them from
-              submission to award.
-            </p>
-            <a
-              href={CEDA.website}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-touch items-center gap-2 self-start rounded-full border border-white/25 px-4 font-semibold text-white no-underline hover:border-[var(--ceda-gold)] hover:text-[var(--ceda-gold)]"
-            >
-              <ExternalLink aria-hidden className="h-4 w-4 shrink-0" />
-              Visit {CEDA.shortName}&apos;s main website<span className="sr-only"> (www.ceda.co.bw, opens in a new tab)</span>
-            </a>
-            <FollowUs />
-          </section>
-          <section aria-labelledby="footer-office" className="flex flex-col gap-4">
+          </div>
+        </div>
+        <div className="mx-auto grid max-w-content grid-cols-2 gap-x-8 gap-y-8 px-4 py-8 md:gap-x-12 md:py-10 lg:grid-cols-4">
+          <section aria-labelledby="footer-office" className="col-span-2 flex flex-col gap-4 md:col-span-1">
             <FooterHeading id="footer-office">Head office</FooterHeading>
             <address className="flex gap-3 not-italic leading-relaxed">
               <span aria-hidden className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/10 text-[var(--ceda-gold)]">
@@ -211,12 +219,12 @@ export function Footer({ chatSpace = false, variant = 'site' }: { chatSpace?: bo
                 <span className="block text-[var(--ceda-footer-text)]">{CEDA.headOffice.postal}</span>
               </span>
             </address>
-            <a href={CEDA.branchNetworkPage} target="_blank" rel="noopener noreferrer" className={`${footerLink} font-semibold`}>
+            <a href={CEDA.branchNetworkPage} target="_blank" rel="noopener noreferrer" className={columnLink}>
               <ExternalLink aria-hidden className="h-4 w-4 shrink-0 text-[var(--ceda-gold)]" />
               View CEDA&apos;s interactive branch map<span className="sr-only"> (opens in a new tab)</span>
             </a>
           </section>
-          <section aria-labelledby="footer-contact" className="flex flex-col gap-3">
+          <section aria-labelledby="footer-contact" className="col-span-2 flex flex-col gap-3 md:col-span-1">
             <FooterHeading id="footer-contact">Contact</FooterHeading>
             {/* Tel and toll-free side by side on phones, the email below; one per line from 768 px. */}
             <div className="grid grid-cols-2 gap-x-4 gap-y-1 md:flex md:flex-col">
@@ -225,21 +233,40 @@ export function Footer({ chatSpace = false, variant = 'site' }: { chatSpace?: bo
               <ContactItem href={`mailto:${CEDA.headOffice.email}`} icon={Mail} label="Email" value={CEDA.headOffice.email} className="col-span-2" />
             </div>
           </section>
-          <section aria-labelledby="footer-help" className="flex flex-col gap-3">
+          <section aria-labelledby="footer-help" className="col-span-2 flex flex-col gap-3 md:col-span-1">
             <FooterHeading id="footer-help">Help</FooterHeading>
             <nav aria-label="Footer" className="flex flex-wrap gap-x-6 md:flex-col">
-              {[...FOOTER_LINKS, { to: '/help/contacts', label: 'Contact and branches' }].map((l) => (
-                <Link key={l.to} to={l.to} className={`${footerLink} font-semibold`}>
+              {HELP_LINKS.map((l) => (
+                <Link key={l.to} to={l.to} className={columnLink}>
                   {l.label}
                 </Link>
               ))}
-              <AccessibilitySettingsButton className={`${footerLink} text-left font-semibold`} />
-              <CookiePreferencesButton className={`${footerLink} text-left font-semibold`} />
             </nav>
+          </section>
+          <section aria-labelledby="footer-policies" className="col-span-2 flex flex-col gap-3 md:col-span-1">
+            <FooterHeading id="footer-policies">Policies and settings</FooterHeading>
+            <ul className="flex flex-wrap gap-x-6 md:flex-col">
+              <li>
+                <Link to="/privacy" className={columnLink}>
+                  Privacy
+                </Link>
+              </li>
+              <li>
+                <Link to="/terms" className={columnLink}>
+                  Terms of use
+                </Link>
+              </li>
+              <li>
+                <AccessibilitySettingsButton className={`${columnLink} text-left`} />
+              </li>
+              <li>
+                <CookiePreferencesButton className={`${columnLink} text-left`} />
+              </li>
+            </ul>
           </section>
         </div>
         <div className="border-t border-white/10">
-          <div className={`mx-auto flex max-w-content flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-4 ${chatSpace ? 'md:pr-56' : ''}`}>
+          <div className={`mx-auto flex max-w-content flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-4 ${chatSpace ? 'md:pr-20' : ''}`}>
             <FooterLegal />
             <button
               type="button"
@@ -256,13 +283,21 @@ export function Footer({ chatSpace = false, variant = 'site' }: { chatSpace?: bo
   )
 }
 
+/** The public footer's Help column. */
+const HELP_LINKS = [
+  { to: '/help/faqs', label: 'FAQs' },
+  { to: '/help/support', label: 'Fault support' },
+  { to: '/help/contacts', label: 'Contact and branches' },
+]
+
 /** The slim footer of the signed-in workspaces: the sunrise as a thin line, then one band of links. */
-function AppFooter({ chatSpace }: { chatSpace: boolean }) {
+function AppFooter({ chatSpace, phoneNav }: { chatSpace: boolean; phoneNav: boolean }) {
   return (
     <footer className="mt-10 text-sm" data-print="hide">
       <div aria-hidden className="h-1 bg-[linear-gradient(90deg,var(--ceda-gold),var(--ceda-amber),var(--ceda-orange),var(--ceda-maroon))]" />
-      <div className="bg-[var(--ceda-night)] text-[var(--ceda-footer-text)]">
-        <div className={`mx-auto flex max-w-content flex-col gap-x-8 gap-y-2 px-4 py-3 lg:flex-row lg:items-center lg:justify-between ${chatSpace ? 'md:pr-56' : ''}`}>
+      {/* Applicants on phones: room below the links for the Peolwane AI button and the navigation bar (3.7rem). */}
+      <div className={`bg-[var(--ceda-night)] text-[var(--ceda-footer-text)] ${phoneNav ? 'pb-[calc(8.5rem+env(safe-area-inset-bottom))] md:pb-0' : ''}`}>
+        <div className={`mx-auto flex max-w-content flex-col gap-x-8 gap-y-2 px-4 py-3 lg:flex-row lg:items-center lg:justify-between ${chatSpace ? 'md:pr-20' : ''}`}>
           <section aria-labelledby="footer-about" className="flex items-center gap-3 lg:min-w-[26rem] lg:max-w-lg">
             <CedaTile className="h-7 w-auto" />
             <div className="flex flex-col">
@@ -327,14 +362,17 @@ export function MockRoleSwitcher({ compact = false }: { compact?: boolean }) {
   )
 }
 
-/** The right end of a signed-in header: the bell and the account menu. `badge` keeps the DEMO pill here (public shell). */
-export function TopBarEnd({ badge = false }: { badge?: boolean }) {
+/**
+ * The right end of a signed-in header: the bell and the account menu. `badge` keeps the DEMO pill here (public shell).
+ * `accountMenu={false}` (staff, whose Sign out is at the foot of the sidebar) shows who is signed in without a menu.
+ */
+export function TopBarEnd({ badge = false, accountMenu = true }: { badge?: boolean; accountMenu?: boolean }) {
   const { data: user } = useSession()
   return (
     <div className="flex shrink-0 items-center gap-2 md:gap-3">
       {badge ? <DemoBadge /> : null}
       {user ? <NotificationsPanel /> : null}
-      {user ? <AccountMenu /> : null}
+      {user ? (accountMenu ? <AccountMenu /> : <AccountChip />) : null}
     </div>
   )
 }
@@ -346,6 +384,30 @@ const initials = (name: string) =>
     .slice(0, 2)
     .map((w) => w[0]!.toUpperCase())
     .join('') || '?'
+
+const accountSubtitle = (roles: readonly Role[]) => (roles.length ? roleLabel(roles.find((r) => r !== 'auditor') ?? roles[0]!) : '')
+
+/** The avatar with the person's initials, name and role, as a label only (staff: Sign out is in the sidebar). */
+function AccountChip() {
+  const { data: user } = useSession()
+  if (!user) return null
+  const subtitle = accountSubtitle(user.roles)
+  return (
+    <p className="flex min-h-touch items-center gap-2 pr-1 text-ink md:pr-3">
+      <span className="sr-only">
+        Signed in as {user.displayName}
+        {subtitle ? `, ${subtitle}` : ''}
+      </span>
+      <span aria-hidden className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-semibold text-surface-card">
+        {initials(user.displayName)}
+      </span>
+      <span aria-hidden className="hidden max-w-[11rem] flex-col leading-tight lg:flex">
+        <span className="truncate text-sm font-semibold">{user.displayName}</span>
+        <span className="truncate text-xs text-ink-muted">{subtitle}</span>
+      </span>
+    </p>
+  )
+}
 
 /**
  * The avatar with the person's initials, name and role (Sandra's 21 Nov frames). It opens a small menu with
@@ -376,7 +438,7 @@ function AccountMenu() {
     }
   }, [open])
   if (!user) return null
-  const subtitle = user.roles.length ? roleLabel(user.roles.find((r) => r !== 'auditor') ?? user.roles[0]!) : ''
+  const subtitle = accountSubtitle(user.roles)
   return (
     <div ref={box} className="relative" data-print="hide">
       <button
@@ -407,8 +469,15 @@ function AccountMenu() {
   )
 }
 
-/** Ends the session and makes this device forget the person's drafts, pending keys and cached data. */
-function SignOutButton() {
+/** Signing out waits this long at most for the session to end before the public home page fades in. */
+const SIGN_OUT_FADE_WAIT_MS = 1500
+
+/**
+ * Ends the session and makes this device forget the person's drafts, pending keys and cached data. In the account
+ * menu by default; `className` restyles it for the foot of the staff sidebar. The whole screen fades over to the
+ * public home page, already signed out (ABM, 23 Nov: it used to cut straight to it).
+ */
+export function SignOutButton({ className, onSignOut }: { className?: string; onSignOut?: () => void }) {
   const signOut = useSignOut()
   const navigate = useNavigate()
   return (
@@ -417,13 +486,16 @@ function SignOutButton() {
       data-print="hide"
       disabled={signOut.isPending}
       onClick={() => {
-        // Leave the signed-in page first, so its guard does not bounce to sign-in when the session ends.
-        navigate('/')
-        signOut.mutate()
+        onSignOut?.()
+        void fadeScreen(async () => {
+          // Leave the signed-in page first, so its guard does not bounce to sign-in when the session ends.
+          await navigate('/', { flushSync: true })
+          await Promise.race([signOut.mutateAsync(), new Promise((resolve) => window.setTimeout(resolve, SIGN_OUT_FADE_WAIT_MS))]).catch(() => undefined)
+        })
       }}
-      className="flex min-h-touch w-full items-center gap-2 rounded-md px-2 text-ink hover:bg-surface-sunken"
+      className={className ?? 'flex min-h-touch w-full items-center gap-2 rounded-md px-2 text-ink hover:bg-surface-sunken'}
     >
-      <LogOut aria-hidden className="h-5 w-5" />
+      <LogOut aria-hidden className="h-5 w-5 shrink-0" />
       Sign out
     </button>
   )

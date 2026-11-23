@@ -1,3 +1,5 @@
+:root { --peolwane-applicant-bar: 3.7rem; }
+
 .peolwane-launcher {
   position: fixed;
   right: 1.25rem;
@@ -39,7 +41,42 @@
 .peolwane-launcher--compact .peolwane-launcher__label, .peolwane-launcher--compact .peolwane-launcher__hint { max-width: 0; opacity: 0; transform: translateX(.3rem); }
 .peolwane-launcher--compact .peolwane-launcher__hint { border-color: transparent; padding-left: 0; }
 .peolwane-launcher[aria-hidden='true'] { opacity: 0; transform: translateY(.2rem) scale(.88); pointer-events: none; }
-.peolwane-launcher--applicant { bottom: calc(6.25rem + env(safe-area-inset-bottom)); }
+/* Their own snapshots while the page changes, above the page's, so they stay steady (see .shell-header, index.css). */
+.peolwane-launcher { view-transition-name: peolwane-launcher; }
+.peolwane-panel { view-transition-name: peolwane-panel; }
+
+/* Staff: Peolwane AI is an item in the sidebar under the navigation (team, 23 Nov), in the launcher's sunrise colours. */
+.peolwane-sidebar-launcher {
+  display: flex;
+  width: 100%;
+  min-height: 3.5rem;
+  align-items: center;
+  gap: .7rem;
+  border: 1px solid color-mix(in srgb, var(--surface-card) 58%, transparent);
+  border-radius: var(--radius-md);
+  padding: .45rem .75rem .45rem .5rem;
+  color: var(--brand-on-primary);
+  background: linear-gradient(125deg, var(--ceda-amber), var(--ceda-orange) 55%, var(--brand-primary-hover));
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--ceda-night) 14%, transparent), inset 0 1px color-mix(in srgb, var(--surface-card) 48%, transparent);
+  font: inherit;
+  cursor: pointer;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.peolwane-sidebar-launcher:hover { transform: translateY(-1px); box-shadow: 0 10px 22px color-mix(in srgb, var(--ceda-night) 20%, transparent), inset 0 1px color-mix(in srgb, var(--surface-card) 52%, transparent); }
+.peolwane-sidebar-launcher:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 3px; }
+.peolwane-sidebar-launcher__icon {
+  display: grid;
+  width: 2.4rem;
+  height: 2.4rem;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--surface-card) 48%, transparent);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--surface-card) 28%, transparent);
+}
+.peolwane-sidebar-launcher__label { font-size: 1rem; font-weight: 650; letter-spacing: -.02em; white-space: nowrap; }
+.peolwane-sidebar-launcher__label strong { font-weight: 850; }
+.peolwane-sidebar-launcher__hint { font-size: .875rem; font-weight: 550; white-space: nowrap; opacity: .88; }
 
 .peolwane-panel {
   position: fixed;
@@ -47,8 +84,9 @@
   bottom: 1.5rem;
   z-index: 50;
   display: flex;
-  width: min(27rem, calc(100vw - 2rem));
-  max-height: min(46rem, calc(100dvh - 2rem));
+  width: min(25rem, calc(100vw - 2rem));
+  /* Compact (team, 23 Nov): it sizes to what it shows, up to 36rem; a long conversation scrolls inside. */
+  max-height: min(36rem, calc(100dvh - 2rem));
   flex-direction: column;
   overflow: hidden;
   transform-origin: bottom right;
@@ -61,38 +99,42 @@
   will-change: opacity, transform;
 }
 .peolwane-panel--closing { animation: peolwane-close .3s cubic-bezier(.4,0,.8,.4) both; pointer-events: none; }
+/* Opened from the staff sidebar: from 1024 px the panel rises beside the sidebar (16rem wide), not at the far right. */
+@media (min-width: 1024px) {
+  .peolwane-panel--beside-sidebar { right: auto; left: calc(16rem + 1.25rem); transform-origin: bottom left; }
+}
 .peolwane-panel__header {
   position: relative;
   display: flex;
-  min-height: 6.6rem;
+  min-height: 4.6rem;
   align-items: center;
-  gap: .85rem;
+  gap: .75rem;
   overflow: hidden;
-  padding: 1.2rem 1rem 1.1rem 1.25rem;
+  padding: .8rem .85rem .8rem 1rem;
   color: var(--surface-card);
   background: radial-gradient(ellipse at 88% 12%, color-mix(in srgb, var(--ceda-amber) 38%, transparent), transparent 37%), linear-gradient(118deg, var(--ceda-night), var(--ceda-brown) 58%, var(--ceda-maroon));
 }
 .peolwane-panel__header::after { position: absolute; right: 3.6rem; bottom: -4.5rem; width: 11rem; height: 8rem; border: 1px solid color-mix(in srgb, var(--ceda-gold) 22%, transparent); border-radius: 50%; content: ''; transform: rotate(-18deg); pointer-events: none; }
-.peolwane-panel__brandmark { z-index: 1; display: grid; width: 3.1rem; height: 3.1rem; flex: 0 0 auto; place-items: center; border: 1px solid color-mix(in srgb, var(--ceda-gold) 48%, transparent); border-radius: 1.1rem; color: var(--ceda-gold); background: color-mix(in srgb, var(--ceda-orange) 24%, transparent); box-shadow: inset 0 1px color-mix(in srgb, var(--surface-card) 18%, transparent); }
+.peolwane-panel__brandmark { z-index: 1; display: grid; width: 2.6rem; height: 2.6rem; flex: 0 0 auto; place-items: center; border: 1px solid color-mix(in srgb, var(--ceda-gold) 48%, transparent); border-radius: 1.1rem; color: var(--ceda-gold); background: color-mix(in srgb, var(--ceda-orange) 24%, transparent); box-shadow: inset 0 1px color-mix(in srgb, var(--surface-card) 18%, transparent); }
 .peolwane-panel__eyebrow { margin: 0 0 .12rem; color: var(--ceda-gold); font-size: .75rem; font-weight: 800; letter-spacing: .14em; }
-.peolwane-panel__title { margin: 0; font-size: 1.25rem; font-weight: 750; letter-spacing: -.035em; line-height: 1.2; }
+.peolwane-panel__title { margin: 0; font-size: 1.125rem; font-weight: 750; letter-spacing: -.035em; line-height: 1.2; }
 .peolwane-panel__subtitle { margin: .17rem 0 0; color: color-mix(in srgb, var(--surface-card) 78%, transparent); font-size: .875rem; }
-.peolwane-panel__online { display: inline-flex; align-items: center; gap: .35rem; color: color-mix(in srgb, var(--surface-card) 88%, transparent); font-size: .875rem; white-space: nowrap; }
+.peolwane-panel__online { display: inline-flex; align-items: center; gap: .35rem; color: color-mix(in srgb, var(--surface-card) 88%, transparent); font-size: .8125rem; white-space: nowrap; }
 .peolwane-panel__online span, .peolwane-panel__section-label span { width: .5rem; height: .5rem; border-radius: 50%; background: var(--feedback-success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--feedback-success) 16%, transparent); }
 .peolwane-panel__close { z-index: 1; display: grid; width: 2.75rem; height: 2.75rem; flex: 0 0 auto; place-items: center; border: 1px solid color-mix(in srgb, var(--surface-card) 26%, transparent); border-radius: 50%; color: var(--surface-card); background: color-mix(in srgb, var(--surface-card) 10%, transparent); cursor: pointer; }
 .peolwane-panel__close:hover { background: color-mix(in srgb, var(--surface-card) 20%, transparent); }
-.peolwane-panel__mode { display: flex; align-items: center; justify-content: center; gap: .75rem; padding: .55rem 1rem; border-bottom: 1px solid var(--border-default); background: var(--surface-card); }
-.peolwane-mode-label { display: inline-flex; align-items: center; gap: .4rem; color: var(--text-secondary); font-size: 1rem; font-weight: 650; transition: color .18s ease; }
-.peolwane-mode-label--active { color: var(--brand-primary-text); }
-/* The switch: 44 px tall hit area, 52 × 28 px track. Checked = voice conversation. */
-.peolwane-mode-switch { position: relative; display: inline-flex; width: 3.25rem; height: 2.75rem; flex: 0 0 auto; align-items: center; border: 0; padding: 0; background: transparent; cursor: pointer; }
-.peolwane-mode-switch::before { position: absolute; inset: .5rem 0; border: 1px solid var(--border-input); border-radius: var(--radius-pill); background: var(--surface-sunken); content: ''; transition: background .2s ease, border-color .2s ease; }
-.peolwane-mode-switch[aria-checked='true']::before { border-color: transparent; background: var(--brand-primary); }
-.peolwane-mode-switch__thumb { position: absolute; top: 50%; left: .25rem; width: 1.25rem; height: 1.25rem; border-radius: 50%; background: var(--surface-card); box-shadow: var(--shadow-1); transform: translateY(-50%); transition: transform .2s cubic-bezier(.16,1,.3,1); }
-.peolwane-mode-switch[aria-checked='true'] .peolwane-mode-switch__thumb { transform: translate(1.5rem, -50%); }
+.peolwane-panel__mode { padding: .65rem .85rem; border-bottom: 1px solid var(--border-default); background: var(--surface-card); }
+/* Text | Voice: one wide control, the chosen half filled with the launcher's sunrise and its label in dark ink (6.35:1). */
+.peolwane-mode { position: relative; display: grid; grid-template-columns: 1fr 1fr; padding: .25rem; border: 1px solid var(--border-input); border-radius: var(--radius-pill); background: var(--surface-sunken); }
+.peolwane-mode__thumb { position: absolute; top: .25rem; bottom: .25rem; left: .25rem; width: calc(50% - .25rem); border-radius: var(--radius-pill); background: linear-gradient(125deg, var(--ceda-amber), var(--ceda-orange) 55%, var(--brand-primary-hover)); box-shadow: 0 4px 12px color-mix(in srgb, var(--ceda-orange) 35%, transparent); transition: transform .3s cubic-bezier(.16,1,.3,1); }
+.peolwane-mode[data-mode='voice'] .peolwane-mode__thumb { transform: translateX(100%); }
+.peolwane-mode__option { position: relative; z-index: 1; display: inline-flex; min-height: 2.75rem; align-items: center; justify-content: center; gap: .45rem; border: 0; border-radius: var(--radius-pill); color: var(--text-secondary); background: transparent; font: inherit; font-size: 1rem; font-weight: 700; cursor: pointer; transition: color .2s ease; }
+.peolwane-mode__option:hover { color: var(--text-primary); }
+.peolwane-mode__option[aria-pressed='true'] { color: var(--brand-on-primary); }
+.peolwane-mode__option:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
 
 /* Voice mode: the orb replaces the conversation. */
-.peolwane-voice-stage { display: flex; min-height: 14rem; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: .5rem; overflow-y: auto; padding: 1.25rem 1.25rem 1rem; text-align: center; background: radial-gradient(ellipse at 50% 28%, color-mix(in srgb, var(--ceda-band-end) 30%, transparent), transparent 58%), var(--surface-card); }
+.peolwane-voice-stage { display: flex; min-height: 11rem; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: .5rem; overflow-y: auto; padding: 1.25rem 1.25rem 1rem; text-align: center; background: radial-gradient(ellipse at 50% 28%, color-mix(in srgb, var(--ceda-band-end) 30%, transparent), transparent 58%), var(--surface-card); }
 .peolwane-voice-stage__caption { width: 100%; max-width: 22rem; }
 .peolwane-voice-stage__caption p { margin: 0; overflow-wrap: anywhere; }
 .peolwane-voice-stage__you { margin-bottom: .4rem !important; color: var(--text-secondary); font-size: .875rem; font-style: italic; }
@@ -115,7 +157,7 @@
 .peolwane-panel__conversation { display: flex; min-height: 8rem; flex: 1; flex-direction: column; overflow: hidden; background: radial-gradient(ellipse at 85% 4%, color-mix(in srgb, var(--ceda-band-end) 22%, transparent), transparent 36%), var(--surface-card); }
 .peolwane-panel__section-label { display: flex; flex: 0 0 auto; align-items: center; gap: .45rem; padding: .75rem 1.15rem .25rem; color: var(--text-secondary); font-size: .75rem; font-weight: 800; letter-spacing: .12em; }
 .peolwane-panel__section-label span { width: .4rem; height: .4rem; background: var(--ceda-orange); box-shadow: none; }
-.peolwane-panel__messages { display: flex; min-height: 0; flex: 1; flex-direction: column; gap: .68rem; overflow-y: auto; overscroll-behavior: contain; margin: 0; padding: .65rem 1rem .8rem; list-style: none; scrollbar-color: var(--border-input) transparent; scrollbar-width: thin; }
+.peolwane-panel__messages { display: flex; min-height: 0; flex: 1; flex-direction: column; gap: .68rem; overflow-y: auto; overscroll-behavior: contain; margin: 0; padding: .85rem .9rem .6rem; list-style: none; scrollbar-color: var(--border-input) transparent; scrollbar-width: thin; }
 .peolwane-message { display: flex; align-items: flex-end; gap: .45rem; }
 .peolwane-message--user { justify-content: flex-end; }
 .peolwane-message__avatar { display: grid; width: 1.65rem; height: 1.65rem; flex: 0 0 auto; place-items: center; border: 1px solid var(--border-default); border-radius: .62rem; color: var(--brand-primary-text); background: var(--brand-primary-subtle); }
@@ -125,13 +167,24 @@
 .peolwane-typing i { width: .32rem; height: .32rem; border-radius: 50%; background: var(--ceda-brown); animation: peolwane-dot 1s infinite ease-in-out; }
 .peolwane-typing i:nth-child(2) { animation-delay: .15s; }
 .peolwane-typing i:nth-child(3) { animation-delay: .3s; }
-.peolwane-prompts { flex: 0 0 auto; padding: 0 1rem 1rem 3.05rem; }
-.peolwane-prompts p { margin: 0 0 .4rem; color: var(--text-secondary); font-size: .875rem; }
-.peolwane-prompts div { display: flex; flex-wrap: wrap; gap: .4rem; }
-.peolwane-prompts button { display: inline-flex; min-height: 2.75rem; align-items: center; gap: .35rem; border: 1px solid var(--border-input); border-radius: var(--radius-pill); padding: .45rem .65rem; color: var(--brand-primary-text); background: var(--brand-primary-subtle); font: inherit; font-size: .875rem; font-weight: 600; text-align: left; cursor: pointer; transition: border-color .18s ease, background .18s ease; }
-.peolwane-prompts button:hover { border-color: var(--brand-primary); background: color-mix(in srgb, var(--brand-primary-subtle) 60%, var(--ceda-band-end)); }
-.peolwane-panel__composer { flex: 0 0 auto; border-top: 1px solid var(--border-default); padding: .75rem 1rem .9rem; background: var(--surface-card); }
+/* Suggested questions, one at a time: the question, then Next and Pause. */
+.peolwane-prompts { flex: 0 0 auto; padding: 0 .9rem .8rem 2.95rem; }
+.peolwane-prompts__head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-bottom: .35rem; }
+.peolwane-prompts__head p { margin: 0; color: var(--text-secondary); font-size: .875rem; }
+.peolwane-prompts__dots { display: inline-flex; gap: .3rem; }
+.peolwane-prompts__dots i { width: .4rem; height: .4rem; border-radius: 50%; background: var(--border-input); transition: background .2s ease, width .2s ease; }
+.peolwane-prompts__dots i.is-current { width: 1rem; border-radius: var(--radius-pill); background: var(--brand-primary); }
+.peolwane-prompts__row { display: flex; align-items: center; gap: .3rem; }
+.peolwane-prompt { display: inline-flex; min-width: 0; min-height: 2.75rem; flex: 1; align-items: center; justify-content: space-between; gap: .45rem; border: 1px solid var(--border-input); border-radius: var(--radius-pill); padding: .45rem .8rem; color: var(--brand-primary-text); background: var(--brand-primary-subtle); font: inherit; font-size: .9375rem; font-weight: 650; text-align: left; cursor: pointer; animation: peolwane-prompt-in .38s cubic-bezier(.16,1,.3,1) both; transition: border-color .18s ease, background .18s ease; }
+.peolwane-prompt:hover { border-color: var(--brand-primary); background: color-mix(in srgb, var(--brand-primary-subtle) 60%, var(--ceda-band-end)); }
+.peolwane-prompts__control { display: grid; width: 2.75rem; height: 2.75rem; flex: 0 0 auto; place-items: center; border: 1px solid var(--border-default); border-radius: 50%; color: var(--text-secondary); background: var(--surface-card); cursor: pointer; }
+.peolwane-prompts__control:hover { color: var(--brand-primary-text); border-color: var(--border-input); }
+.peolwane-prompt:focus-visible, .peolwane-prompts__control:focus-visible { outline: 3px solid var(--focus-ring); outline-offset: 2px; }
+@keyframes peolwane-prompt-in { from { opacity: 0; transform: translateX(.6rem); } to { opacity: 1; transform: none; } }
+.peolwane-panel__composer { flex: 0 0 auto; border-top: 1px solid var(--border-default); padding: .65rem .85rem .7rem; background: var(--surface-card); }
 .peolwane-panel__status { min-height: 1.25rem; margin: 0 0 .35rem; color: var(--text-secondary); font-size: .875rem; }
+/* Kept in place for screen readers, but takes no room while there is nothing to say. */
+.peolwane-panel__status:empty { min-height: 0; margin: 0; }
 .peolwane-panel__error { margin: 0 0 .5rem; border-radius: .65rem; padding: .55rem .65rem; color: var(--feedback-error); background: var(--feedback-error-subtle); font-size: .875rem; }
 .peolwane-input-row { display: flex; align-items: center; gap: .5rem; border: 1px solid var(--border-input); border-radius: 1rem; padding: .35rem; background: var(--surface-card); transition: border-color .18s ease, box-shadow .18s ease; }
 .peolwane-input-row:focus-within { border-color: var(--brand-primary-text); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-primary) 24%, transparent); }
@@ -145,7 +198,7 @@
 .peolwane-voice-control button:hover { filter: brightness(1.1); }
 .peolwane-voice-control button:disabled { opacity: .55; cursor: wait; }
 .peolwane-voice-control .peolwane-voice-control--listening { background: linear-gradient(115deg, var(--feedback-error), color-mix(in srgb, var(--feedback-error) 74%, var(--ceda-night))); animation: peolwane-pulse 1.3s infinite; }
-.peolwane-panel__privacy { display: flex; align-items: flex-start; gap: .4rem; margin: .65rem 0 0; color: var(--text-secondary); font-size: .875rem; line-height: 1.45; }
+.peolwane-panel__privacy { display: flex; align-items: flex-start; gap: .4rem; margin: .5rem 0 0; color: var(--text-secondary); font-size: .8125rem; line-height: 1.4; }
 .peolwane-panel__privacy svg { flex: 0 0 auto; color: var(--brand-primary-text); }
 .peolwane-panel__privacy a { color: var(--brand-primary-text); font-weight: 700; text-decoration: underline; text-underline-offset: 2px; }
 
@@ -154,17 +207,27 @@
 @keyframes peolwane-dot { 0%, 60%, 100% { transform: translateY(0); opacity: .45; } 30% { transform: translateY(-3px); opacity: 1; } }
 @keyframes peolwane-pulse { 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--feedback-error) 14%, transparent); } }
 
+/*
+ * Applicants have a navigation bar at the foot of the window below 768 px (--peolwane-applicant-bar, its height). There
+ * the launcher keeps the same gap above that bar as it keeps above the window's edge on every other screen; from
+ * 768 px there is no bar, and it sits exactly where it does on the public and staff pages.
+ */
+@media (max-width: 767.98px) {
+  .peolwane-launcher--applicant { bottom: calc(var(--peolwane-applicant-bar) + 1.5rem + env(safe-area-inset-bottom)); }
+}
 @media (max-width: 640px) {
   .peolwane-launcher { right: 1rem; bottom: calc(1rem + env(safe-area-inset-bottom)); width: 12.5rem; min-height: 3.4rem; padding-right: .85rem; }
   .peolwane-launcher__hint { max-width: 0; border-left-color: transparent; padding-left: 0; opacity: 0; }
   .peolwane-launcher--compact { width: 3.5rem; }
-  .peolwane-launcher--applicant { bottom: calc(6.25rem + env(safe-area-inset-bottom)); }
+  .peolwane-launcher--applicant { bottom: calc(var(--peolwane-applicant-bar) + 1rem + env(safe-area-inset-bottom)); }
   .peolwane-panel { right: .55rem; bottom: calc(.55rem + env(safe-area-inset-bottom)); left: .55rem; width: auto; max-height: calc(100dvh - 1.1rem - env(safe-area-inset-bottom)); border-radius: 1.35rem; }
-  .peolwane-panel__header { min-height: 6.1rem; gap: .65rem; padding-right: .7rem; padding-left: .9rem; }
+  .peolwane-panel__header { min-height: 4.4rem; gap: .6rem; padding-right: .7rem; padding-left: .85rem; }
   .peolwane-panel__online { font-size: .875rem; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .peolwane-launcher, .peolwane-mode-label, .peolwane-mode-switch::before, .peolwane-mode-switch__thumb, .peolwane-input-row { transition: none; }
+  .peolwane-launcher, .peolwane-sidebar-launcher, .peolwane-mode__thumb, .peolwane-mode__option, .peolwane-input-row { transition: none; }
+  .peolwane-prompt { animation: none; }
+  .peolwane-sidebar-launcher:hover { transform: none; }
   .les-orb .les-orb-core, .les-orb .les-orb-ring { animation: none !important; }
   .peolwane-panel, .peolwane-panel--closing { animation: none; }
   .peolwane-typing i, .peolwane-voice-control .peolwane-voice-control--listening { animation: none; }

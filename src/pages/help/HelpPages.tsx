@@ -224,7 +224,7 @@ const QUICK_CONTACTS: { icon: LucideIcon; label: string; value: string; note: st
 ]
 
 const sectionEyebrow = 'text-sm font-bold uppercase tracking-wider text-brand-text'
-const sectionTitle = 'text-[1.75rem] font-normal leading-tight md:text-[2rem]'
+const sectionTitle = 'text-[1.75rem] font-semibold leading-tight tracking-tight text-[var(--ceda-night)] md:text-[2.25rem]'
 
 /**
  * T03 contacts (post-freeze redesign, ABM 22 Nov): a header on a photo of Gaborone's CBD, where CEDA's head office
@@ -279,28 +279,37 @@ export function ContactsPage() {
         <BranchNetworkMap />
       </Suspense>
 
-      <section aria-labelledby="contacts-heading" className="flex flex-col gap-5">
+      {/* Regulatory offices (restyled 23 Nov, in the home page's "Why submit" style): a low sun behind the heading, and
+          white cards with a line of sunrise, the icon on a sunrise tile and a quiet number, lifting a little on hover. */}
+      <section aria-labelledby="contacts-heading" className="relative isolate flex flex-col gap-6">
+        <div aria-hidden className="pointer-events-none absolute -left-40 -top-24 -z-10 h-80 w-80 rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--ceda-gold)_22%,transparent),transparent_68%)]" />
         <div className="flex max-w-2xl flex-col gap-2">
           <p className={sectionEyebrow}>Registration and compliance</p>
           <h2 id="contacts-heading" className={sectionTitle}>
             Regulatory offices
           </h2>
-          <p className="text-ink-muted">Offices that can help with registration, licensing, standards and intellectual property.</p>
+          <p className="text-[1.0625rem] leading-relaxed text-[var(--ceda-brown)]">Offices that can help with registration, licensing, standards and intellectual property.</p>
         </div>
         <ContentStates query={contacts} what="contacts">
           {(rows) => (
             <>
             <SampleSectionNote rows={rows} what="offices" />
             <ul className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-              {rows.map((row) => {
+              {rows.map((row, i) => {
                 const Icon = iconFor(row)
                 return (
-                  <li key={row.slug} className="group relative flex flex-col gap-3 overflow-hidden rounded-md border border-line bg-surface-card p-5 shadow-1 transition-shadow hover:shadow-2">
+                  <li
+                    key={row.slug}
+                    className="group relative flex flex-col gap-3 overflow-hidden rounded-[1.25rem] border border-line bg-white p-6 shadow-1 hover:shadow-2 motion-safe:transition motion-safe:duration-300 motion-safe:hover:-translate-y-1"
+                  >
                     <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,var(--ceda-gold),var(--ceda-orange),var(--ceda-maroon))]" />
-                    <span aria-hidden className="flex h-12 w-12 items-center justify-center rounded-md bg-[color-mix(in_srgb,var(--ceda-gold)_22%,transparent)] text-[var(--ceda-maroon)]">
+                    <span aria-hidden className="absolute right-5 top-5 text-sm font-bold tracking-wider text-[color-mix(in_srgb,var(--ceda-orange)_55%,transparent)]">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <span aria-hidden className="grid h-12 w-12 place-items-center rounded-[0.9rem] bg-[linear-gradient(135deg,var(--ceda-gold),var(--ceda-orange))] text-[var(--ceda-night)] shadow-1">
                       <Icon className="h-6 w-6" />
                     </span>
-                    <h3 className="text-h3 font-semibold">{row.title}</h3>
+                    <h3 className="pr-8 text-lg font-semibold text-[var(--ceda-night)]">{row.title}</h3>
                     <div className="text-sm text-ink-muted">
                       <PlainMarkdown source={row.body_md} />
                     </div>

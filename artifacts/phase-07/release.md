@@ -9,7 +9,7 @@
 | Commit | the merge commit of the PR that adds this note (`git rev-parse v1.0.1-judging^{commit}`) |
 | Date | 23 Nov 2026 (CAT) |
 | Release URL | https://main.d270qrk6a7zs47.amplifyapp.com (Amplify, deploys `main`; Supabase mode, hosted project `hncwpxyuolfxafbemapb`, EU Central) |
-| Included PRs | every PR merged into `main` up to the tagged commit (`git log --oneline v1.0.1-judging`). Since `v1.0-judging`: #165 toolkit preview behind a flag (switched on for judging, see below), #167 Peolwane AI guide and page transitions, #168 Supabase URL hardening and audit fixes, #170 API contract for 017, #171 notifications panel, #172 accessibility settings, cookie preferences, terms of use, Data Protection Act rights and Follow us, #174 Peolwane AI orb in voice mode with a Voice/Text switch, and this release PR (licence list, release docs) |
+| Included PRs | every PR merged into `main` up to the tagged commit (`git log --oneline v1.0.1-judging`). Since `v1.0-judging`: #165 toolkit preview behind a flag (switched on for judging, see below), #167 Peolwane AI guide and page transitions, #168 Supabase URL hardening and audit fixes, #170 API contract for 017, #171 notifications panel, #172 accessibility settings, cookie preferences, terms of use, Data Protection Act rights and Follow us, #173 this release (licence list, release docs), #174 Peolwane AI orb in voice mode, and, after the first tag on 23 Nov, #176 (which includes #175): Peolwane AI in the staff sidebar, regrouped footers, smoother page transitions, the home and How it works heroes, a frosted navbar and a compact Peolwane AI panel with a Text | Voice control. Presentation only: no data, API, route or permission changes |
 
 ## What is in this release
 

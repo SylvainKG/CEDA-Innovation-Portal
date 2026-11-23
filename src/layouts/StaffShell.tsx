@@ -5,8 +5,8 @@ import { navFor } from '@/navigation/nav-config'
 import { roleLabel } from '@/navigation/role-labels'
 import { useSession } from '@/lib/session'
 import { cn } from '@/lib/cn'
-import { Brand, Footer, MockRoleSwitcher, SkipLink, TopBarEnd } from './ShellParts'
-import { PeolwaneAssistant } from '@/features/assistant/PeolwaneAssistant'
+import { Brand, Footer, MockRoleSwitcher, SignOutButton, SkipLink, TopBarEnd } from './ShellParts'
+import { PeolwaneAssistant, PeolwaneSidebarLauncher } from '@/features/assistant/PeolwaneAssistant'
 import { PageTransition } from './PageTransition'
 
 /** A staff navigation item: the current one has an orange bar on its left edge, a tinted background and an orange icon. */
@@ -21,6 +21,10 @@ function StaffNav({ onNavigate }: { onNavigate?: () => void }) {
   const { pathname } = useLocation()
   const items = navFor(user?.roles ?? [])
   const main = user?.roles.find((r) => r !== 'auditor') ?? user?.roles[0]
+  // Administrators have Peolwane AI straight under Settings (team, 23 Nov). Other staff have a short navigation, so
+  // there it sits at the foot of the sidebar, just above Sign out, instead of floating near the top.
+  const assistant = <PeolwaneSidebarLauncher onOpen={onNavigate} />
+  const adminLayout = user?.roles.includes('admin') ?? false
   return (
     <div className="flex h-full flex-col gap-3">
       {main ? <p className="px-3 pt-1 text-sm font-bold uppercase tracking-wider text-brand-text">{roleLabel(main)} portal</p> : null}
@@ -49,13 +53,21 @@ function StaffNav({ onNavigate }: { onNavigate?: () => void }) {
           )
         })}
       </ul>
-      <p className="mt-auto flex items-start gap-2 rounded-md border border-line bg-surface-sunken p-3 text-sm">
-        <ShieldCheck aria-hidden className="h-5 w-5 shrink-0 text-[var(--ceda-maroon)]" />
-        <span>
-          <span className="block font-semibold">Restricted staff area</span>
-          <span className="text-ink-muted">Actions are recorded</span>
-        </span>
-      </p>
+      {adminLayout ? assistant : null}
+      <div className="mt-auto flex flex-col gap-2 border-t border-line pt-3">
+        {adminLayout ? null : assistant}
+        <SignOutButton
+          onSignOut={onNavigate}
+          className="flex min-h-touch w-full items-center gap-3 rounded-md px-3 text-ink transition-colors hover:bg-surface-sunken [&>svg]:text-ink-muted"
+        />
+        <p className="flex items-start gap-2 rounded-md border border-line bg-surface-sunken p-3 text-sm">
+          <ShieldCheck aria-hidden className="h-5 w-5 shrink-0 text-[var(--ceda-maroon)]" />
+          <span>
+            <span className="block font-semibold">Restricted staff area</span>
+            <span className="text-ink-muted">Actions are recorded</span>
+          </span>
+        </p>
+      </div>
     </div>
   )
 }
@@ -64,8 +76,9 @@ function StaffNav({ onNavigate }: { onNavigate?: () => void }) {
  * Staff shell (spec §4), laid out to Sandra's 21 Nov frames, tidied after the freeze (ABM, 22 Nov):
  *
  * - From 1024 px the logo, the portal label and the navigation sit in a left sidebar that stays in view as the page
- *   scrolls (sticky, full window height), with "Restricted staff area" at its foot. The top bar (bell and account
- *   menu) stays in view too.
+ *   scrolls (sticky, full window height). Sign out and "Restricted staff area" sit at its foot. Peolwane AI is an
+ *   item in the sidebar: under Settings for administrators, just above Sign out for other staff (team, 23 Nov). Its
+ *   panel opens beside the sidebar. The top bar (bell, and who is signed in) stays in view too.
  * - Below 1024 px a menu button opens the same navigation in a drawer from the left, over a dimmed page. It closes
  *   on a link, Escape, a tap outside it, or a change of page.
  * - The page fills at least the window, so the slim workspace footer starts below the fold.
@@ -96,7 +109,7 @@ export function StaffShell() {
         </nav>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 h-16 border-b border-line bg-[color-mix(in_srgb,var(--surface-card)_92%,transparent)] backdrop-blur-md">
+        <header className="shell-header sticky top-0 z-30 h-16 border-b border-line bg-[color-mix(in_srgb,var(--surface-card)_92%,transparent)] backdrop-blur-md">
           <div className="flex h-full items-center justify-between gap-2 px-4 md:gap-4">
             <div className="flex min-w-0 items-center gap-1 md:gap-3">
               <button
@@ -113,7 +126,7 @@ export function StaffShell() {
                 <Brand />
               </div>
             </div>
-            <TopBarEnd badge={false} />
+            <TopBarEnd badge={false} accountMenu={false} />
           </div>
         </header>
         {open ? (
@@ -132,8 +145,8 @@ export function StaffShell() {
         <div className="mx-auto w-full max-w-content px-4">
           <MockRoleSwitcher />
         </div>
-        <Footer variant="app" chatSpace />
-        <PeolwaneAssistant />
+        <Footer variant="app" />
+        <PeolwaneAssistant placement="sidebar" />
       </div>
     </div>
   )

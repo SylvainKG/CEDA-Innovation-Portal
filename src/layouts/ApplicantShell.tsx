@@ -16,9 +16,9 @@ import { PageTransition } from './PageTransition'
  */
 export function ApplicantShell() {
   return (
-    <div className="flex min-h-screen flex-col pb-40 md:pb-0">
+    <div className="flex min-h-screen flex-col">
       <SkipLink />
-      <header className="sticky top-0 z-30 border-b border-line bg-[color-mix(in_srgb,var(--surface-card)_92%,transparent)] backdrop-blur-md">
+      <header className="shell-header sticky top-0 z-30 border-b border-line bg-[color-mix(in_srgb,var(--surface-card)_92%,transparent)] backdrop-blur-md">
         <div className="mx-auto flex h-16 max-w-content items-center justify-between gap-4 px-4">
           <div className="flex min-w-0 items-center gap-3">
             <Brand />
@@ -43,9 +43,9 @@ export function ApplicantShell() {
       <div className="mx-auto w-full max-w-content px-4">
         <MockRoleSwitcher />
       </div>
-      <Footer variant="app" chatSpace />
+      <Footer variant="app" chatSpace phoneNav />
       <PeolwaneAssistant placement="applicant" />
-      <nav aria-label="Main" className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-line bg-surface-card md:hidden">
+      <nav aria-label="Main" className="shell-bottom-nav fixed inset-x-0 bottom-0 z-30 grid grid-cols-3 border-t border-line bg-surface-card md:hidden">
         {APPLICANT_NAV.map((item) => (
           <NavLink
             key={item.to}

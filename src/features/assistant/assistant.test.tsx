@@ -1,9 +1,10 @@
-import { act, render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useState } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ask, AssistantError, pickRecordingType, readAssistantConfig, transcribe } from './leseding'
-import { PeolwaneAssistant } from './PeolwaneAssistant'
+import { PeolwaneAssistant, PeolwaneSidebarLauncher } from './PeolwaneAssistant'
 import { getState, orbState, resetAssistant, sendQuestion, setMode, setOpen } from './store'
 
 const CFG = { base: 'https://engine.example', key: 'lsk_test_key' }
@@ -20,9 +21,10 @@ function streamed(chunks: string[], status = 200) {
   return new Response(body, { status, headers: { 'Content-Type': 'text/plain' } })
 }
 
-function renderAssistant(config: typeof CFG | null = CFG, placement: 'default' | 'applicant' = 'default') {
+function renderAssistant(config: typeof CFG | null = CFG, placement: 'default' | 'applicant' | 'sidebar' = 'default') {
   render(
     <MemoryRouter>
+      {placement === 'sidebar' ? <PeolwaneSidebarLauncher config={config} /> : null}
       <PeolwaneAssistant config={config} placement={placement} />
     </MemoryRouter>,
   )
@@ -132,7 +134,7 @@ describe('Peolwane AI panel', () => {
     await user.click(launcher)
     const dialog = screen.getByRole('dialog', { name: 'Peolwane AI' })
     expect(dialog).toBeInTheDocument()
-    expect(screen.getByRole('switch', { name: 'Voice conversation' })).toBeChecked()
+    expect(screen.getByRole('button', { name: 'Voice' })).toHaveAttribute('aria-pressed', 'true')
     expect(screen.getByRole('button', { name: 'Start speaking' })).toHaveFocus()
     // Voice mode shows the Leseding orb (idle) in place of the conversation.
     expect(screen.getByTestId('peolwane-orb')).toHaveAttribute('data-state', 'idle')
@@ -160,12 +162,48 @@ describe('Peolwane AI panel', () => {
     expect(screen.getByRole('button', { name: 'Peolwane AI' }).className).toContain('peolwane-launcher--applicant')
   })
 
+  it('staff: opens from the sidebar launcher beside the sidebar, with no floating launcher, and Esc returns focus to it', async () => {
+    const user = renderAssistant(CFG, 'sidebar')
+    const launcher = screen.getByRole('button', { name: 'Peolwane AI' })
+    expect(launcher.className).toContain('peolwane-sidebar-launcher')
+    expect(document.querySelector('.peolwane-launcher')).not.toBeInTheDocument()
+    await user.click(launcher)
+    expect(launcher).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getByRole('dialog', { name: 'Peolwane AI' })).toHaveClass('peolwane-panel--beside-sidebar')
+    await user.keyboard('{Escape}')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(launcher).toHaveFocus()
+  })
+
+  it('staff: shows no sidebar launcher when the assistant is not configured', () => {
+    renderAssistant(null, 'sidebar')
+    expect(screen.queryByRole('button', { name: 'Peolwane AI' })).not.toBeInTheDocument()
+  })
+
+  it('staff: returns focus to the navigation button after closing from the mobile drawer', async () => {
+    const user = userEvent.setup()
+    function MobileStaffShell() {
+      const [drawerOpen, setDrawerOpen] = useState(true)
+      return (
+        <MemoryRouter>
+          <button type="button" aria-controls="staff-drawer">Open navigation</button>
+          {drawerOpen ? <PeolwaneSidebarLauncher onOpen={() => setDrawerOpen(false)} config={CFG} /> : null}
+          <PeolwaneAssistant config={CFG} placement="sidebar" />
+        </MemoryRouter>
+      )
+    }
+    render(<MobileStaffShell />)
+    await user.click(screen.getByRole('button', { name: 'Peolwane AI' }))
+    await user.keyboard('{Escape}')
+    expect(screen.getByRole('button', { name: 'Open navigation' })).toHaveFocus()
+  })
+
   it('switches to text, sends a typed question and shows the streamed answer (not spoken)', async () => {
     fetchMock.mockResolvedValue(streamed(['Your receipt is on ', 'the idea page.']))
     const user = renderAssistant()
     await user.click(screen.getByRole('button', { name: 'Peolwane AI' }))
-    await user.click(screen.getByRole('switch', { name: 'Voice conversation' }))
-    expect(screen.getByRole('switch', { name: 'Voice conversation' })).not.toBeChecked()
+    await user.click(screen.getByRole('button', { name: 'Text' }))
+    expect(screen.getByRole('button', { name: 'Voice' })).toHaveAttribute('aria-pressed', 'false')
     expect(screen.queryByTestId('peolwane-orb')).not.toBeInTheDocument()
     expect(screen.getByText(/Hello, I'm Peolwane AI/)).toBeInTheDocument()
     const input = screen.getByRole('textbox', { name: 'Your question' })
@@ -178,11 +216,26 @@ describe('Peolwane AI panel', () => {
     expect(getState().status).toBe('idle')
   })
 
+  it('shows one suggested question at a time; Next steps through them, Pause stops them, and choosing one asks it', async () => {
+    fetchMock.mockResolvedValue(streamed(['Open Challenges to see them.']))
+    const user = renderAssistant()
+    await user.click(screen.getByRole('button', { name: 'Peolwane AI' }))
+    await user.click(screen.getByRole('button', { name: 'Text' }))
+    const carousel = screen.getByRole('group', { name: 'Suggested questions' })
+    expect(within(carousel).getByRole('button', { name: 'How do I submit an idea?' })).toBeInTheDocument()
+    expect(within(carousel).queryByRole('button', { name: 'Where can I find open challenges?' })).not.toBeInTheDocument()
+    await user.click(within(carousel).getByRole('button', { name: /^(Pause|Rotate) the suggested questions$/ }))
+    await user.click(within(carousel).getByRole('button', { name: 'Next suggested question' }))
+    await user.click(within(carousel).getByRole('button', { name: 'Where can I find open challenges?' }))
+    expect(await screen.findByText('Open Challenges to see them.')).toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: 'Suggested questions' })).not.toBeInTheDocument()
+  })
+
   it('shows a failed answer as an alert and keeps the question', async () => {
     fetchMock.mockResolvedValue(new Response('busy', { status: 429 }))
     const user = renderAssistant()
     await user.click(screen.getByRole('button', { name: 'Peolwane AI' }))
-    await user.click(screen.getByRole('switch', { name: 'Voice conversation' }))
+    await user.click(screen.getByRole('button', { name: 'Text' }))
     await user.type(screen.getByRole('textbox', { name: 'Your question' }), 'Hello{Enter}')
     expect(await screen.findByRole('alert')).toHaveTextContent('Peolwane AI is busy. Wait a moment and try again.')
     expect(screen.getByText('Hello')).toBeInTheDocument()
@@ -194,7 +247,7 @@ describe('Peolwane AI panel', () => {
     await user.click(screen.getByRole('button', { name: 'Peolwane AI' }))
     await user.click(screen.getByRole('button', { name: 'Start speaking' }))
     expect(await screen.findByRole('alert')).toHaveTextContent("Voice isn't available in this browser.")
-    expect(screen.getByRole('switch', { name: 'Voice conversation' })).not.toBeChecked()
+    expect(screen.getByRole('button', { name: 'Voice' })).toHaveAttribute('aria-pressed', 'false')
   })
 
   it('in voice mode, speaks the answer, drives the orb through its states, and is idle again when the audio ends', async () => {

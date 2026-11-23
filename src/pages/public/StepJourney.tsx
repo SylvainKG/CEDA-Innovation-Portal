@@ -37,7 +37,8 @@ const DWELL = 4200
  * who acts. It plays through once on its own (each step for about four seconds); Pause stops it, and the arrows or the
  * step buttons move it by hand. With the reduced-motion setting nothing plays on its own and the swallow simply moves.
  */
-export function StepJourney({ steps }: { steps: JourneyStep[] }) {
+/** `glass`: inside a dark hero, a translucent card with a faint edge instead of a solid night-brown one. */
+export function StepJourney({ steps, glass = false }: { steps: JourneyStep[]; glass?: boolean }) {
   const [index, setIndex] = useState(0)
   const [playing, setPlaying] = useState(() => !prefersReducedMotion())
   const [arrived, setArrived] = useState(false)
@@ -72,7 +73,12 @@ export function StepJourney({ steps }: { steps: JourneyStep[] }) {
 
   return (
     // min-w-0: inside a grid it may shrink to the column instead of growing to its widest content.
-    <figure className="relative mx-auto flex w-full min-w-0 max-w-xl flex-col overflow-hidden rounded-[2rem] bg-[var(--ceda-night)] text-white shadow-2">
+    <figure
+      className={cn(
+        'relative mx-auto flex w-full min-w-0 max-w-xl flex-col overflow-hidden rounded-[2rem] text-white',
+        glass ? 'bg-white/[0.06] ring-1 ring-white/15 backdrop-blur-sm' : 'bg-[var(--ceda-night)] shadow-2',
+      )}
+    >
       <svg viewBox="0 0 600 300" className="block h-auto w-full" aria-hidden focusable="false">
         <defs>
           <mask id={reveal}>
