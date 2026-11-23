@@ -1,12 +1,15 @@
 import { AlertTriangle, ArrowRight, BookOpen, CircleHelp, MessagesSquare, Trophy } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { EmptyState, ErrorState, IdeaCard, LoadingState, ButtonLink } from '@/components'
+import { ToolkitPreview } from '@/components/ToolkitPreview'
 import { HeaderFigure, PageHeader } from '@/layouts/PageHeader'
 import { formatDateTimeCAT, relativeDays } from '@/lib/format'
 import { isChallengeOpen } from '@/lib/form-check'
 import { useSession } from '@/lib/session'
 import { primaryActionFor, sortIdeas, toIdeaCard } from '@/features/ideas/idea-view'
 import { useChallenges, useMyIdeas } from '@/features/submission/queries'
+import { INNOVATOR_HIGHLIGHTED, INNOVATOR_TOOLS } from '@/features/toolkit-preview/catalogue'
+import { toolkitPreviewEnabled } from '@/features/toolkit-preview/flag'
 import type { ChallengeSummary, MyIdea } from '@/lib/api/types'
 
 const IN_PROGRESS: readonly MyIdea['status'][] = ['submitted', 'in_evaluation', 'in_adjudication']
@@ -124,6 +127,16 @@ export function MyIdeasPage() {
             </li>
           ))}
         </ul>
+      ) : null}
+
+      {toolkitPreviewEnabled() ? (
+        <ToolkitPreview
+          eyebrow="Coming soon"
+          title="Business Development Toolkit"
+          workflow="Tools to plan, cost and test your business idea, so your next application to CEDA is stronger."
+          tools={INNOVATOR_TOOLS}
+          highlighted={INNOVATOR_HIGHLIGHTED}
+        />
       ) : null}
     </div>
   )

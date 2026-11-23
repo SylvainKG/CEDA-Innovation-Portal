@@ -2,10 +2,13 @@ import { useQuery } from '@tanstack/react-query'
 import { ArrowRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { EmptyState, ErrorState, LoadingState } from '@/components/states/States'
+import { ToolkitPreview } from '@/components/ToolkitPreview'
 import { chatKeys } from '@/features/chat/queries'
 import { oversightKeys } from '@/features/oversight/queries'
 import { reviewKeys } from '@/features/review/queries'
 import { staffKeys } from '@/features/staff/queries'
+import { REVIEWER_HIGHLIGHTED, REVIEWER_TOOLS } from '@/features/toolkit-preview/catalogue'
+import { toolkitPreviewEnabled } from '@/features/toolkit-preview/flag'
 import { api } from '@/lib/api'
 import type { Role } from '@/lib/api/types'
 import { cn } from '@/lib/cn'
@@ -285,6 +288,16 @@ export function StaffHomePage() {
             ))}
           </ul>
         </section>
+      ) : null}
+
+      {reviewer && toolkitPreviewEnabled() ? (
+        <ToolkitPreview
+          eyebrow="Coming soon"
+          title="Reviewer Intelligence Toolkit"
+          workflow="Tools to read evidence against each criterion and give clearer, more consistent feedback."
+          tools={REVIEWER_TOOLS}
+          highlighted={REVIEWER_HIGHLIGHTED}
+        />
       ) : null}
     </div>
   )
