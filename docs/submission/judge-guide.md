@@ -59,6 +59,7 @@ Also worth trying:
 - **Administration:** as `admin`, open **Users & roles** (grant or remove a role with a reason; invite staff by email, which is Simulated), **Challenges** (edit a challenge, its application form and its rubric; weights must total 100%), **Content** (FAQs, contacts, notices; only published pages are public) and **Chat settings** (opening hours and closures). Every change is recorded in the audit log.
 - **Notifications:** the bell in the header shows unread notifications; **Notifications** lists them, and the email alerts setting there is stored, but emails are Simulated.
 - **Peolwane AI** (live; checked on the judging site on 23 Nov): the button at the bottom right of every page opens a voice-first assistant (tap the microphone, speak, tap again; or switch to Text). It answers questions about using the portal and never sees accounts or ideas.
+- **Toolkits (planned, not built):** My ideas shows a "Business Development Toolkit" section to applicants, and staff home shows a "Reviewer Intelligence Toolkit" section to reviewers. They preview tools planned for later; every tool is marked "Planned feature" and none of them works yet.
 - **Clarification:** case `CEDA-2026-0003` has an open question for `applicant.e`. A reply returns the case to its stage without creating a new version.
 
 ## 3. Access control you can check yourself

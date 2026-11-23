@@ -9,7 +9,7 @@
 | Commit | the merge commit of the PR that adds this note (`git rev-parse v1.0.1-judging^{commit}`) |
 | Date | 23 Nov 2026 (CAT) |
 | Release URL | https://main.d270qrk6a7zs47.amplifyapp.com (Amplify, deploys `main`; Supabase mode, hosted project `hncwpxyuolfxafbemapb`, EU Central) |
-| Included PRs | every PR merged into `main` up to the tagged commit (`git log --oneline v1.0.1-judging`). Since `v1.0-judging`: #165 toolkit preview behind a flag (off), #167 Peolwane AI guide and page transitions, #168 Supabase URL hardening and audit fixes, #170 API contract for 017, #171 notifications panel, #172 accessibility settings, cookie preferences, terms of use, Data Protection Act rights and Follow us, #174 Peolwane AI orb in voice mode with a Voice/Text switch, and this release PR (licence list, release docs) |
+| Included PRs | every PR merged into `main` up to the tagged commit (`git log --oneline v1.0.1-judging`). Since `v1.0-judging`: #165 toolkit preview behind a flag (switched on for judging, see below), #167 Peolwane AI guide and page transitions, #168 Supabase URL hardening and audit fixes, #170 API contract for 017, #171 notifications panel, #172 accessibility settings, cookie preferences, terms of use, Data Protection Act rights and Follow us, #174 Peolwane AI orb in voice mode with a Voice/Text switch, and this release PR (licence list, release docs) |
 
 ## What is in this release
 
@@ -32,6 +32,7 @@ The full main journey (steps 0–17) passed through the real screens against the
 - **Demo staff accounts skip two-step sign-in.** The `demo_mfa_exempt` setting is **on**, so judges can sign in to the seeded staff accounts without an authenticator app. Every other staff account still needs two-step sign-in. **Switch it off for any real use** (D-07, BCR-001 Part C; runbook). There is no settings screen for it: only the backend team can change it.
 - **Demo data:** every person, organisation, idea and contact is fictional and labelled DEMO or Sample. The demo data is wiped after judging (D-15).
 - **Demo passwords** are set from the environment and given to judges separately. They are never in the repository, the bundle or the video (D-17).
+- **Toolkit preview is switched on** (Sylvain, owner of the judging site, 23 Nov): `VITE_TOOLKIT_PREVIEW=true` on the Amplify `main` branch, set in the console, then `main` redeployed. My ideas shows the "Business Development Toolkit" section to applicants and staff home shows the "Reviewer Intelligence Toolkit" section to reviewers. Every tool is marked "Planned feature": **none of them is built**, and the sections make no requests. Remove the variable and redeploy to hide them again.
 
 ## Known limitations
 
