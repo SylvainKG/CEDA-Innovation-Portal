@@ -86,7 +86,7 @@ export function ReportsPage() {
         <div className="flex flex-col gap-1">
           <p className="text-xs font-bold uppercase tracking-wider text-brand-text">Innovation portal</p>
           <h1 className="text-h1 font-semibold">Reports</h1>
-          <p className="text-ink-muted">Operational indicators for administrators and committee members.</p>
+          <p className="text-ink-muted">Operational indicators for administrators.</p>
           <p className="text-sm text-ink-muted">Generated {formatDateTimeCAT(r.generated_at)}. The period applies to when ideas were submitted (CAT).</p>
         </div>
         <Button variant="secondary" icon={Download} loading={exporting} loadingLabel="Exporting…" onClick={() => void exportCsv()}>

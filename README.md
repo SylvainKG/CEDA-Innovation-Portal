@@ -29,10 +29,9 @@ The sign-in page looks as it would in real use: it offers no account picker. Use
 | `screening@demo.ceda-portal.test` | Screening officer | Screening queue |
 | `reviewer.1@demo.ceda-portal.test`, `reviewer.2@demo.ceda-portal.test` | Reviewers | My reviews: declare, then score |
 | `reviewer.3@demo.ceda-portal.test` | Reviewer not assigned to the demo case | Sees nothing of others' cases |
-| `adjudicator@demo.ceda-portal.test` | Adjudicator | Ready for decision |
-| `admin@demo.ceda-portal.test` | Administrator and auditor | All cases, Reports, Audit log, Users & roles, Settings |
-| `consultant@demo.ceda-portal.test` | Support consultant and support lead | Support inbox |
-| `committee.ext@demo.ceda-portal.test` | External committee member | Counts by stage and the case list only |
+| `admin@demo.ceda-portal.test` | Administrator (also decisions, support chat and committee oversight) and auditor | All cases, Ready for decision, Reports, Support inbox, Audit log, Users & roles, Settings |
+
+The Administrator now carries every staff duty beyond screening and reviewing: recording and publishing decisions, recording awards, handling support chat, and the programme oversight the external committee used to have. Earlier builds split these across separate adjudicator, support-consultant and committee accounts; those roles have been folded into the Administrator, so there is one staff account to try them from.
 
 Staff accounts don't ask for an authenticator code: the seeded staff accounts are exempt so evaluators can sign in directly (D-07; switched off for any real use). The 15-minute tour is in the [judge guide](docs/submission/judge-guide.md).
 
