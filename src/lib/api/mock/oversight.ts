@@ -53,6 +53,27 @@ function seedNotifications(): StoredNotification[] {
     n('demo-reviewer-1', 4, 8, 'assignment.created', 'New case to review', 'A case was assigned to you. Declare any conflict before you open it.', '2026-11-10T09:05:00Z', false),
     n('demo-adjudicator', 5, 4, 'case.ready_for_decision', 'Case ready for decision', 'All reviewers have submitted their scorecards.', '2026-10-26T07:00:00Z', false),
     n('demo-admin', 6, null, 'role.granted', 'Your access changed', 'An administrator updated your roles.', '2026-11-01T06:00:00Z', true),
+    // Sample notifications per user type (fictional; never proposal content), so every dashboard's bell panel and
+    // the notifications page have something to show in the demo.
+    n('demo-applicant-a', 7, 8, 'feedback.requested', 'Clarification requested', 'A CEDA officer asked a question about your idea. Reply from the idea page.', '2026-11-21T08:15:00Z', false),
+    n('demo-applicant-a', 8, null, 'chat.reply', 'Reply from CEDA support', 'A consultant answered your question in the support chat.', '2026-11-20T13:30:00Z', false),
+    n('demo-applicant-a', 9, null, 'challenge.published', 'New challenge open', 'A new innovation challenge is open for ideas.', '2026-11-15T07:00:00Z', true),
+    n('demo-applicant-a', 10, null, 'draft.reminder', 'Finish your draft', 'You have a draft idea that has not been submitted yet.', '2026-11-12T06:30:00Z', true),
+    n('demo-screening', 11, 1, 'proposal.submitted', 'New idea to screen', 'A new idea is waiting in the screening queue.', '2026-11-21T07:50:00Z', false),
+    n('demo-screening', 12, 3, 'feedback.responded', 'Applicant replied', 'An applicant answered your clarification request.', '2026-11-20T10:05:00Z', false),
+    n('demo-screening', 13, 1, 'case.overdue', 'Screening overdue', 'A case has waited more than five days for screening.', '2026-11-18T06:00:00Z', true),
+    n('demo-reviewer-1', 14, 8, 'review.due_soon', 'Scorecard due in 2 days', 'Submit your scorecard before the due date.', '2026-11-21T06:00:00Z', false),
+    n('demo-reviewer-1', 15, 2, 'case.revised', 'Revised version to review', 'The applicant submitted version 2. Score the new version.', '2026-11-16T09:20:00Z', true),
+    n('demo-admin', 16, 4, 'case.ready_for_decision', 'Case ready for decision', 'All reviewers have submitted their scorecards.', '2026-11-21T09:10:00Z', false),
+    n('demo-admin', 17, null, 'chat.waiting', 'Applicant waiting in chat', 'An applicant is waiting for a consultant in the support chat.', '2026-11-21T11:40:00Z', false),
+    n('demo-admin', 18, 2, 'review.overdue', 'Review overdue', "A reviewer's scorecard is past its due date.", '2026-11-17T07:00:00Z', true),
+    n('demo-admin', 19, null, 'staff.invited', 'Invitation accepted', 'A new staff member accepted their invitation.', '2026-11-19T12:00:00Z', true),
+    n('demo-adjudicator', 20, 5, 'decision.published', 'Decision published', 'Your decision was published to the applicant.', '2026-11-14T10:00:00Z', true),
+    n('demo-consultant', 21, null, 'chat.waiting', 'Applicant waiting in chat', 'An applicant is waiting for a consultant in the support chat.', '2026-11-21T11:40:00Z', false),
+    n('demo-support-lead', 22, null, 'chat.waiting', 'Applicant waiting in chat', 'An applicant is waiting for a consultant in the support chat.', '2026-11-21T11:40:00Z', false),
+    n('demo-support-lead', 23, null, 'chat.stats', 'Weekly chat summary ready', "Last week's support chat figures are ready on the support dashboard.", '2026-11-17T06:00:00Z', true),
+    n('demo-committee', 24, null, 'report.updated', 'Programme summary updated', 'The status summary for the committee was updated.', '2026-11-20T06:00:00Z', false),
+    n('demo-auditor', 25, null, 'audit.role_change', 'Role change recorded', 'A role change was recorded in the audit log.', '2026-11-19T12:05:00Z', false),
   ]
 }
 

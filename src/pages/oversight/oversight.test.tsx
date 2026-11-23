@@ -47,7 +47,10 @@ describe('T11 notifications (NTF-01)', () => {
     await as('applicant')
     const user = renderAt('/notifications')
     expect(await screen.findByRole('heading', { name: 'Notifications', level: 1 }, LOAD)).toBeInTheDocument()
-    expect(screen.getByText('1 unread')).toBeInTheDocument()
+    expect(screen.getByText('3 unread')).toBeInTheDocument()
+    // The applicant's sample notifications (demo data) appear with the seeded ones.
+    expect(screen.getByRole('link', { name: /^Unread: ?Clarification requested/ })).toHaveAttribute('href', '/ideas/30000000-0000-4000-8000-000000000008')
+    expect(screen.getByText('Reply from CEDA support')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /^Unread: ?Your idea is under review/ })).toHaveAttribute('href', '/ideas/30000000-0000-4000-8000-000000000008')
     expect(screen.getByText('Idea submitted')).toBeInTheDocument()
     // Another person's notification (the reviewer's "New case to review") never appears.
