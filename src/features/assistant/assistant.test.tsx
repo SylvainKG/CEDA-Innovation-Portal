@@ -1,5 +1,6 @@
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { useState } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ask, AssistantError, pickRecordingType, readAssistantConfig, transcribe } from './leseding'
@@ -174,6 +175,24 @@ describe('Peolwane AI panel', () => {
   it('staff: shows no sidebar launcher when the assistant is not configured', () => {
     renderAssistant(null, 'sidebar')
     expect(screen.queryByRole('button', { name: 'Peolwane AI' })).not.toBeInTheDocument()
+  })
+
+  it('staff: returns focus to the navigation button after closing from the mobile drawer', async () => {
+    const user = userEvent.setup()
+    function MobileStaffShell() {
+      const [drawerOpen, setDrawerOpen] = useState(true)
+      return (
+        <MemoryRouter>
+          <button type="button" aria-controls="staff-drawer">Open navigation</button>
+          {drawerOpen ? <PeolwaneSidebarLauncher onOpen={() => setDrawerOpen(false)} config={CFG} /> : null}
+          <PeolwaneAssistant config={CFG} placement="sidebar" />
+        </MemoryRouter>
+      )
+    }
+    render(<MobileStaffShell />)
+    await user.click(screen.getByRole('button', { name: 'Peolwane AI' }))
+    await user.keyboard('{Escape}')
+    expect(screen.getByRole('button', { name: 'Open navigation' })).toHaveFocus()
   })
 
   it('switches to text, sends a typed question and shows the streamed answer (not spoken)', async () => {

@@ -4,6 +4,7 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `design` **Peolwane AI in the staff sidebar** (team request, 23 Nov). Staff have one branded launcher below the navigation; the assistant opens beside the sidebar on wide screens and from the mobile drawer on small screens. Sign out sits at the foot of the staff sidebar, while the header identifies the signed-in user. Public and applicant launchers are unchanged. No data, route, permission or workflow changes.
 - `feature` **Accessibility settings, cookie preferences, terms of use, Data Protection Act rights and "Follow us"** (team request, 23 Nov). Every footer, public and workspace, gains these.
   - **Accessibility settings** (a sheet): text size (Default, Large 112%, Larger 125%), high contrast, reduce motion and underline all links. Settings apply at once as classes on `<html>`, before the first paint. "Reduce motion" also stops the page transitions and the smooth scrolling, as the system setting already did.
   - **Cookie preferences** (a sheet) states that the portal sets no analytics or advertising cookies. It lists what the browser keeps: the session as strictly necessary, the Peolwane AI conversation in session storage. It offers the one real choice: remember accessibility settings on this device (off by default; otherwise they last for the visit).
