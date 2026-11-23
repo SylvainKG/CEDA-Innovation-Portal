@@ -9,7 +9,7 @@
 | Commit | the merge commit of the PR that adds this note (`git rev-parse v1.0.1-judging^{commit}`) |
 | Date | 23 Nov 2026 (CAT) |
 | Release URL | https://main.d270qrk6a7zs47.amplifyapp.com (Amplify, deploys `main`; Supabase mode, hosted project `hncwpxyuolfxafbemapb`, EU Central) |
-| Included PRs | every PR merged into `main` up to the tagged commit (`git log --oneline v1.0.1-judging`). Since `v1.0-judging`: #165 toolkit preview behind a flag (off), #167 Peolwane AI guide and page transitions, #168 Supabase URL hardening and audit fixes, #170 API contract for 017, #171 notifications panel, #172 accessibility settings, cookie preferences, terms of use, Data Protection Act rights and Follow us, and this release PR (licence list, release docs) |
+| Included PRs | every PR merged into `main` up to the tagged commit (`git log --oneline v1.0.1-judging`). Since `v1.0-judging`: #165 toolkit preview behind a flag (off), #167 Peolwane AI guide and page transitions, #168 Supabase URL hardening and audit fixes, #170 API contract for 017, #171 notifications panel, #172 accessibility settings, cookie preferences, terms of use, Data Protection Act rights and Follow us, #174 Peolwane AI orb in voice mode with a Voice/Text switch, and this release PR (licence list, release docs) |
 
 ## What is in this release
 
@@ -38,7 +38,7 @@ The full main journey (steps 0–17) passed through the real screens against the
 | Item | Status |
 |---|---|
 | Email alerts | **Simulated:** no SMTP is connected. Alerts are queued and shown in the outbox. A new registration can't verify its email, so judges use the seeded demo accounts (C-22) |
-| Peolwane AI (site-help assistant) | **Live.** Checked on the release URL on 23 Nov: the button shows, typed questions are answered ("How do I submit an idea?"), and it did not ask for a name or other personal details, including after a bare greeting (BCR-004) |
+| Peolwane AI (site-help assistant) | **Live.** Voice mode shows the Leseding orb (#174). Checked on the release URL on 23 Nov: the button shows, typed questions are answered ("How do I submit an idea?"), and it did not ask for a name or other personal details, including after a bare greeting (BCR-004) |
 | Response-time targets | Agreed (D-16) but **not measured** (C-18) |
 | Browser and device matrix | **Not run** as a full matrix (C-19); Chromium at 360 and 1280 px is tested |
 | Malware scanning of uploads | **Deferred**: the file type is checked from the declared content type |

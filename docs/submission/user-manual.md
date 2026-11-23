@@ -29,7 +29,7 @@ Screens still being built are marked **[confirm at release]**; that line is chec
 
 **Notifications.** The bell in the header shows how many updates are unread; **Notifications** lists them. The count refreshes every so often while you are signed in. Select the bell to see your five newest updates in a small panel; choosing one marks it read and opens **Notifications**. **Email alerts** are optional: switch them on or off on the Notifications page. In this demonstration they are **Simulated** (queued but not sent).
 
-**Peolwane AI.** The **Peolwane AI** button at the bottom right of every page opens an assistant for questions about using the portal. It starts in **Voice**: tap the microphone, speak, tap again, and the answer is shown and spoken. Choose **Text** to type instead. It only receives what you say or type in its panel, never your ideas or account, so don't share personal details with it. **Esc** closes it.
+**Peolwane AI.** The **Peolwane AI** button at the bottom right of every page opens an assistant for questions about using the portal. It starts in **Voice**: tap the microphone, speak, tap again, and the answer is shown and spoken. While it listens, thinks and speaks, an orange orb shows what it is doing, and the last question and answer are written under it. Turn the **Voice conversation** switch off (Text) to type instead and see the whole conversation. It only receives what you say or type in its panel, never your ideas or account, so don't share personal details with it. **Esc** closes it.
 
 **Help.** **Help** holds the FAQs, regulatory contacts and how to report a problem. All times are Gaborone time (CAT).
 
