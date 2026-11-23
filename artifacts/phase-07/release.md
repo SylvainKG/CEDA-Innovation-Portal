@@ -1,15 +1,15 @@
-# Release note: v1.0-judging
+# Release note: v1.0.1-judging
 
-**Owner:** Sylvain (release coordinator) · **Status:** Draft, 22 Nov 2026. The tag, commit and included PRs are filled in at the tag, after the 18:00 CAT code freeze (release checklist §2).
+**Owner:** Sylvain (release coordinator) · **Status:** Final, 23 Nov 2026. `v1.0.1-judging` supersedes `v1.0-judging` (`f34e97e`, tagged after the 22 Nov freeze): the site auto-deploys `main`, which had moved on, so the submitted source is re-tagged at the deployed commit (REL-01: the source matches the demo build). The organisers moved the upload deadline to 17:00 CAT on 23 Nov.
 **Product:** Peolwane · CEDA Innovation Portal. A demonstration prototype with fictional data, built for CEDA's Innovation Fund.
 
 | | |
 |---|---|
-| Tag | `v1.0-judging` **[at tag]** |
-| Commit | **[at tag]** |
-| Date | **[at tag]** (CAT) |
-| Release URL | **[confirm at release]** |
-| Included PRs | **[at tag]**: every PR merged into `main` up to the tagged commit (`git log --oneline v1.0-judging`) |
+| Tag | `v1.0.1-judging` (`v1.0-judging` kept for history) |
+| Commit | the merge commit of the PR that adds this note (`git rev-parse v1.0.1-judging^{commit}`) |
+| Date | 23 Nov 2026 (CAT) |
+| Release URL | https://main.d270qrk6a7zs47.amplifyapp.com (Amplify, deploys `main`; Supabase mode, hosted project `hncwpxyuolfxafbemapb`, EU Central) |
+| Included PRs | every PR merged into `main` up to the tagged commit (`git log --oneline v1.0.1-judging`). Since `v1.0-judging`: #165 toolkit preview behind a flag (off), #167 Peolwane AI guide and page transitions, #168 Supabase URL hardening and audit fixes, #170 API contract for 017, #171 notifications panel, #172 accessibility settings, cookie preferences, terms of use, Data Protection Act rights and Follow us, and this release PR (licence list, release docs) |
 
 ## What is in this release
 
@@ -18,8 +18,9 @@ The full applicant and staff lifecycle, with every rule enforced in the database
 **submit → screen → two independent evaluations → revision request with a Feedback Roadmap → version 2 → adjudication → published decision → award**
 
 It also includes:
-- live chat with CEDA consultants;
-- notifications;
+- live chat with CEDA (handled by the administrator since #162);
+- notifications, with a panel from the bell;
+- accessibility settings (text size, high contrast, reduced motion, underlined links) and cookie preferences;
 - reports with CSV export;
 - the audit log;
 - administration of challenges, forms, rubrics, content, users and roles.
@@ -37,23 +38,25 @@ The full main journey (steps 0–17) passed through the real screens against the
 | Item | Status |
 |---|---|
 | Email alerts | **Simulated:** no SMTP is connected. Alerts are queued and shown in the outbox. A new registration can't verify its email, so judges use the seeded demo accounts (C-22) |
-| Peolwane AI (site-help assistant) | **[confirm at release]** whether it is live. It needs Leseding's knowledge base and instructions; in the 22 Nov check it asked for a name. If it isn't confirmed, the two `VITE_LESEDING_*` variables are removed and the assistant isn't shown (BCR-004) |
+| Peolwane AI (site-help assistant) | **Live.** Checked on the release URL on 23 Nov: the button shows, typed questions are answered ("How do I submit an idea?"), and it did not ask for a name or other personal details, including after a bare greeting (BCR-004) |
 | Response-time targets | Agreed (D-16) but **not measured** (C-18) |
 | Browser and device matrix | **Not run** as a full matrix (C-19); Chromium at 360 and 1280 px is tested |
 | Malware scanning of uploads | **Deferred**: the file type is checked from the declared content type |
 | Retention and data-subject requests | Proposed in the data-handling note; manual, not automated |
 | Region comparison with Mumbai | **Not run**. EU Central, chosen; latency acceptable: p95 315 ms from Gaborone (D-14) |
 | Restore into a full Supabase project, and file-storage backup | **Not run** (the database data restore drill passed, C-20) |
+| Terms of use and Data Protection Act section | **Draft**, awaiting CEDA legal review; worded "designed with reference to", no compliance claim (D-18) |
+| Uptime monitor | **Not set up**; the keep-alive workflow runs and the named contact checks the site daily |
 | Settings screens for the review quorum and the demo two-step exemption | **Not built**: stored settings changed by the backend team |
 | Peolwane AI processor terms | Leseding's location and its retention of transcripts are **not yet confirmed** (data-handling note §5, §7) |
 
 ## Release checks
 
 Recorded as they're done, with links (release checklist §1–§6):
-- **[at tag]** `main` green on the required checks
-- **[at tag]** licence list up to date (`node scripts/third-party-licences.mjs --check`)
+- **Done, 23 Nov:** `main` green on the required checks for #171 and #172 (all CI jobs passed)
+- **Done, 23 Nov:** licence list regenerated in this PR (#168 moved `@typescript-eslint` to 8.73.0, build tooling only); `--check` passes
 - **Done, 22 Nov:** staging write run (N9 and the full journey, [run 44996202242](https://github.com/SylvainKG/CEDA-Innovation-Portal/actions/runs/44996202242), 7 passed) between Stacey's snapshot (06:56:39 UTC) and her verified exact reset (07:06 UTC; #61)
 - **[before freeze]** hosted pgTAP on `main`, all suites (Stacey; run record `artifacts/phase-00/hosted-supabase.md`). No pgTAP runner touches the project after 18:00 CAT (runbook §3 step 9)
-- **[at tag]** staging at the demo baseline after Stacey's reset
+- **Done, 23 Nov 07:39 UTC (Stacey, #61, read-only):** `health()` ok at migration 017; next reference still `CEDA-2026-0009`; 14 accounts; 11 cases (8 seeded, 3 drafts without references)
 - **[at release]** E2E against the release URL (smoke and security headers; read-only journey)
-- **[at release]** source package: size and SHA-256
+- **[at package]** source package: size and SHA-256, from `scripts/package-source.sh v1.0.1-judging`

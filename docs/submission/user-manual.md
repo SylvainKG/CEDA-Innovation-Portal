@@ -27,9 +27,9 @@ Screens still being built are marked **[confirm at release]**; that line is chec
 
 **Staff two-step sign-in.** Staff permissions require a second factor (an authenticator app); the server enforces this. The first time, the **Two-step sign-in** screen shows a QR code: scan it with an authenticator app (or type the key shown), then enter the 6-digit code. After that, enter a new code from the app when asked. Seeded staff accounts used for evaluation are exempt so that evaluators can sign in directly; the screen then says "No authenticator code is needed for this account."
 
-**Notifications.** The bell in the header shows how many updates are unread; **Notifications** lists them. The count refreshes every so often while you are signed in. **Email alerts** are optional: switch them on or off on the Notifications page **[confirm at release]**. In this demonstration they are **Simulated** (queued but not sent).
+**Notifications.** The bell in the header shows how many updates are unread; **Notifications** lists them. The count refreshes every so often while you are signed in. Select the bell to see your five newest updates in a small panel; choosing one marks it read and opens **Notifications**. **Email alerts** are optional: switch them on or off on the Notifications page. In this demonstration they are **Simulated** (queued but not sent).
 
-**Peolwane AI** **[confirm at release]**. The **Peolwane AI** button at the bottom right of every page opens an assistant for questions about using the portal. It starts in **Voice**: tap the microphone, speak, tap again, and the answer is shown and spoken. Choose **Text** to type instead. It only receives what you say or type in its panel, never your ideas or account, so don't share personal details with it. **Esc** closes it.
+**Peolwane AI.** The **Peolwane AI** button at the bottom right of every page opens an assistant for questions about using the portal. It starts in **Voice**: tap the microphone, speak, tap again, and the answer is shown and spoken. Choose **Text** to type instead. It only receives what you say or type in its panel, never your ideas or account, so don't share personal details with it. **Esc** closes it.
 
 **Help.** **Help** holds the FAQs, regulatory contacts and how to report a problem. All times are Gaborone time (CAT).
 

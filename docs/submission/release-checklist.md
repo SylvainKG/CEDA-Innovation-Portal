@@ -72,7 +72,7 @@ Every line starts as **Not run**. Tick it only with evidence: a commit, a CI run
 - [ ] One folder, **`Peolwane CEDA Innovation Portal`**, holding: live URL and judge accounts (in the judge guide, not the source), video (DEM-01), source package, technical proposal (DOC-01, at most 10 pages), user manual and README (DOC-02), installation files
 - [ ] Personal documents (ID copies, certificates, CVs) only where the brief asks, and **never** inside the source package
 - [ ] Every item checked against the brief by a second person; video playback and link permissions checked by a teammate (DEM-01)
-- [ ] Upload on Skillsranker by **12:00 on 23 Nov**; submission confirmation saved in `artifacts/phase-07/` before 17:00
+- [ ] Upload on Skillsranker by **17:00 on 23 Nov** (moved from 12:00 by the organisers); submission confirmation saved in `artifacts/phase-07/`
 
 ## 7. Judging period (24 Nov – 3 Dec)
 
