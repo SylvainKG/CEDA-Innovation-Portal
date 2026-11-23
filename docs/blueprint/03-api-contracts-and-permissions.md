@@ -69,22 +69,24 @@ Roles and permissions are **data** (`roles`, `permissions`, `role_permissions`).
 | `case.read_status` | | | | | | | | ● | |
 | `case.screen` | | ● | | | | | | | |
 | `case.assign` | | | | | ● | | | | |
-| `case.request_feedback` | | ● | ● (assigned) | ● | | | | | |
-| `case.close` | | ● | | ● | | | | | |
+| `case.request_feedback` | | ● | ● (assigned) | ● | ● (017) | | | | |
+| `case.close` | | ● | | ● | ● (017) | | | | |
 | `case.note` | | ● | ● | ● | ● | | | | |
 | `scorecard.submit` | | | ● | | | | | | |
 | `scorecard.read_panel` | | | | ● | ● | | | | |
-| `decision.record` / `decision.publish` | | | | ● | | | | | |
+| `decision.record` / `decision.publish` | | | | ● | ● (017) | | | | |
 | `award.record` (D-05) | | | | | ● | | | | |
 | `role.manage`, `config.manage` | | | | | ● | | | | |
 | `report.read` | | | | ● | ● | | | | |
 | `audit.read` | | | | | ● | | | | ● |
-| `chat.handle` | | | | | | ● | ● | | |
-| `chat.stats` | | | | | | | ● | | |
+| `chat.handle` | | | | | ● (017) | ● | ● | | |
+| `chat.stats` | | | | | ● (017) | | ● | | |
+
+**Migration 017 (owner decision, 22 Nov 2026):** the administrator absorbs the adjudicator, support consultant / lead and committee member roles. 017 grants the administrator the permissions marked "(017)". The absorbed roles and their own rows stay in the database for audit history and the test suite. The app hides them wherever a role is shown or granted (`isActiveRole`, `src/lib/api/types.ts`). **017 does not revoke anything:** `private.has_permission` still honours an active assignment of an absorbed role, so the three seeded demo accounts (Demo Adjudicator, Demo Support Consultant, Demo Committee Member) keep those roles' permissions and can still sign in. `grant_role` and the `invite-staff` function also still accept the absorbed role keys when called directly. Enforcing this in the database is an open gap (§11). `case.read_status` is covered by the administrator's `case.read_all`.
 
 **MFA (D-07):** roles with `requires_mfa = true` (every staff role) grant nothing unless the session is `aal2`, **except** seeded accounts (`profiles.is_demo`) while `app_settings.demo_mfa_exempt = true`. Applicants and committee members do not need MFA. `my_access().mfa_required` tells the UI to show the MFA prompt.
 
-**Open decisions:** D-05 (award authority), D-06 (quorum, stored as `app_settings.review_quorum`), D-08 (committee visibility) and D-13 (chat audience) are configured as their defaults. Changing them is a data change, not a code change.
+**D-05 (award authority)** is superseded by the 22 Nov owner decision (migration 017): the administrator both decides and records the award. **Open decisions:** D-06 (quorum, stored as `app_settings.review_quorum`), D-08 (committee visibility) and D-13 (chat audience) are configured as their defaults. Changing them is a data change, not a code change.
 
 ---
 
@@ -166,7 +168,7 @@ Roles and permissions are **data** (`roles`, `permissions`, `role_permissions`).
 
 | RPC | Who | Arguments | Returns | Errors | Writes |
 |---|---|---|---|---|---|
-| `request_feedback` | `case.request_feedback` and either `case.read_all` (screening officer, adjudicator) or an assigned, declared reviewer (D-09) | `p_proposal_id`, `p_kind` (`clarification` or `revision`), `p_message` (1–4,000), `p_due_at?` (default now + 7 days, future), `p_tasks text[]?` (revision only, up to 10, each 1–1,000) | `{ feedback_request_id, kind, status: "action_required", return_stage, due_at, tasks }` | `FORBIDDEN`, `VALIDATION` (`fields.task:<n>`), `INVALID_STATE` (not `submitted`/`in_evaluation`/`in_adjudication`, e.g. a request is already open) | Case → `action_required` with `return_stage` = where it was; request + tasks (task text is immutable); audit; applicant notified (+ email if opted in) |
+| `request_feedback` | `case.request_feedback` and either `case.read_all` (screening officer, adjudicator, administrator) or an assigned, declared reviewer (D-09) | `p_proposal_id`, `p_kind` (`clarification` or `revision`), `p_message` (1–4,000), `p_due_at?` (default now + 7 days, future), `p_tasks text[]?` (revision only, up to 10, each 1–1,000) | `{ feedback_request_id, kind, status: "action_required", return_stage, due_at, tasks }` | `FORBIDDEN`, `VALIDATION` (`fields.task:<n>`), `INVALID_STATE` (not `submitted`/`in_evaluation`/`in_adjudication`, e.g. a request is already open) | Case → `action_required` with `return_stage` = where it was; request + tasks (task text is immutable); audit; applicant notified (+ email if opted in) |
 | `respond_clarification` | The applicant | `p_feedback_request_id`, `p_text` (10–1,000) | `{ feedback_request_id, status: "answered", responded_at, case_status }` | `FORBIDDEN`, `VALIDATION`, `INVALID_STATE` (not an open clarification) | Reply stored on the request, **no new version** (D-21); case returns to `return_stage` (BCR-001 B1); requester notified |
 | `submit_revision` | The applicant | `p_proposal_id`, `p_client_request_id`, `p_change_note` (1–2,000), `p_task_responses [{task_id, status: addressed/not_addressed, explanation 1–500}]`, `p_declaration_version` | Receipt for the new version (`version_no` 2, 3 …) + `replayed` | `FORBIDDEN`, `VALIDATION` (`change_note`, `task:<n>`, `declaration`, form fields), `INVALID_STATE` (no open revision), `REQUEST_CONFLICT` | New immutable version with the same reference. Content = the revision working copy (`save_draft`), or the current version if unedited. Files carry forward unless a new upload replaces the same document type. Task answers locked on the new version. Case returns to `return_stage` (D-10); assigned reviewers and the requester notified. **Idempotent by `p_client_request_id`** (BCR-001 B9); `get_submission_receipt(p_client_request_id => …)` finds it |
 | `verify_feedback_task` | An assigned, declared reviewer, case `in_evaluation` | `p_task_id`, `p_assignment_id`, `p_result` (`verified`/`not_verified`), `p_note?` (required for `not_verified`, ≤ 1,000) | `{ task_id, result, verified_at }` | `FORBIDDEN`, `VALIDATION`, `INVALID_STATE` (task from an earlier version, scoring closed, or own scorecard already submitted) | One verification per task per reviewer, changeable until that reviewer submits their scorecard, then locked. Audited |
@@ -185,12 +187,12 @@ Roles and permissions are **data** (`roles`, `permissions`, `role_permissions`).
 
 | RPC | Who | Arguments | Returns | Errors | Writes |
 |---|---|---|---|---|---|
-| `record_decision` | `decision.record` (adjudicator) | `p_proposal_id`, `p_outcome` (`approved`/`not_approved`), `p_reason` (1–4,000) | `{ decision_id, outcome, published: false, supersedes, case_status }` | `FORBIDDEN`, `VALIDATION`, `INVALID_STATE` (not `in_adjudication`, or already published) | Unpublished decision on the current version. **The case stays `in_adjudication`; the applicant sees nothing and is not notified** (N4). Recording again before publication supersedes the earlier draft (kept, `superseded_at` set). Audited with the outcome |
-| `publish_decision` | `decision.publish` (adjudicator) | `p_decision_id` | `{ decision_id, outcome, published_at, case_status }` | `FORBIDDEN`, `INVALID_STATE` (superseded, already published, recorded on an earlier version, or a concurrent publish won) | `in_adjudication` → `approved` / `not_approved`; decision locked; applicant notified (+ email without the outcome) |
+| `record_decision` | `decision.record` (adjudicator; administrator since 017) | `p_proposal_id`, `p_outcome` (`approved`/`not_approved`), `p_reason` (1–4,000) | `{ decision_id, outcome, published: false, supersedes, case_status }` | `FORBIDDEN`, `VALIDATION`, `INVALID_STATE` (not `in_adjudication`, or already published) | Unpublished decision on the current version. **The case stays `in_adjudication`; the applicant sees nothing and is not notified** (N4). Recording again before publication supersedes the earlier draft (kept, `superseded_at` set). Audited with the outcome |
+| `publish_decision` | `decision.publish` (adjudicator; administrator since 017) | `p_decision_id` | `{ decision_id, outcome, published_at, case_status }` | `FORBIDDEN`, `INVALID_STATE` (superseded, already published, recorded on an earlier version, or a concurrent publish won) | `in_adjudication` → `approved` / `not_approved`; decision locked; applicant notified (+ email without the outcome) |
 | `record_award` | `award.record` (administrator, D-05) | `p_proposal_id`, `p_amount_minor` (thebe, 1 – 10,000,000,000), `p_description` (1–1,000) | `{ award_id, amount_minor, currency: "BWP", case_status: "awarded", replayed }` | `FORBIDDEN`, `CASE_NOT_APPROVED` (N5: no published approval), `VALIDATION`, `INVALID_STATE` (a different award already exists) | Award (append-only) linked to the published approval; `approved` → `awarded` as a **separate event** (DEC-02); applicant notified. The same award again returns `replayed: true` |
-| `close_case` | `case.close` (screening officer, adjudicator) | `p_proposal_id`, `p_reason` (1–500) | `{ proposal_id, case_status: "closed", expired_requests }` | `FORBIDDEN`, `VALIDATION`, `INVALID_STATE` (approved, awarded, draft or already closed) | Closed with the reason (visible to the applicant); any open feedback request marked `expired`; applicant notified |
+| `close_case` | `case.close` (screening officer, adjudicator; administrator since 017) | `p_proposal_id`, `p_reason` (1–500) | `{ proposal_id, case_status: "closed", expired_requests }` | `FORBIDDEN`, `VALIDATION`, `INVALID_STATE` (approved, awarded, draft or already closed) | Closed with the reason (visible to the applicant); any open feedback request marked `expired`; applicant notified |
 
-- **Who decides, who pays:** the adjudicator records and publishes; only the administrator records the award (D-05). The administrator cannot decide or publish.
+- **Who decides, who pays:** since migration 017 (22 Nov owner decision, superseding D-05's separation of duties) the administrator records and publishes decisions and also records the award. The adjudicator role keeps `decision.record` / `decision.publish`. The app no longer offers it, but the database still honours an active assignment: the seeded Demo Adjudicator can still decide and publish (017 note, §2). Only the administrator records the award. A screening officer or reviewer cannot decide or publish.
 - **Unpublished means invisible:** the applicant's `decisions` rows, case status, case history and notifications all stay as "Under review" until `publish_decision`.
 - **Stale decisions:** if a revision was requested after a decision was drafted, the draft refers to the earlier version and cannot be published; record a new one.
 
@@ -207,7 +209,7 @@ Roles and permissions are **data** (`roles`, `permissions`, `role_permissions`).
 | `accept_chat` | `chat.handle` | `p_session_id` | `{ session_id, status: "active", accepted_at }` | `FORBIDDEN`, `INVALID_STATE` (someone else took it, or it ended) |
 | `close_chat` | Either participant | `p_session_id` | `{ session_id, status, replayed }` (closing a never-accepted chat records it as missed) | `FORBIDDEN` |
 | `my_chat_inbox` | `chat.handle` | — | Waiting conversations plus own active ones (a consultant can hold several): `{ session_id, status, applicant_name, queued_at, waiting_seconds, last_message_at, last_message }` | `FORBIDDEN` |
-| `chat_statistics` | `chat.stats` (support lead) | `p_from?`, `p_to?` | `{ volume, handled, missed, waiting_now, average_wait_seconds, by_day[{day, volume, missed}] }` | `FORBIDDEN` |
+| `chat_statistics` | `chat.stats` (support lead; administrator since 017) | `p_from?`, `p_to?` | `{ volume, handled, missed, waiting_now, average_wait_seconds, by_day[{day, volume, missed}] }` | `FORBIDDEN` |
 
 - **Hours (CHT-02):** open when the Gaborone local time is within `service_calendar` hours on a working day and the date is not in `service_closures`. `app_settings.chat_demo_override` (`"open"`, `"closed"` or `null`) lets judges see both states.
 - **Missed chats:** a waiting conversation not accepted within 30 minutes, or still waiting when the service closes, becomes `missed`. There is no scheduler: this sweep runs whenever a chat is started, accepted, listed or counted.
@@ -354,6 +356,8 @@ export interface RpcErrorBody { code: string; message: ApiErrorCode | 'IMMUTABLE
 | Mutation checks (Slice 4): drop the verification lock; keep the form editable after V2 | Same | Each caught (3 and 2 failures) |
 | `email-relay` against a real SMTP server | Staging | **Not run**: SMTP not configured; email is Simulated until it is |
 | `006_slice5_decide_award.test.sql`: role separation (D-05), unpublished decisions invisible to the applicant (N4), supersede history, N5 before approval and on not-approved, publish once, stale-version refusal, award + retry + two timeline stages, closure rules and request expiry, N6 on decisions, awards and history | PGlite stand-in | Passed, 45/45 |
+| Migration 017: the administrator holds the six absorbed permissions and records and publishes a decision (`006`, 7 assertions in a savepoint); a screening officer cannot decide or publish | PGlite stand-in, PR #162 at `ff17072` | Passed: `006` 52/52, suite 520 assertions, 0 failed. With 017's file removed, `006` fails (`FORBIDDEN`), so the suite notices a missing 017 |
+| Migration 017 on hosted staging (judging project) | `supabase db push`, 22 Nov 21:30 UTC, after a dry run listing only 017 | Applied. Read-only check: the six `admin` rows present; migration list 001–017. No pgTAP on the judging project after the freeze |
 | Mutation checks (Slice 5): applicant can read unpublished decisions; award without approval | Same | Each caught (2 and 2 failures) |
 | `007_slice6_reports_audit_chat.test.sql`: report access, every report figure reconciled with the seed, period and challenge filters, CSV rows match, audit filters and paging, literal wildcards, Gaborone hours incl. UTC conversion, weekend and holiday, override both ways, chat isolation, multi-session consultant, closing, statistics against the seed | PGlite stand-in | Passed, 45/45 |
 | Mutation checks (Slice 6a): audit query open to anyone; chat always open | Same | Each caught (6 and 1 failures) |
@@ -406,6 +410,7 @@ export interface RpcErrorBody { code: string; message: ApiErrorCode | 'IMMUTABLE
 | Revision files carry forward as new attachment rows on the new version (same storage object) | Each version lists exactly its own files; earlier versions stay intact |
 | Admin settings are RPCs over the existing tables; no separate settings tables | T12 editors; every change audited |
 | Migration 010 hardens function privileges: global default (new functions start closed), `my_access` signed-in only, `private` helpers granted only where policies need them | Privilege review (SEC-02): schema-level default privileges cannot revoke PostgreSQL's built-in PUBLIC execute |
+| Adjudicator, support and committee roles absorbed into the administrator (017); the roles stay as data, hidden in the app, and existing assignments are not revoked | Owner decision, 22 Nov: one staff role carries every duty beyond screening and reviewing. Reversible: delete the six rows |
 | **Adding an RPC now requires** an explicit `grant execute … to authenticated` **and** adding it to the allow-list in `010_security_privileges.test.sql` | A function cannot become callable by accident |
 
 ## 11. Known gaps (debt)
@@ -417,3 +422,4 @@ export interface RpcErrorBody { code: string; message: ApiErrorCode | 'IMMUTABLE
 | Foreign keys without covering indexes (34, mostly actor/`*_by` columns) and one table with two permissive policies | Slower joins and policy checks at real volumes; negligible with demo data | Add indexes on the hot paths (`proposals.challenge_version_id`, `scorecards.version_id`, `notifications.proposal_id`) when real data arrives | Load beyond the demo |
 | `save_draft` autosave is last-write-wins across tabs | Two tabs can overwrite each other | BCR-001 B5 (deferred) | Co-submitters |
 | The first `save_draft` (no `proposal_id` yet) has no request key (BCR-001 B3: keys on submit and revision only) | A lost reply on the very first autosave, retried blindly, could create a second empty draft | Frontend never retries the first save automatically; it shows "Not saved yet" and retries only with the returned `proposal_id` (PR #16/#18). An extra empty draft is harmless: never submitted, visible only to its owner | Drafts become visible to staff, or duplicates are seen in practice |
+| 017 hides the absorbed roles in the app but does not enforce it in the database: active assignments keep their permissions, and `grant_role` / `invite-staff` still accept the absorbed role keys | The three seeded legacy demo accounts can still decide and publish, handle chat and read case status. An administrator calling the RPC directly could grant an absorbed role again (audited) | Not enforced after the freeze; the accounts are not advertised and have no navigation. Enforcing needs a migration (revoke the legacy assignments, reject absorbed keys in `grant_role`) and pgTAP changes, because the suite signs in as these accounts | Before real use, or if the legacy accounts must stop working |
