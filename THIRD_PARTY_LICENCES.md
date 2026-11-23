@@ -11,7 +11,7 @@ Not listed here, because they are not npm packages:
 
 ## Portal (frontend, build and test tooling)
 
-Source: `package-lock.json`. 512 packages: MIT 446 · Apache-2.0 25 · ISC 16 · BSD-2-Clause 10 · BSD-3-Clause 3 · MIT-0 2 · CC0-1.0 2 · BlueOak-1.0.0 2 · 0BSD 2 · OFL-1.1 1 · Python-2.0 1 · MPL-2.0 1 · CC-BY-4.0 1.
+Source: `package-lock.json`. 513 packages: MIT 446 · Apache-2.0 25 · ISC 16 · BSD-2-Clause 10 · BlueOak-1.0.0 3 · BSD-3-Clause 3 · MIT-0 2 · CC0-1.0 2 · 0BSD 2 · OFL-1.1 1 · Python-2.0 1 · MPL-2.0 1 · CC-BY-4.0 1.
 
 ### Ships in the built site (52)
 
@@ -70,7 +70,7 @@ Source: `package-lock.json`. 512 packages: MIT 446 · Apache-2.0 25 · ISC 16 ·
 | `use-callback-ref` | 1.3.3 | MIT |
 | `use-sidecar` | 1.1.3 | MIT |
 
-### Build, test and lint tooling only (460)
+### Build, test and lint tooling only (461)
 
 | Package | Version | Licence |
 |---|---|---|
@@ -148,6 +148,7 @@ Source: `package-lock.json`. 512 packages: MIT 446 · Apache-2.0 25 · ISC 16 ·
 | `@humanfs/types` | 0.15.0 | Apache-2.0 |
 | `@humanwhocodes/module-importer` | 1.0.1 | Apache-2.0 |
 | `@humanwhocodes/retry` | 0.4.3 | Apache-2.0 |
+| `@isaacs/nonrecursive-glob-match` | 1.1.0 | BlueOak-1.0.0 |
 | `@jridgewell/gen-mapping` | 0.3.13 | MIT |
 | `@jridgewell/remapping` | 2.3.5 | MIT |
 | `@jridgewell/resolve-uri` | 3.1.3 | MIT |
@@ -200,16 +201,16 @@ Source: `package-lock.json`. 512 packages: MIT 446 · Apache-2.0 25 · ISC 16 ·
 | `@types/json-schema` | 7.0.15 | MIT |
 | `@types/leaflet` | 1.9.22 | MIT |
 | `@types/node` | 26.6.6 | MIT |
-| `@typescript-eslint/eslint-plugin` | 8.72.2 | MIT |
-| `@typescript-eslint/parser` | 8.72.2 | MIT |
-| `@typescript-eslint/project-service` | 8.72.2 | MIT |
-| `@typescript-eslint/scope-manager` | 8.72.2 | MIT |
-| `@typescript-eslint/tsconfig-utils` | 8.72.2 | MIT |
-| `@typescript-eslint/type-utils` | 8.72.2 | MIT |
-| `@typescript-eslint/types` | 8.72.2 | MIT |
-| `@typescript-eslint/typescript-estree` | 8.72.2 | MIT |
-| `@typescript-eslint/utils` | 8.72.2 | MIT |
-| `@typescript-eslint/visitor-keys` | 8.72.2 | MIT |
+| `@typescript-eslint/eslint-plugin` | 8.73.0 | MIT |
+| `@typescript-eslint/parser` | 8.73.0 | MIT |
+| `@typescript-eslint/project-service` | 8.73.0 | MIT |
+| `@typescript-eslint/scope-manager` | 8.73.0 | MIT |
+| `@typescript-eslint/tsconfig-utils` | 8.73.0 | MIT |
+| `@typescript-eslint/type-utils` | 8.73.0 | MIT |
+| `@typescript-eslint/types` | 8.73.0 | MIT |
+| `@typescript-eslint/typescript-estree` | 8.73.0 | MIT |
+| `@typescript-eslint/utils` | 8.73.0 | MIT |
+| `@typescript-eslint/visitor-keys` | 8.73.0 | MIT |
 | `@vitejs/plugin-react` | 4.7.0 | MIT |
 | `@vitest/mocker` | 5.1.0 | MIT |
 | `@vitest/spy` | 5.1.0 | MIT |
@@ -346,7 +347,7 @@ Source: `package-lock.json`. 512 packages: MIT 446 · Apache-2.0 25 · ISC 16 ·
 | `hasown` | 2.0.4 | MIT |
 | `html-encoding-sniffer` | 6.0.0 | MIT |
 | `ignore` | 5.3.2 | MIT |
-| `ignore` | 7.0.14 | MIT |
+| `ignore` | 7.0.16 | MIT |
 | `import-fresh` | 3.3.1 | MIT |
 | `imurmurhash` | 0.1.4 | MIT |
 | `indent-string` | 4.0.0 | MIT |
@@ -407,7 +408,7 @@ Source: `package-lock.json`. 512 packages: MIT 446 · Apache-2.0 25 · ISC 16 ·
 | `merge2` | 1.4.1 | MIT |
 | `micromatch` | 4.0.8 | MIT |
 | `min-indent` | 1.0.1 | MIT |
-| `minimatch` | 10.2.6 | BlueOak-1.0.0 |
+| `minimatch` | 11.0.9 | BlueOak-1.0.0 |
 | `minimatch` | 3.1.5 | ISC |
 | `ms` | 2.1.3 | MIT |
 | `mz` | 2.7.0 | MIT |
@@ -510,7 +511,7 @@ Source: `package-lock.json`. 512 packages: MIT 446 · Apache-2.0 25 · ISC 16 ·
 | `typed-array-byte-offset` | 1.0.5 | MIT |
 | `typed-array-length` | 1.0.8 | MIT |
 | `typescript` | 5.8.3 | Apache-2.0 |
-| `typescript-eslint` | 8.72.2 | MIT |
+| `typescript-eslint` | 8.73.0 | MIT |
 | `unbox-primitive` | 1.1.0 | MIT |
 | `undici` | 7.30.2 | MIT |
 | `undici-types` | 8.9.0 | MIT |
