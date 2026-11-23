@@ -4,6 +4,7 @@ Classification follows the evidence-led skill: `feature`, `refactor`, `repair`, 
 
 ## [Unreleased]
 
+- `repair` **Supabase URL validation requires an exact local hostname for HTTP**; lookalikes such as `localhost.attacker.example` and URLs containing user information are rejected. The locked development toolchain is refreshed to clear the moderate `minimatch` advisories; the production dependency set was already clean.
 - `docs` **Submission screenshots retaken without the header DEMO pill** (after #157). Same four pages and method as #154: a mock build of `main` at 1280 px, after the loading splash, demo data only.
 - `docs` **Evaluator accounts in the README** (team lead, 22 Nov): every account, its role and where to start, since the sign-in page no longer offers a picker (#159). The password is given with the submission, never in the repository (D-17). The judge guide and user manual no longer mention the picker, and quote the two-step sign-in page's new wording.
 - `design` **No demo-account picker or demo-account notes on the sign-in pages** (team lead, 22 Nov: evaluators should see the portal as it would look in real use; the accounts come with the submission's README). Sign in no longer shows "Demo accounts are available…" or "Choose a demo portal". The two-step sign-in page says "No authenticator code is needed for this account." instead of naming demo accounts. Sign-in itself is unchanged.
