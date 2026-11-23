@@ -1,6 +1,6 @@
 # Toolkit preview: two-hour implementation plan
 
-**Status:** Proposed, not started. · **Prepared:** 22 Nov 2026, after the code freeze · **Timebox:** 2 hours · **Approver for merge and enabling:** Sylvain (release owner)
+**Status:** Implemented behind the off-by-default flag on `ui/toolkit-preview` (draft PR #165); this follow-up polishes its presentation. · **Prepared:** 22 Nov 2026, after the code freeze · **Approver for merge and enabling:** Sylvain (release owner)
 
 ## 1. Goal
 
@@ -30,13 +30,13 @@ Every tool shows its name, a one-line description and a **Planned feature** badg
 |---|---|
 | Dialog with Escape to close, focus trap, focus return, phone scrolling | `src/components/Dialog.tsx` (Radix) |
 | Button | `Button` (`variant="secondary"`) |
-| Cards and tiles | Card pattern of `DashboardCard` (`rounded-md bg-surface-card shadow-1`) |
-| "Planned feature" badge | `rounded-full` pill in the `status-draft` colours (neutral, not a case status) |
+| Cards and tiles | Card pattern of `DashboardCard` with the CEDA orange edge and the shared surface, line and shadow tokens |
+| "Planned feature" badge | `rounded-full` pill in the `status-draft` colours, with a clock icon and text (neutral, not a case status) |
 | Eyebrow + heading | The 21 Nov frame pattern (`text-brand-text` eyebrow, `text-h2 font-semibold` heading) |
 | Icons | `lucide-react` (already a dependency) |
-| Layout | `grid gap-3 md:grid-cols-2` cards, one column at 360 px; no animation |
+| Layout | `grid gap-3 md:grid-cols-2` cards, one column at 360 px; warm CEDA sunrise hero |
 
-Motion: nothing animates, so reduced-motion is respected by default.
+Motion: short card entrance and hover feedback, plus a responsive sheet and overlay transition. All new motion is disabled when `prefers-reduced-motion: reduce` is set.
 
 ## 4. Files
 
@@ -48,6 +48,8 @@ Motion: nothing animates, so reduced-motion is respected by default.
 | `src/pages/applicant/MyIdeasPage.tsx` | Render the innovator section when the flag is on | Stacey |
 | `src/pages/staff/StaffHomePage.tsx` | Render the reviewer section inside the existing `reviewer` block when the flag is on | Shawnjembu |
 | `src/components/ToolkitPreview.test.tsx` | **New.** Component tests | Shawnjembu |
+| `src/styles/index.css` | Preview-specific card and dialog transitions; reduced-motion override | ABM (follow-up polish) |
+| `artifacts/phase-07/toolkit-preview/` | Before/after applicant preview captures at 360 and 1280 px | ABM (follow-up polish) |
 | `src/pages/applicant/toolkit-preview.test.tsx` | **New.** Innovator page tests | Stacey |
 | `src/pages/staff/toolkit-preview.test.tsx` | **New.** Reviewer page tests | Shawnjembu |
 | `src/vite-env.d.ts` (if present), `.env.example` | The flag's type and name (names only) | Stacey |
