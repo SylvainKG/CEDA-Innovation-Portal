@@ -147,20 +147,33 @@ export function HowItWorksPage() {
         </aside>
       </section>
 
-      <section aria-labelledby="before-heading" className="flex flex-col gap-5">
+      {/* Good to know (restyled 23 Nov, in the home page's "Why submit" style): a warm panel with the sun's glow, and white
+          cards with a line of sunrise along the top, the icon on a sunrise tile and a quiet number. */}
+      <section
+        aria-labelledby="before-heading"
+        className="relative isolate flex flex-col gap-6 overflow-hidden rounded-[2rem] bg-[linear-gradient(135deg,var(--ceda-surface-warm),color-mix(in_srgb,var(--ceda-band-end)_40%,var(--ceda-surface-warm)))] p-6 md:p-10"
+      >
+        <div aria-hidden className="absolute -right-24 -top-28 -z-10 h-80 w-80 rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--ceda-gold)_32%,transparent),transparent_65%)]" />
         <div className="flex flex-col gap-2">
           <p className="text-sm font-bold uppercase tracking-wider text-brand-text">Before you start</p>
-          <h2 id="before-heading" className="text-[1.75rem] font-normal leading-tight md:text-[2rem]">
+          <h2 id="before-heading" className="text-[1.75rem] font-semibold leading-tight tracking-tight text-[var(--ceda-night)] md:text-[2.25rem]">
             Good to know
           </h2>
         </div>
         <ul className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {BEFORE_YOU_START.map(({ icon: Icon, title, text }) => (
-            <li key={title} className="flex flex-col gap-3 rounded-md border border-line bg-surface-card p-5 shadow-1">
-              <span aria-hidden className="flex h-11 w-11 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--ceda-gold)_25%,transparent)] text-[var(--ceda-maroon)]">
-                <Icon className="h-5 w-5" />
+          {BEFORE_YOU_START.map(({ icon: Icon, title, text }, i) => (
+            <li
+              key={title}
+              className="relative flex flex-col gap-3 overflow-hidden rounded-[1.25rem] border border-line bg-white p-6 shadow-1 hover:shadow-2 motion-safe:transition motion-safe:duration-300 motion-safe:hover:-translate-y-1"
+            >
+              <span aria-hidden className="absolute inset-x-0 top-0 h-1 bg-[linear-gradient(90deg,var(--ceda-gold),var(--ceda-orange),var(--ceda-maroon))]" />
+              <span aria-hidden className="absolute right-5 top-5 text-sm font-bold tracking-wider text-[color-mix(in_srgb,var(--ceda-orange)_55%,transparent)]">
+                {String(i + 1).padStart(2, '0')}
               </span>
-              <h3 className="text-h3 font-semibold">{title}</h3>
+              <span aria-hidden className="grid h-12 w-12 place-items-center rounded-[0.9rem] bg-[linear-gradient(135deg,var(--ceda-gold),var(--ceda-orange))] text-[var(--ceda-night)] shadow-1">
+                <Icon className="h-6 w-6" />
+              </span>
+              <h3 className="text-lg font-semibold text-[var(--ceda-night)]">{title}</h3>
               <p className="text-ink-muted">{text}</p>
             </li>
           ))}
