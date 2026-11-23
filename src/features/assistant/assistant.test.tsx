@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ask, AssistantError, pickRecordingType, readAssistantConfig, transcribe } from './leseding'
 import { PeolwaneAssistant } from './PeolwaneAssistant'
-import { getState, resetAssistant, sendQuestion, setMode, setOpen } from './store'
+import { getState, orbState, resetAssistant, sendQuestion, setMode, setOpen } from './store'
 
 const CFG = { base: 'https://engine.example', key: 'lsk_test_key' }
 
@@ -132,9 +132,12 @@ describe('Peolwane AI panel', () => {
     await user.click(launcher)
     const dialog = screen.getByRole('dialog', { name: 'Peolwane AI' })
     expect(dialog).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Voice' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('switch', { name: 'Voice conversation' })).toBeChecked()
     expect(screen.getByRole('button', { name: 'Start speaking' })).toHaveFocus()
-    expect(screen.getByText(/Hello, I'm Peolwane AI/)).toBeInTheDocument()
+    // Voice mode shows the Leseding orb (idle) in place of the conversation.
+    expect(screen.getByTestId('peolwane-orb')).toHaveAttribute('data-state', 'idle')
+    expect(screen.queryByRole('log')).not.toBeInTheDocument()
+    expect(screen.getByText(/and ask about the portal/)).toBeInTheDocument()
     await user.keyboard('{Escape}')
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Peolwane AI' })).toHaveFocus()
@@ -161,7 +164,10 @@ describe('Peolwane AI panel', () => {
     fetchMock.mockResolvedValue(streamed(['Your receipt is on ', 'the idea page.']))
     const user = renderAssistant()
     await user.click(screen.getByRole('button', { name: 'Peolwane AI' }))
-    await user.click(screen.getByRole('button', { name: 'Text' }))
+    await user.click(screen.getByRole('switch', { name: 'Voice conversation' }))
+    expect(screen.getByRole('switch', { name: 'Voice conversation' })).not.toBeChecked()
+    expect(screen.queryByTestId('peolwane-orb')).not.toBeInTheDocument()
+    expect(screen.getByText(/Hello, I'm Peolwane AI/)).toBeInTheDocument()
     const input = screen.getByRole('textbox', { name: 'Your question' })
     expect(input).toHaveFocus()
     await user.type(input, 'Where is my receipt?{Enter}')
@@ -176,7 +182,7 @@ describe('Peolwane AI panel', () => {
     fetchMock.mockResolvedValue(new Response('busy', { status: 429 }))
     const user = renderAssistant()
     await user.click(screen.getByRole('button', { name: 'Peolwane AI' }))
-    await user.click(screen.getByRole('button', { name: 'Text' }))
+    await user.click(screen.getByRole('switch', { name: 'Voice conversation' }))
     await user.type(screen.getByRole('textbox', { name: 'Your question' }), 'Hello{Enter}')
     expect(await screen.findByRole('alert')).toHaveTextContent('Peolwane AI is busy. Wait a moment and try again.')
     expect(screen.getByText('Hello')).toBeInTheDocument()
@@ -188,15 +194,16 @@ describe('Peolwane AI panel', () => {
     await user.click(screen.getByRole('button', { name: 'Peolwane AI' }))
     await user.click(screen.getByRole('button', { name: 'Start speaking' }))
     expect(await screen.findByRole('alert')).toHaveTextContent("Voice isn't available in this browser.")
-    expect(screen.getByRole('button', { name: 'Text' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('switch', { name: 'Voice conversation' })).not.toBeChecked()
   })
 
-  it('in voice mode, speaks the answer and is idle again when the audio ends', async () => {
+  it('in voice mode, speaks the answer, drives the orb through its states, and is idle again when the audio ends', async () => {
     fetchMock.mockImplementation(async (url: string) =>
       url.endsWith('/api/chat') ? streamed(['Sure.']) : new Response(new Uint8Array([1, 2, 3]), { status: 200 }),
     )
     const played: FakeAudio[] = []
     class FakeAudio {
+      onplaying: (() => void) | null = null
       onended: (() => void) | null = null
       onerror: (() => void) | null = null
       constructor(readonly src: string) {
@@ -207,15 +214,36 @@ describe('Peolwane AI panel', () => {
     }
     vi.stubGlobal('Audio', FakeAudio)
     vi.stubGlobal('URL', Object.assign(URL, { createObjectURL: vi.fn(() => 'blob:reply'), revokeObjectURL: vi.fn() }))
+    renderAssistant()
     act(() => setOpen(true))
+    const orb = screen.getByTestId('peolwane-orb')
+    expect(orb).toHaveAttribute('data-state', 'idle')
     await act(() => sendQuestion(CFG, 'Hi', 'voice'))
     expect(fetchMock.mock.calls.map((c) => c[0])).toEqual(['https://engine.example/api/chat', 'https://engine.example/api/speak'])
     expect(JSON.parse(fetchMock.mock.calls[1]![1].body)).toEqual({ text: 'Sure.', language: 'english' })
     expect(played).toHaveLength(1)
     expect(played[0]!.src).toBe('blob:reply')
     expect(getState().status).toBe('speaking')
+    // Audio fetched but not yet playing: still "thinking"; it becomes "speaking" when playback starts.
+    expect(orb).toHaveAttribute('data-state', 'thinking')
+    act(() => played[0]!.onplaying?.())
+    expect(orb).toHaveAttribute('data-state', 'speaking')
+    // The spoken answer is also shown under the orb.
+    expect(screen.getByText('Sure.')).toBeInTheDocument()
     act(() => played[0]!.onended?.())
     expect(getState().status).toBe('idle')
+    expect(orb).toHaveAttribute('data-state', 'idle')
     expect(getState().error).toBeNull()
+  })
+})
+
+describe('orb state (Leseding integration)', () => {
+  it('maps recording, working, fetching speech and playing to the four orb states', () => {
+    expect(orbState('idle', false)).toBe('idle')
+    expect(orbState('listening', false)).toBe('listening')
+    expect(orbState('transcribing', false)).toBe('thinking')
+    expect(orbState('thinking', false)).toBe('thinking')
+    expect(orbState('speaking', false)).toBe('thinking')
+    expect(orbState('speaking', true)).toBe('speaking')
   })
 })
