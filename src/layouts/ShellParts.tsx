@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowUp, Bell, ExternalLink, LogOut, Mail, MapPin, Phone } from 'lucide-react'
+import { ArrowUp, ExternalLink, LogOut, Mail, MapPin, Phone } from 'lucide-react'
+import { NotificationsPanel } from './NotificationsPanel'
 import { Link, useNavigate } from 'react-router-dom'
 import { BRANDS, brand } from '@/brand'
 import { HorizonEdge } from '@/brand/Horizon'
 import { CEDA, telHref } from '@/brand/ceda-info'
 import { DemoBadge } from '@/components/DemoBadge'
-import { useNotifications } from '@/features/oversight/queries'
 import { apiMode } from '@/lib/api'
 import { MOCK_ROLE_OPTIONS, mockRoleOf } from '@/lib/api/mock/session'
 import type { Role } from '@/lib/api/types'
@@ -250,31 +250,6 @@ function AppFooter({ chatSpace }: { chatSpace: boolean }) {
 }
 
 /**
- * The bell (spec T11, NTF-01): the unread count as a badge, refreshed every 30 seconds and on returning to the tab.
- * The accessible name says the count ("Notifications, 3 unread"); the badge is only a visual repeat of it.
- */
-export function NotificationsLink() {
-  const list = useNotifications()
-  const unread = (list.data ?? []).filter((n) => !n.read_at).length
-  const name = unread ? `Notifications, ${unread} unread` : 'Notifications'
-  return (
-    // A round bell button (Sandra's 21 Nov frames); the touch target stays 44 × 44 px.
-    <Link
-      to="/notifications"
-      aria-label={name}
-      className="relative inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-line text-ink no-underline hover:bg-surface-sunken"
-    >
-      <Bell aria-hidden className="h-5 w-5" />
-      {unread ? (
-        <span aria-hidden className="absolute -right-1 -top-1 min-w-[1.25rem] rounded-full bg-brand px-1 text-center text-xs font-semibold leading-5 text-brand-on">
-          {unread > 9 ? '9+' : unread}
-        </span>
-      ) : null}
-    </Link>
-  )
-}
-
-/**
  * Mock mode only: lets the team preview each role's shell. Clearly labelled as not authentication.
  * Renders nothing outside mock mode.
  */
@@ -308,7 +283,7 @@ export function TopBarEnd({ badge = false }: { badge?: boolean }) {
   return (
     <div className="flex shrink-0 items-center gap-2 md:gap-3">
       {badge ? <DemoBadge /> : null}
-      {user ? <NotificationsLink /> : null}
+      {user ? <NotificationsPanel /> : null}
       {user ? <AccountMenu /> : null}
     </div>
   )
