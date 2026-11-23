@@ -1,7 +1,11 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { dismissSplash } from '@/brand/splash'
+import { applyA11y, loadA11y } from '@/features/preferences/settings'
 import '@/styles/index.css'
+
+// Accessibility settings (footer) apply before the first paint, so a reload never flashes the default look.
+applyA11y(loadA11y())
 
 const rootElement = document.getElementById('root')
 if (!rootElement) throw new Error('Root element #root not found in index.html')
