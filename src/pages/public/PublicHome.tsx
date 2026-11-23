@@ -75,7 +75,8 @@ export function PublicHome() {
 
 /**
  * The hero as one composition (ABM, 23 Nov; the team found the earlier split cold, the photo a separate card). One
- * panel in CEDA's night brown, like the About and How it works heroes: the words on the left; the Okavango sunrise
+ * panel in CEDA's night brown, edge to edge from 1024 px (its words still on the page's content edge) and a rounded
+ * card on phones and tablets, like the About and How it works heroes: the words on the left; the Okavango sunrise
  * filling the right and fading into the brown, so there is no edge between them; the swallow's dotted flight rising
  * out of the dark into the sun; and the challenge open now as a glass card on the photo, inside the same panel. When
  * the swallow lands, a line of light runs along the card and its "Open now" dot pulses. On phones the photo sits at
@@ -85,17 +86,17 @@ export function PublicHome() {
 function Hero() {
   const [landed, setLanded] = useState(false)
   return (
-    <div className="relative bg-[linear-gradient(180deg,var(--surface-card),var(--ceda-surface-warm))] px-4 pb-12 pt-6 md:pb-16 md:pt-10">
+    <div className="relative bg-[linear-gradient(180deg,var(--surface-card),var(--ceda-surface-warm))] px-4 pb-12 pt-6 md:pb-16 md:pt-10 lg:p-0">
       {/* The sun's glow behind the panel (decorative). */}
       <div aria-hidden className="pointer-events-none absolute -right-40 -top-40 h-[36rem] w-[36rem] rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--ceda-gold)_30%,transparent),transparent_65%)]" />
       <section
         aria-labelledby="intro"
         className={cn(
-          'dawn-frame relative isolate mx-auto grid w-full max-w-content overflow-hidden rounded-[2rem] bg-[var(--ceda-night)] text-white shadow-2 lg:min-h-[34rem] lg:grid-cols-2 xl:min-h-[36rem]',
+          'dawn-frame relative isolate mx-auto grid w-full max-w-content overflow-hidden rounded-[2rem] bg-[var(--ceda-night)] text-white shadow-2 lg:min-h-[34rem] lg:max-w-none lg:grid-cols-2 lg:rounded-none lg:shadow-none xl:min-h-[38rem]',
           landed && 'is-landed',
         )}
       >
-        <div className="relative z-10 flex flex-col gap-5 px-6 pb-8 md:px-10 lg:justify-center lg:py-12 lg:pl-10 lg:pr-2 xl:py-16 xl:pl-12 xl:pr-4">
+        <div className="relative z-10 flex flex-col gap-5 px-6 pb-8 md:px-10 lg:justify-center lg:py-14 lg:pl-[max(2.5rem,calc((100vw-75rem)/2+1rem))] lg:pr-2 xl:py-20 xl:pr-4">
           <Eyebrow onDark>A new season for innovation</Eyebrow>
           <h1 id="intro" className="text-[2.5rem] font-semibold leading-[1.1] tracking-tight md:text-[3.5rem] lg:text-[2.75rem] xl:text-[3.5rem]">
             A{' '}
@@ -136,15 +137,17 @@ function Hero() {
         {/* The sunrise and the swallow's flight. From 1024 px it fills the right of the panel and fades into the brown at
             its left edge; below that it heads the panel and fades at its foot. DawnFlight crops from the photo's left, so
             the tree, the sun and the swallow's landing stay to the right of the words at every width. */}
-        <figure className="dawn-photo relative order-first aspect-[4/3] md:aspect-[16/9] lg:absolute lg:inset-y-0 lg:right-0 lg:order-none lg:aspect-auto lg:w-[74%]">
+        <figure className="dawn-photo relative order-first aspect-[4/3] md:aspect-[16/9] lg:absolute lg:inset-y-0 lg:right-0 lg:order-none lg:aspect-auto lg:w-[min(74%,62rem)]">
           <DawnFlight photo={PHOTOS.sunrise} onArrive={() => setLanded(true)} className="absolute inset-0 block h-full w-full" />
           <figcaption className="absolute left-4 top-4 rounded-full bg-black/45 px-3 py-1 text-xs font-semibold text-white backdrop-blur-sm lg:left-auto lg:right-4">
             {PHOTOS.sunrise.caption}
           </figcaption>
         </figure>
-        <div className="relative z-10 px-4 pb-4 md:px-6 md:pb-6 lg:col-start-2 lg:self-end lg:pl-0">
+        <div className="relative z-10 px-4 pb-4 md:px-6 md:pb-6 lg:col-start-2 lg:self-end lg:pb-8 lg:pl-0 lg:pr-[max(1.5rem,calc((100vw-75rem)/2+1rem))]">
           <ChallengeStrip />
         </div>
+        {/* From 1024 px the hero runs edge to edge and ends on a thin line of sunrise, as the workspace footer begins. */}
+        <div aria-hidden className="absolute inset-x-0 bottom-0 z-10 hidden h-1 bg-[linear-gradient(90deg,var(--ceda-gold),var(--ceda-amber),var(--ceda-orange),var(--ceda-maroon))] lg:block" />
       </section>
     </div>
   )
