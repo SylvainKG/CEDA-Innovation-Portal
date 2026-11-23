@@ -1,6 +1,7 @@
-import { ArrowUp, Keyboard, Loader2, Mic, Send, ShieldCheck, Sparkles, Square, VolumeX, X } from 'lucide-react'
+import { ArrowUp, ChevronRight, Keyboard, Loader2, Mic, Pause, Play, Send, ShieldCheck, Sparkles, Square, VolumeX, X } from 'lucide-react'
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
+import { prefersReducedMotion } from '@/features/preferences/settings'
 import { cn } from '@/lib/cn'
 import { assistantConfig, type AssistantConfig } from './leseding'
 import {
@@ -21,6 +22,8 @@ import './assistant.css'
 
 const PROMPTS = ['How do I submit an idea?', 'Where can I find open challenges?', 'What happens after I apply?']
 const PANEL_EXIT_MS = 340
+/** How long each suggested question shows before the next one (ms). */
+const PROMPT_EVERY_MS = 4000
 
 /**
  * Where the way in to Peolwane AI sits: `default` and `applicant` float a launcher at the bottom right (the applicant
@@ -231,35 +234,35 @@ function Panel({ config, closing, beside = false }: { config: AssistantConfig; c
         <div className="peolwane-panel__brandmark" aria-hidden><Sparkles className="h-6 w-6" /></div>
         <div className="min-w-0 flex-1">
           <p className="peolwane-panel__eyebrow">CEDA PORTAL GUIDE</p>
-          <h2 id={titleId} className="peolwane-panel__title">Peolwane AI</h2>
+          {/* The status sits beside the name, so the line below it has room (compact header, 23 Nov). */}
+          <div className="flex flex-wrap items-center gap-x-2.5">
+            <h2 id={titleId} className="peolwane-panel__title">Peolwane AI</h2>
+            <span className="peolwane-panel__online"><span />{status === 'thinking' || status === 'transcribing' ? 'Working' : status === 'listening' ? 'Listening' : 'Ready'}</span>
+          </div>
           <p className="peolwane-panel__subtitle">Here to help you find your way</p>
         </div>
-        <span className="peolwane-panel__online"><span />{status === 'thinking' || status === 'transcribing' ? 'Working' : status === 'listening' ? 'Listening' : 'Ready'}</span>
         <button type="button" onClick={() => setOpen(false)} className="peolwane-panel__close" aria-label={`Close ${ASSISTANT_NAME}`}>
           <X aria-hidden className="h-5 w-5" />
         </button>
       </header>
 
+      {/* Text or voice, as two halves of one control with the chosen one filled (team, 23 Nov: the small switch was easy to miss). */}
       <div className="peolwane-panel__mode">
-        <span className={cn('peolwane-mode-label', mode === 'text' && 'peolwane-mode-label--active')} aria-hidden><Keyboard className="h-4 w-4" />Text</span>
-        <button
-          type="button"
-          role="switch"
-          aria-checked={mode === 'voice'}
-          aria-label="Voice conversation"
-          onClick={() => setMode(mode === 'voice' ? 'text' : 'voice')}
-          className="peolwane-mode-switch"
-        >
-          <span className="peolwane-mode-switch__thumb" aria-hidden />
-        </button>
-        <span className={cn('peolwane-mode-label', mode === 'voice' && 'peolwane-mode-label--active')} aria-hidden><Mic className="h-4 w-4" />Voice</span>
+        <div className="peolwane-mode" data-mode={mode} role="group" aria-label="How to talk to Peolwane AI">
+          <span className="peolwane-mode__thumb" aria-hidden />
+          <button type="button" aria-pressed={mode === 'text'} onClick={() => setMode('text')} className="peolwane-mode__option">
+            <Keyboard aria-hidden className="h-4 w-4" />Text
+          </button>
+          <button type="button" aria-pressed={mode === 'voice'} onClick={() => setMode('voice')} className="peolwane-mode__option">
+            <Mic aria-hidden className="h-4 w-4" />Voice
+          </button>
+        </div>
       </div>
 
       {mode === 'voice' ? (
         <VoiceStage state={orbState(status, playing)} messages={messages} />
       ) : (
       <div className="peolwane-panel__conversation">
-        <div className="peolwane-panel__section-label"><span /> YOUR CONVERSATION</div>
         <ol ref={logRef} role="log" aria-label="Conversation with Peolwane AI" className="peolwane-panel__messages">
           {messages.map((message) => (
             <li key={message.id} className={cn('peolwane-message', `peolwane-message--${message.role}`)} aria-busy={message.pending || undefined}>
@@ -272,12 +275,7 @@ function Panel({ config, closing, beside = false }: { config: AssistantConfig; c
           ))}
         </ol>
 
-        {showPrompts && (
-          <div className="peolwane-prompts" aria-label="Suggested questions">
-            <p>Not sure where to start?</p>
-            <div>{PROMPTS.map((prompt) => <button key={prompt} type="button" onClick={() => submitQuestion(prompt)}>{prompt}<ArrowUp aria-hidden className="h-3.5 w-3.5" /></button>)}</div>
-          </div>
-        )}
+        {showPrompts && <PromptCarousel onAsk={(prompt) => submitQuestion(prompt)} />}
       </div>
       )}
 
@@ -320,6 +318,61 @@ function Panel({ config, closing, beside = false }: { config: AssistantConfig; c
  * Voice mode: the Leseding orb in place of the conversation, with the last exchange as a caption underneath so a
  * spoken answer is also readable. The full conversation stays available in Text mode.
  */
+/**
+ * The suggested questions, one at a time (team, 23 Nov: three stacked chips made the panel too tall). Each shows for a
+ * few seconds, then the next slides in; it waits while the pointer or focus is on it, Next steps through by hand, and
+ * Pause stops it (WCAG 2.2.2). With reduced motion it starts paused. Choosing one asks it.
+ */
+function PromptCarousel({ onAsk }: { onAsk: (prompt: string) => void }) {
+  const [index, setIndex] = useState(0)
+  const [paused, setPaused] = useState(() => prefersReducedMotion())
+  const [held, setHeld] = useState(false)
+  useEffect(() => {
+    if (paused || held) return undefined
+    const timer = window.setInterval(() => setIndex((i) => (i + 1) % PROMPTS.length), PROMPT_EVERY_MS)
+    return () => window.clearInterval(timer)
+  }, [paused, held])
+  const prompt = PROMPTS[index]!
+  return (
+    <div
+      className="peolwane-prompts"
+      role="group"
+      aria-roledescription="carousel"
+      aria-label="Suggested questions"
+      onMouseEnter={() => setHeld(true)}
+      onMouseLeave={() => setHeld(false)}
+      onFocus={() => setHeld(true)}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setHeld(false)
+      }}
+    >
+      <div className="peolwane-prompts__head">
+        <p>Not sure where to start? Try:</p>
+        <span className="peolwane-prompts__dots" aria-hidden>
+          {PROMPTS.map((p, i) => <i key={p} className={cn(i === index && 'is-current')} />)}
+        </span>
+      </div>
+      <div className="peolwane-prompts__row">
+        <button key={prompt} type="button" onClick={() => onAsk(prompt)} className="peolwane-prompt">
+          <span>{prompt}</span>
+          <ArrowUp aria-hidden className="h-4 w-4 shrink-0" />
+        </button>
+        <button type="button" onClick={() => setIndex((i) => (i + 1) % PROMPTS.length)} aria-label="Next suggested question" className="peolwane-prompts__control">
+          <ChevronRight aria-hidden className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          onClick={() => setPaused((p) => !p)}
+          aria-label={paused ? 'Rotate the suggested questions' : 'Pause the suggested questions'}
+          className="peolwane-prompts__control"
+        >
+          {paused ? <Play aria-hidden className="h-4 w-4" /> : <Pause aria-hidden className="h-4 w-4" />}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function VoiceStage({ state, messages }: { state: OrbState; messages: AssistantMessage[] }) {
   const lastAnswer = [...messages].reverse().find((message) => message.role === 'assistant' && message.id !== 0 && !message.pending && message.content)
   const lastQuestion = [...messages].reverse().find((message) => message.role === 'user')
