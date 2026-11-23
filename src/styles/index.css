@@ -453,7 +453,7 @@
 }
 
 /*
- * Signing out (fadeScreen in PageTransition.tsx): the whole screen fades as one, so nothing is held above it. The
+ * Signing out (fadeScreen, src/layouts/page-motion.ts): the whole screen fades as one, so nothing is held above it. The
  * workspace sinks back a little as it fades; the public home page rises in. Reduced motion skips it (fadeScreen).
  */
 html.ceda-screen-fade .page-transition,

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ArrowUp, ExternalLink, LogOut, Mail, MapPin, Phone } from 'lucide-react'
 import { NotificationsPanel } from './NotificationsPanel'
-import { fadeScreen } from './PageTransition'
+import { fadeScreen } from './page-motion'
 import { Link, useNavigate } from 'react-router-dom'
 import { BRANDS, brand } from '@/brand'
 import { HorizonEdge } from '@/brand/Horizon'
