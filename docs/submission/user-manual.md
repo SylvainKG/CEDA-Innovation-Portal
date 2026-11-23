@@ -12,11 +12,8 @@ Screens still being built are marked **[confirm at release]**; that line is chec
 2. Applicant
 3. Screening officer
 4. Reviewer
-5. Adjudicator
-6. Administrator
-7. Support consultant and support lead
-8. External committee member
-9. Auditor
+5. Administrator (decisions, awards, support chat, oversight, configuration)
+6. Auditor
 
 ---
 
@@ -81,19 +78,23 @@ Screens still being built are marked **[confirm at release]**; that line is chec
 4. You **can't see other reviewers' scores until you have submitted your own** on the same version.
 5. **Version 2:** for a revised idea, verify each roadmap task as **Verified** or **Not verified**, with a note. **Compare versions** shows both versions side by side, with each change named. Version 1's scores stay with version 1.
 
-## 5. Adjudicator
+## 5. Administrator
 
-1. **Ready for decision** lists cases whose reviews have reached the quorum (two scorecards).
-2. The **score panel** shows each reviewer's scores, the weighted total and the spread between reviewers.
-3. **Record decision** (Approved or Not approved, with a reason). It stays a **draft, invisible to the applicant**, until you **Publish** it.
-4. An award can only follow a published approval.
+The Administrator carries every staff duty beyond screening and reviewing. Earlier builds split some of this across separate adjudicator, support-consultant and external-committee accounts; those roles are now part of the Administrator.
 
-## 6. Administrator
+The navigation has **All cases**, **Ready for decision**, **Support inbox**, **Reports**, **Audit log**, **Users & roles** and **Settings**. Settings opens **Challenges**; links at the top of every settings page lead to **Roles**, **Content** and **Chat settings**.
 
-The navigation has **All cases**, **Users & roles** and **Settings**. Settings opens **Challenges**; links at the top of every settings page lead to **Roles**, **Content** and **Chat settings**.
-
+**Cases, decisions and awards**
 - **All cases:** every case with its stage; **assign reviewers** (at least two), see each reviewer's load, and remove a reviewer.
-- **Record award** on an approved case (amount in BWP and a description), and **close** a case with a reason.
+- **Ready for decision** lists cases whose reviews have reached the quorum (two scorecards). The **score panel** shows each reviewer's scores, the weighted total and the spread between reviewers.
+- **Record decision** (Approved or Not approved, with a reason). It stays a **draft, invisible to the applicant**, until you **Publish** it.
+- **Record award** on an approved case (amount in BWP and a description) — an award can only follow a published approval — and **close** a case with a reason.
+
+**Support chat**
+- **Support inbox:** take a waiting chat, reply, and close it. You can handle several chats at once.
+- **Reports → Chat:** chat statistics (volume, handled, missed, average wait) for a chosen period.
+
+**Oversight and configuration**
 - **Challenges:** edit a challenge's details, publish, unpublish or close it to new ideas. Build its **application form** (sections and fields: short text, long text, choice, email), save it as a draft, then publish it. A submitted idea keeps the form version it used.
 - **Rubrics:** add the criteria reviewers score, each with a weight and a description of what a 1, a 3 and a 5 look like. The weights must total 100%.
 - **Content:** FAQs, contacts, referrals, the support page, the privacy notice, the declaration and other pages. Save as a draft or publish; only published pages are shown to the public.
@@ -104,16 +105,6 @@ The navigation has **All cases**, **Users & roles** and **Settings**. Settings o
 
 Every change on these screens is recorded in the audit log.
 
-## 7. Support consultant and support lead
-
-- **Support inbox:** take a waiting chat, reply, and close it. One consultant can handle several chats.
-- You **can't see proposals, files or scores**, by design.
-- **Support lead:** chat statistics (volume, handled, missed, average wait) for a chosen period.
-
-## 8. External committee member
-
-**Home** shows how many cases are at each stage. **All cases** lists each case's **reference, challenge, stage and last update only**. You can't see proposal text, scores or internal notes (D-08).
-
-## 9. Auditor
+## 6. Auditor
 
 The **audit log** records every workflow action: who did it, what, when and the outcome. You can filter by case, action and date (a filter by person isn't available in this version). Entries can't be changed or deleted by any portal user, including administrators. The log holds no passwords, proposal text or note text.

@@ -29,11 +29,10 @@ All addresses end in `@demo.ceda-portal.test`. Each account sees only what its r
 | `screening` | Screening officer | Screening queue | Record a screening result; ask for a clarification or a revision |
 | `reviewer.1`, `reviewer.2` | Reviewers | My reviews | Declare no conflict, then score against the rubric |
 | `reviewer.3` | Reviewer, not assigned to the demo case | My reviews | Sees nothing of cases they aren't assigned to |
-| `adjudicator` | Adjudicator | Ready for decision | Compare scores, record and publish a decision |
-| `admin` | Administrator and auditor | All cases | Assign reviewers, record an award, Reports (CSV export), Audit log; the admin screens: Users & roles, and under Settings: Challenges and rubrics, Roles, Content, Chat settings |
-| `consultant` | Support consultant and lead | Support inbox | Take and answer chats; chat statistics under Reports. Can't see proposals or scores |
-| `committee.ext` | External committee member | Home, then All cases | Counts by stage, and each case's reference, challenge, stage and last update only. No proposal text, scores or notes (D-08) |
+| `admin` | Administrator (also decisions, support chat, committee oversight) and auditor | All cases | Assign reviewers; compare scores and **record and publish a decision** (Ready for decision); record an award; **Support inbox** (take and answer chats); Reports (CSV export) and Audit log; Users & roles, and under Settings: Challenges and rubrics, Roles, Content, Chat settings |
 | `applicant.c`, `.d`, `.e` | Applicants | My ideas | Owners of the background cases |
+
+The Administrator now holds the decision, support-chat and committee-oversight duties that earlier builds split across separate adjudicator, support-consultant and external-committee accounts.
 
 **Staff two-step sign-in:** staff permissions normally require a second factor. The seeded demo staff accounts are exempt so that judges can sign in directly (D-07). The exemption is a setting, and it is switched off for any real use. The **Two-step sign-in** screen (`/auth/mfa`) tells an exempt account "No authenticator code is needed for this account."; a staff account without the exemption sets up an authenticator app there and enters its 6-digit code.
 
@@ -47,7 +46,7 @@ The demo data holds eight earlier cases (`CEDA-2026-0001` to `0008`), so **your 
 | 2 | `screening` | Screening queue → the new case → **Record screening: Eligible** with a short reason | The case moves to evaluation; the applicant sees "Under review". The reason stays with staff |
 | 3 | `admin` | The case → **Assign reviewers** → Reviewer 1 and Reviewer 2 | Each reviewer shows "Declaration needed" |
 | 4 | `reviewer.1`, then `reviewer.2` | My reviews → the case → **declare no conflict** → score each criterion with a reason → submit | Before declaring, the proposal and files are hidden. A reviewer sees the other's scores only after submitting their own. After the second scorecard the case is **Ready for decision** |
-| 5 | `adjudicator` | Ready for decision → score panel → **Record decision: Approved** with a reason → **Publish** | Until published, the applicant sees no decision. After publishing they see Approved, the reason and next steps |
+| 5 | `admin` | Ready for decision → score panel → **Record decision: Approved** with a reason → **Publish** | Until published, the applicant sees no decision. After publishing they see Approved, the reason and next steps |
 | 6 | `admin` | The case → **Record award** (for example BWP 250,000.50) | The applicant sees the award |
 | 7 | `applicant.a` | My ideas → the idea | The stage timeline, decision, award and next steps |
 
@@ -56,7 +55,7 @@ Every step above runs through the screens. Each step was also verified against t
 Also worth trying:
 - **Revision and roadmap:** as `screening`, ask for a revision with tasks on a case. The applicant answers each task in version 2, each reviewer verifies each task, and version 1's scores stay with version 1 (C-13). Staff can put the two versions side by side on the case page (**Compare versions**), with each change named.
 - **Reports and audit:** as `admin`, open **Reports** (participation, outcomes, time in stage; CSV export) and the **Audit log** (filter by case, action and date).
-- **Live chat:** as `applicant.a`, open **Chat** (09:00–16:00 CAT on working days; outside those hours it says it is closed); as `consultant`, answer it in the **Support inbox**.
+- **Live chat:** as `applicant.a`, open **Chat** (09:00–16:00 CAT on working days; outside those hours it says it is closed); as `admin`, answer it in the **Support inbox**.
 - **Administration:** as `admin`, open **Users & roles** (grant or remove a role with a reason; invite staff by email, which is Simulated), **Challenges** (edit a challenge, its application form and its rubric; weights must total 100%), **Content** (FAQs, contacts, notices; only published pages are public) and **Chat settings** (opening hours and closures). Every change is recorded in the audit log.
 - **Notifications:** the bell in the header shows unread notifications; **Notifications** lists them, and the email alerts setting there is stored, but emails are Simulated.
 - **Peolwane AI** **[confirm at release]**: the button at the bottom right of every page opens a voice-first assistant (tap the microphone, speak, tap again; or switch to Text). It answers questions about using the portal and never sees accounts or ideas.
@@ -72,7 +71,6 @@ These are refused **by the server**, not only hidden in the screens.
 | As `applicant.a`, open `/staff/queue/screening` or `/audit` | "You don't have access to this page" |
 | As `reviewer.3`, look for the demo case | Not listed; no proposal and no files (N3) |
 | As `reviewer.1`, open an assigned case **before** declaring | No proposal and no files until the declaration (N10) |
-| As `consultant`, look for proposals or scores | None (N7) |
 | As `admin`, open **Users & roles** and find your own row | The role controls are disabled: "You can't change your own roles." The server also refuses the change if it is sent directly, and records the attempt (N8, proven at the database layer) |
 | As `applicant.a`, look for a decision before it is published | Nothing (N4) |
 

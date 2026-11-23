@@ -6,9 +6,7 @@ import { EmptyState, ErrorState, LoadingState } from '@/components/states/States
 import { useStaffCases } from '@/features/staff/queries'
 import type { CaseStatus, StaffCaseRow } from '@/lib/api/types'
 import { formatDateCAT } from '@/lib/format'
-import { useSession } from '@/lib/session'
 import { staffStatus } from '@/lib/status'
-import { CommitteeCases } from './CommitteeView'
 
 const ALL: readonly CaseStatus[] = []
 /** Statuses an admin can filter by, in workflow order (drafts are never visible to staff). */
@@ -28,17 +26,9 @@ const FILTERABLE: readonly CaseStatus[] = [
  * administrator screening" in `Figma pdf/`) like the other work queues (#118): "WORK QUEUE" over the title, the
  * filter card (search, status, challenge) with removable chips, and every submitted case with its challenge, last
  * update, active reviewers and status. The status filter stays in the address so it survives reloads and can be
- * shared. Committee members get the status-only variant (D-08).
+ * shared. Admin-only: the committee oversight role was absorbed into the Administrator (migration 017).
  */
 export function AllCasesPage() {
-  const { data: user } = useSession()
-  if (user && !user.roles.includes('admin') && user.roles.includes('committee_member')) {
-    return <CommitteeCases />
-  }
-  return <AdminCases />
-}
-
-function AdminCases() {
   const [params, setParams] = useSearchParams()
   const raw = params.get('status')
   const status = raw && (FILTERABLE as readonly string[]).includes(raw) ? (raw as CaseStatus) : null

@@ -152,11 +152,9 @@ describe('T07 all cases (admin)', () => {
     expect(links.sort()).toEqual(['CEDA-2026-0002', 'CEDA-2026-0008'])
   })
 
-  it('gives committee members the status-only variant instead of the admin table (D-08)', async () => {
+  it('no longer serves committee members a status-only view — All cases is admin-only (absorbed, migration 017)', async () => {
     await as('committee_member')
     renderAt('/staff/cases')
-    expect(await screen.findByRole('heading', { level: 1, name: 'All cases' })).toBeInTheDocument()
-    expect(await screen.findByText(/No proposal text, scores or notes \(D-08\)/)).toBeInTheDocument()
-    expect(screen.queryByRole('columnheader', { name: 'Reviewers' })).not.toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: "You don't have access to this page" })).toBeInTheDocument()
   })
 })
