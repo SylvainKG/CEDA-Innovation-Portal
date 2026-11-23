@@ -75,8 +75,9 @@ const BEFORE_YOU_START = [
  */
 export function HowItWorksPage() {
   return (
-    <div className="mx-auto flex w-full max-w-content flex-col gap-12 py-2 md:gap-16">
+    <div className="flex flex-col overflow-x-clip">
       <Hero />
+      <div className="mx-auto flex w-full max-w-content flex-col gap-12 px-4 pb-6 pt-10 md:gap-16 md:pt-14">
 
       <section id="process-steps" aria-labelledby="steps-heading" className="grid scroll-mt-28 gap-8 lg:grid-cols-[minmax(0,1fr)_19rem] lg:gap-12">
         <div>
@@ -171,6 +172,7 @@ export function HowItWorksPage() {
       <p className="border-t border-line pt-5 text-sm text-ink-muted">
         {brand.header.title} is a demonstration prototype. Challenge information and example cases are fictional unless a page links to CEDA’s official website.
       </p>
+      </div>
     </div>
   )
 }
@@ -182,14 +184,17 @@ const STARS: [number, number, number][] = [
 ]
 
 /**
- * The hero (23 Nov, after the team asked for "a touch of magic"): one panel in CEDA's night brown, like the home and
- * About heroes, under a sky of faint stars that twinkle, with the sun's glow at the top right and an ember glow at the
- * bottom left. "innovation process" is in the sunrise; the swallow's journey sits in the same panel as a glass card.
- * The stars, the pulsing dot and the journey's own motion stop for people who reduce motion.
+ * The hero (23 Nov, after the team asked for "a touch of magic" and the home hero's energy): one panel in CEDA's night
+ * brown under a sky of faint stars that twinkle, with the sun's glow at the top right and an ember glow at the bottom
+ * left. Like the home hero it runs edge to edge from 1024 px, its words and the journey on the page's content edges,
+ * ending on a thin line of sunrise; it is at most as tall as the window under the header, so the swallow's journey and
+ * its step card show in full on one screen. On phones and tablets it is a rounded card. "innovation process" is in the
+ * sunrise. The stars, the pulsing dot and the journey's own motion stop for people who reduce motion.
  */
 function Hero() {
   return (
-    <div className="relative isolate grid grid-cols-1 items-center gap-10 overflow-hidden rounded-[2rem] bg-[var(--ceda-night)] px-5 py-8 text-white shadow-2 sm:px-8 md:px-12 md:py-14 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
+    <div className="px-4 pt-6 lg:p-0">
+    <div className="relative isolate grid grid-cols-1 items-center gap-10 overflow-hidden rounded-[2rem] bg-[var(--ceda-night)] px-5 py-8 text-white shadow-2 sm:px-8 md:px-12 md:py-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-12 lg:rounded-none lg:py-10 lg:shadow-none lg:min-h-[min(40rem,calc(100svh-6.75rem))] lg:pl-[max(2.5rem,calc((100vw-75rem)/2+1rem))] lg:pr-[max(1.5rem,calc((100vw-75rem)/2+1rem))]">
       <div aria-hidden className="absolute -right-24 -top-32 -z-10 h-[30rem] w-[30rem] rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--ceda-gold)_38%,transparent),transparent_65%)]" />
       <div aria-hidden className="absolute -bottom-44 -left-28 -z-10 h-[28rem] w-[28rem] rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--ceda-maroon)_55%,transparent),transparent_68%)]" />
       <div aria-hidden className="pointer-events-none absolute inset-0 -z-10">
@@ -222,7 +227,12 @@ function Hero() {
           </a>
         </div>
       </div>
-      <StepJourney steps={STEPS} glass />
+      <div className="w-full lg:justify-self-end">
+        <StepJourney steps={STEPS} glass />
+      </div>
+      {/* From 1024 px the hero ends on a thin line of sunrise, as the home hero does. */}
+      <div aria-hidden className="absolute inset-x-0 bottom-0 hidden h-1 bg-[linear-gradient(90deg,var(--ceda-gold),var(--ceda-amber),var(--ceda-orange),var(--ceda-maroon))] lg:block" />
+    </div>
     </div>
   )
 }

@@ -65,6 +65,8 @@ export function PublicShell() {
   const [open, setOpen] = useState(false)
   const { pathname } = useLocation()
   const home = pathname === '/'
+  // The home page and How it works run their heroes edge to edge, so they lay out their own width (team, 23 Nov).
+  const fullWidth = home || pathname === '/how-it-works'
   const floating = useScrolledPast(FLOAT_AFTER)
   const { data: user } = useSession()
   // A signed-in person on a public page (the home page) gets one button back to their own workspace; not mid-sign-in.
@@ -186,7 +188,7 @@ export function PublicShell() {
         ) : null}
       </header>
       {/* Every page fills at least the window below the navigation, so the footer always starts below the fold. */}
-      <main id="main" className={home ? 'w-full flex-1' : 'mx-auto min-h-[calc(100svh-4rem)] w-full max-w-content flex-1 px-4 py-6 lg:min-h-[calc(100svh-6.75rem)]'}>
+      <main id="main" className={fullWidth ? 'w-full flex-1' : 'mx-auto min-h-[calc(100svh-4rem)] w-full max-w-content flex-1 px-4 py-6 lg:min-h-[calc(100svh-6.75rem)]'}>
         <PageTransition>
           <Outlet />
         </PageTransition>

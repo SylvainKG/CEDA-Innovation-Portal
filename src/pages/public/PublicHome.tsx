@@ -92,11 +92,11 @@ function Hero() {
       <section
         aria-labelledby="intro"
         className={cn(
-          'dawn-frame relative isolate mx-auto grid w-full max-w-content overflow-hidden rounded-[2rem] bg-[var(--ceda-night)] text-white shadow-2 lg:min-h-[34rem] lg:max-w-none lg:grid-cols-2 lg:rounded-none lg:shadow-none xl:min-h-[38rem]',
+          'dawn-frame relative isolate mx-auto grid w-full max-w-content overflow-hidden rounded-[2rem] bg-[var(--ceda-night)] text-white shadow-2 lg:max-w-none lg:grid-cols-2 lg:rounded-none lg:shadow-none lg:min-h-[min(40rem,calc(100svh-6.75rem))]',
           landed && 'is-landed',
         )}
       >
-        <div className="relative z-10 flex flex-col gap-5 px-6 pb-8 md:px-10 lg:justify-center lg:py-14 lg:pl-[max(2.5rem,calc((100vw-75rem)/2+1rem))] lg:pr-2 xl:py-20 xl:pr-4">
+        <div className="relative z-10 flex flex-col gap-5 px-6 pb-8 md:px-10 lg:justify-center lg:py-12 lg:pl-[max(2.5rem,calc((100vw-75rem)/2+1rem))] lg:pr-2 xl:py-14 xl:pr-4">
           <Eyebrow onDark>A new season for innovation</Eyebrow>
           <h1 id="intro" className="text-[2.5rem] font-semibold leading-[1.1] tracking-tight md:text-[3.5rem] lg:text-[2.75rem] xl:text-[3.5rem]">
             A{' '}
