@@ -24,7 +24,21 @@ export const ROLES = [
 ] as const
 export type Role = (typeof ROLES)[number]
 
+/**
+ * Roles absorbed into Administrator (owner decision, 22 Nov 2026): the adjudicator,
+ * support consultant/lead and external committee member no longer have their own
+ * dashboards or accounts — the admin does that work. They stay in ROLES (and in the
+ * database) so existing audit/history keeps resolving, but they are hidden everywhere
+ * a role is shown or granted. See migration 017. `isActiveRole` is the single test.
+ */
+export const ABSORBED_INTO_ADMIN: readonly Role[] = ['adjudicator', 'support_consultant', 'support_lead', 'committee_member']
+
+export const isActiveRole = (role: Role): boolean => !ABSORBED_INTO_ADMIN.includes(role)
+
 export const STAFF_ROLES: readonly Role[] = ROLES.filter((r) => r !== 'applicant')
+
+/** Staff roles still offered in the app (absorbed roles removed). */
+export const ACTIVE_STAFF_ROLES: readonly Role[] = STAFF_ROLES.filter(isActiveRole)
 
 /** Internal case status (blueprint §4.3). */
 export type CaseStatus =

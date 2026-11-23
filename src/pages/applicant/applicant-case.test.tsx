@@ -147,7 +147,7 @@ describe('T08 applicant case view', () => {
 
   it('an unpublished decision stays invisible; once published the applicant sees it, the award and Next steps', async () => {
     await reviewsIn()
-    await as('adjudicator')
+    await as('admin')
     const d = await mockStaff.recordDecision({ proposalId: CASE_8, outcome: 'approved', reason: 'A practical, well-scored idea.' })
     if (d.kind !== 'ok') throw new Error('record failed')
 
@@ -155,7 +155,7 @@ describe('T08 applicant case view', () => {
     expect((await mockSubmission.getMyCase(CASE_8))?.decision).toBeNull()
     expect((await mockSubmission.listMyIdeas()).find((i) => i.id === CASE_8)?.status).toBe('in_adjudication')
 
-    await as('adjudicator')
+    await as('admin')
     await mockStaff.publishDecision({ decisionId: d.data.decision_id })
     await as('admin')
     await mockStaff.recordAward({ proposalId: CASE_8, amountMinor: 5_000_000, description: 'Pilot grant (DEMO).' })

@@ -37,17 +37,17 @@ describe('T12 users and roles (IAM-01)', () => {
     await as('admin')
     const user = renderAt('/admin/users')
     const row = await screen.findByRole('listitem', { name: 'Demo Reviewer 2' }, LOAD)
-    await user.selectOptions(within(row).getByLabelText('Add a role to Demo Reviewer 2'), 'adjudicator')
+    await user.selectOptions(within(row).getByLabelText('Add a role to Demo Reviewer 2'), 'screening_officer')
     await user.click(within(row).getByRole('button', { name: 'Grant role' }))
-    expect(await screen.findByText('Demo Reviewer 2 now has the Adjudicator role.', {}, LOAD)).toBeInTheDocument()
-    await waitFor(() => expect(within(screen.getByRole('list', { name: 'Roles of Demo Reviewer 2' })).getByText('Adjudicator')).toBeInTheDocument(), LOAD)
+    expect(await screen.findByText('Demo Reviewer 2 now has the Screening officer role.', {}, LOAD)).toBeInTheDocument()
+    await waitFor(() => expect(within(screen.getByRole('list', { name: 'Roles of Demo Reviewer 2' })).getByText('Screening officer')).toBeInTheDocument(), LOAD)
 
-    await user.click(screen.getByRole('button', { name: 'Remove Adjudicator from Demo Reviewer 2' }))
+    await user.click(screen.getByRole('button', { name: 'Remove Screening officer from Demo Reviewer 2' }))
     const dialog = await screen.findByRole('dialog')
     await user.type(within(dialog).getByLabelText(/^Reason/), 'Granted by mistake.')
     await user.click(within(dialog).getByRole('button', { name: 'Remove role' }))
-    expect(await screen.findByText('Adjudicator removed from Demo Reviewer 2.', {}, LOAD)).toBeInTheDocument()
-    await waitFor(() => expect(within(screen.getByRole('list', { name: 'Roles of Demo Reviewer 2' })).queryByText('Adjudicator')).not.toBeInTheDocument(), LOAD)
+    expect(await screen.findByText('Screening officer removed from Demo Reviewer 2.', {}, LOAD)).toBeInTheDocument()
+    await waitFor(() => expect(within(screen.getByRole('list', { name: 'Roles of Demo Reviewer 2' })).queryByText('Screening officer')).not.toBeInTheDocument(), LOAD)
   })
 
   it("disables the administrator's own role controls, and the server refuses a self-change anyway", async () => {
@@ -86,7 +86,7 @@ describe('T12 users and roles (IAM-01)', () => {
   })
 
   it('is closed to everyone but administrators', async () => {
-    await as('adjudicator')
+    await as('reviewer')
     expect(await mockAdmin.listUsers()).toBeNull()
     expect(await mockAdmin.grantRole({ userId: 'demo-reviewer-2', roleKey: 'admin' })).toMatchObject({ kind: 'refused', code: 'FORBIDDEN' })
     expect(await mockAdmin.invite({ email: 'x@demo.test', fullName: 'X', roleKey: 'admin' })).toMatchObject({ kind: 'refused', code: 'FORBIDDEN' })

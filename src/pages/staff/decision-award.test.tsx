@@ -68,8 +68,8 @@ describe('money in thebe', () => {
 })
 
 describe('Slice 5: decide, publish, award', () => {
-  it('the adjudicator records an unpublished decision, then publishes it', async () => {
-    await as('adjudicator')
+  it('the administrator records an unpublished decision, then publishes it', async () => {
+    await as('admin')
     const user = renderAt(`/staff/cases/${CASE_4}`)
     await user.click(await screen.findByRole('button', { name: 'Record decision' }, LOAD))
     const dialog = await screen.findByRole('dialog', { name: 'Record decision for CEDA-2026-0004' })
@@ -96,7 +96,7 @@ describe('Slice 5: decide, publish, award', () => {
   }, JOURNEY)
 
   it('changing a draft keeps the earlier one as replaced', async () => {
-    await as('adjudicator')
+    await as('admin')
     const user = renderAt(`/staff/cases/${CASE_4}`)
     await recordDecision(user, 'Not approved', 'First thoughts on this case.')
     await screen.findByText(/Decision saved as Not approved/)
@@ -108,15 +108,18 @@ describe('Slice 5: decide, publish, award', () => {
     expect(within(panel).getByText('Earlier drafts (1)')).toBeInTheDocument()
   }, JOURNEY)
 
-  it('only the administrator records the award, and only after a published approval', async () => {
+  it('the administrator decides, publishes and records the award — staff without the permission are refused', async () => {
+    // The admin now carries decision.record / decision.publish / award.record (absorbed the adjudicator, migration 017).
     await as('admin')
+    // An award is refused until an approval is published.
     expect(await mockStaff.recordAward({ proposalId: CASE_4, amountMinor: 100, description: 'x' })).toMatchObject({ kind: 'refused', code: 'CASE_NOT_APPROVED' })
-    expect(await mockStaff.recordDecision({ proposalId: CASE_4, outcome: 'approved', reason: 'x' })).toMatchObject({ kind: 'refused', code: 'FORBIDDEN' })
-
-    await as('adjudicator')
     const d = await mockStaff.recordDecision({ proposalId: CASE_4, outcome: 'approved', reason: 'Approved.' })
     if (d.kind !== 'ok') throw new Error('record failed')
     await mockStaff.publishDecision({ decisionId: d.data.decision_id })
+
+    // A reviewer has none of these permissions.
+    await as('reviewer')
+    expect(await mockStaff.recordDecision({ proposalId: CASE_4, outcome: 'approved', reason: 'x' })).toMatchObject({ kind: 'refused', code: 'FORBIDDEN' })
     expect(await mockStaff.recordAward({ proposalId: CASE_4, amountMinor: 100, description: 'x' })).toMatchObject({ kind: 'refused', code: 'FORBIDDEN' })
 
     await as('admin')
