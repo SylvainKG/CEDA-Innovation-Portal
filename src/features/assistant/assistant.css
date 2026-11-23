@@ -41,6 +41,9 @@
 .peolwane-launcher--compact .peolwane-launcher__label, .peolwane-launcher--compact .peolwane-launcher__hint { max-width: 0; opacity: 0; transform: translateX(.3rem); }
 .peolwane-launcher--compact .peolwane-launcher__hint { border-color: transparent; padding-left: 0; }
 .peolwane-launcher[aria-hidden='true'] { opacity: 0; transform: translateY(.2rem) scale(.88); pointer-events: none; }
+/* Their own snapshots while the page changes, above the page's, so they stay steady (see .shell-header, index.css). */
+.peolwane-launcher { view-transition-name: peolwane-launcher; }
+.peolwane-panel { view-transition-name: peolwane-panel; }
 
 /* Staff: Peolwane AI is an item in the sidebar under the navigation (team, 23 Nov), in the launcher's sunrise colours. */
 .peolwane-sidebar-launcher {

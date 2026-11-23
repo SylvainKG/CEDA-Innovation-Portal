@@ -102,7 +102,7 @@ export function PublicShell() {
     <div className="flex min-h-screen flex-col">
       <SkipLink />
       <ContactStrip />
-      <header className={cn('site-nav', floating && 'site-nav--floating')}>
+      <header className={cn('site-nav shell-header', floating && 'site-nav--floating')}>
         <div className="site-nav__bar">
           <div className="mx-auto flex max-w-content items-center justify-between gap-4 px-4 py-2">
             <div className="flex shrink-0 items-center gap-3">
