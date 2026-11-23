@@ -2,10 +2,18 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, useRoutes } from 'react-router-dom'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { mockSession } from '@/lib/api/mock/session'
 import type { Role } from '@/lib/api/types'
 import { routes } from '@/routes/router'
+
+vi.mock('@/features/assistant/PeolwaneAssistant', () => ({
+  PeolwaneAssistant: ({ placement = 'default' }: { placement?: string }) => (
+    <button type="button" aria-label="Peolwane AI" data-placement={placement}>
+      Peolwane AI
+    </button>
+  ),
+}))
 
 const LOAD = { timeout: 5000 }
 
@@ -32,7 +40,7 @@ beforeEach(async () => {
 })
 
 describe('shared shell, laid out to Sandra\'s 21 Nov frames', () => {
-  it('applicant: text links, DEMO pill, account menu with Sign out, and the floating chat button', async () => {
+  it('applicant: text links, account menu, one Peolwane launcher, and human support access', async () => {
     await as('applicant')
     const user = renderAt('/ideas')
     await screen.findByRole('heading', { level: 1, name: 'Welcome, Demo Applicant A' }, LOAD)
@@ -52,7 +60,8 @@ describe('shared shell, laid out to Sandra\'s 21 Nov frames', () => {
     expect(screen.queryByRole('button', { name: 'Sign out' })).not.toBeInTheDocument()
     expect(account).toHaveFocus()
 
-    expect(screen.getByRole('link', { name: 'Chat with CEDA' })).toHaveAttribute('href', '/support/chat')
+    expect(screen.getByRole('button', { name: 'Peolwane AI' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Message CEDA support' })).toHaveAttribute('href', '/support/chat')
     // The slim workspace footer: Peolwane is a CEDA product, with help links, the toll-free number and CEDA's website.
     const footer = within(screen.getByRole('contentinfo'))
     expect(footer.getByText(/· Demo prototype with fictional data$/)).toBeInTheDocument()
@@ -88,7 +97,8 @@ describe('shared shell, laid out to Sandra\'s 21 Nov frames', () => {
     expect(within(nav).getByRole('link', { name: 'Challenges' })).toHaveAttribute('aria-current', 'page')
     expect(within(header).queryByRole('link', { name: 'About Us' })).not.toBeInTheDocument()
     expect(within(header).getByRole('link', { name: 'Peolwane · CEDA Innovation Portal' })).toHaveAttribute('href', '/ideas')
-    expect(screen.getByRole('link', { name: 'Chat with CEDA' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Peolwane AI' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Chat with CEDA' })).not.toBeInTheDocument()
   })
 
   it('staff keep the staff navigation on shared pages such as the FAQs', async () => {

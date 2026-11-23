@@ -263,11 +263,40 @@
 }
 
 /*
- * Moving between pages (post-freeze, ABM 22 Nov): the page fade is in PageTransition (Web Animations, so it leaves no
- * transform behind); here, the thin sunrise-coloured line along the top of the window while a page's data loads
- * (RouteProgress), and skeletons that shimmer instead of pulsing. All of it is still with the reduced-motion setting.
+ * Moving between pages (post-freeze, ABM 22 Nov): PageTransition fades the outgoing snapshot before revealing the
+ * destination, with a Web Animations fallback for browsers without View Transitions. This layer has the thin sunrise
+ * line shown while a page's data loads (RouteProgress), plus skeletons that shimmer instead of pulsing.
  */
 @layer components {
+  /*
+   * Link navigation uses React Router's View Transitions API, so the outgoing page is captured and fades away
+   * before the destination is revealed. The named page keeps the app shell steady around that motion.
+   */
+  .page-transition {
+    view-transition-name: ceda-page;
+  }
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+  ::view-transition-group(ceda-page) {
+    animation-duration: 380ms;
+    animation-timing-function: cubic-bezier(.2, .7, .2, 1);
+  }
+  ::view-transition-old(ceda-page) {
+    animation: ceda-page-out 170ms cubic-bezier(.4, 0, .8, .4) both;
+  }
+  ::view-transition-new(ceda-page) {
+    animation: ceda-page-in 290ms cubic-bezier(.16, 1, .3, 1) 80ms both;
+  }
+  @keyframes ceda-page-out {
+    to { opacity: 0; transform: translateY(-5px) scale(.995); filter: blur(1.5px); }
+  }
+  @keyframes ceda-page-in {
+    from { opacity: 0; transform: translateY(12px) scale(.99); filter: blur(2px); }
+    to { opacity: 1; transform: none; filter: blur(0); }
+  }
+
   /* The five stages on the home page's dark band and the How it works overview, joined by the swallow's dotted
      flight: down the left on phones and tablets, across from 1024 px. */
   .process-rail__stage:not(:last-child)::after {
@@ -330,6 +359,16 @@
     background: var(--ceda-orange);
   }
   @media (prefers-reduced-motion: reduce) {
+    .page-transition {
+      view-transition-name: none;
+    }
+    ::view-transition-old(root),
+    ::view-transition-new(root),
+    ::view-transition-group(ceda-page),
+    ::view-transition-old(ceda-page),
+    ::view-transition-new(ceda-page) {
+      animation: none !important;
+    }
     .ceda-map-pin {
       transition: none;
     }
